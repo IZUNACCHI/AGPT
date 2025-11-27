@@ -4,6 +4,9 @@
 #include <string>
 #include <type_traits>
 #include "Component.h"
+
+class Scene;
+
 //There's probably a better way to do memory management for GameObjects
 class GameObject {
 
@@ -21,6 +24,9 @@ public:
 		}
 		
 	}
+
+	// Scene reference (not owning)
+	Scene* owningScene = nullptr;
 
 	// Hierarchy
 	void SetParent(GameObject* newParent);

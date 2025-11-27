@@ -35,6 +35,10 @@ void GameObject::AddChild(GameObject* child)
 		if (p == child) return; // child is already an ancestor
 		p = p->parent;
 	}
+
+	// scene check
+	if (child->owningScene != owningScene) return; 
+
 	// set child's parent to this
 	child->SetParent(this);
 }

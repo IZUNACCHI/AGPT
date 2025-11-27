@@ -284,6 +284,6 @@ const GamepadState* Input::GetGamepad(int id)
 	return nullptr;
 }
 
-bool Input::ShouldQuit() {
+bool Input::Close() {
 	return impl->quitRequested;
 }

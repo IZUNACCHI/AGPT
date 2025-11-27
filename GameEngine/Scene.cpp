@@ -1,7 +1,8 @@
 #include "Scene.h"
 #include "FRect.hpp"       
 
-Scene::Scene() = default;
+Scene::Scene() : instanceId(Engine::GenerateUniqueId()){}
+
 
 Scene::~Scene()
 {
@@ -12,6 +13,8 @@ GameObject* Scene::CreateGameObject(const std::string& name /*= "GameObject"*/)
 {
 	// Create GameObject 
 	auto obj = std::make_unique<GameObject>(name);
+	// Set owning scene
+	obj->owningScene = this;
 	// Every GameObject must have a Transform component for now
 	obj->AddComponent<Transform>();
 	// Return raw pointer but keep ownership in the scene
@@ -23,7 +26,7 @@ GameObject* Scene::CreateGameObject(const std::string& name /*= "GameObject"*/)
 //
 void Scene::Destroy(GameObject* go, bool recursive = false)
 {
-	// ´null check
+	// null check
 	if (!go) return;
 
 	// Detach from parent
@@ -67,14 +70,14 @@ void Scene::CollectRenderItems(GameObject* go)
 	}
 
 	for (auto& child : go->GetChildren())
-		CollectRenderItems(child.get());
+		CollectRenderItems(child);
 }
 
 void Scene::Update(float deltaTime)
 {
 	for (const auto& obj : objects)
 	{
-		if (!obj->parent && obj->active)   // start only from roots
+		if (!obj->GetParent() && obj->active)   // start only from roots
 			obj->Update(deltaTime);
 	}
 }
@@ -85,7 +88,7 @@ void Scene::Render(Renderer& renderer)
 
 	for (const auto& obj : objects)
 	{
-		if (!obj->parent)
+		if (!obj->GetParent())
 			CollectRenderItems(obj.get());
 	}
 

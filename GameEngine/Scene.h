@@ -8,11 +8,20 @@
 #include <vector>
 #include <algorithm>
 
+#include "UniqueID.h"
+
 class Scene
 {
 public:
 	Scene();
 	~Scene();
+
+	const uint64_t instanceId;           // unique runtime ID (read-only)
+	std::string name = "Scene";			// scene name
+
+	virtual void OnLoad() {}     // Called once when the scene becomes active
+	virtual void OnUnload() {}   // Called just before the scene is destroyed
+
 
 	// Create a new GameObject (automatically adds a Transform component - every object without Transform cannot be rendered)
 	GameObject* CreateGameObject(const std::string& name = "GameObject");

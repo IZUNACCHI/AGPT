@@ -1,6 +1,7 @@
 #include "SleeplessEngine.h"
 #include <SDL3/SDL.h>
 #include "Input.h"
+#include "SceneManager.h"
 
 SleeplessEngine::SleeplessEngine() {
 }
@@ -11,11 +12,17 @@ SleeplessEngine::~SleeplessEngine() {
 
 void SleeplessEngine::Start(const std::string& title, int w, int h)
 {
+	// reset shutdown flag
+	shutdownCalled = false;
+
 	std::cout << "SleeplessEngine Initializing\n";
+
+	// Initialize SDL, swap if change DISTRIBUTION
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
 		throw EngineException(SDL_GetError());
 	}
 
+	// Initialize subsystems
 	std::cout << "\t-Window\n";
 	window = std::make_unique<Window>(title, w, h);
 	std::cout << "\t-Renderer\n";
@@ -27,18 +34,19 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	std::cout << "\t-Input System\n";
 	Input::Initialize();
 	std::cout << "\t-Physics System\n";
-	
+	SceneManager::Initialize();
+	std::cout << "\t-Scene Manager\n";
 
 	std::cout << "\n";
 
+	// Main loop
 	running = true;
 	std::cout << "SleeplessEngine Running\n";
 
 	while (running) {
-		//if scene exists
 		time->Update();
 		HandleEvents();
-		if (Input::ShouldQuit()) {
+		if (Input::Close()) {
 			running = false;
 			continue;
 		}
@@ -49,11 +57,15 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	Shutdown();
 }
 
-
+// 
 void SleeplessEngine::Update() {
-	//scene->Update(time->DeltaTime());
+	Scene* scene = SceneManager::GetActiveScene();
+	if(scene) {
+		scene->Update(time->DeltaTime());
+	}
 }
 
+// Fixed timestep physics update
 void SleeplessEngine::PhysicsUpdate() {
 	float dt = time->DeltaTime();
 	physAccumulator += dt;
@@ -65,24 +77,40 @@ void SleeplessEngine::PhysicsUpdate() {
 	}
 }
 
+// Render the current scene
 void SleeplessEngine::Render() {
-	renderer->Clear();
-	//scene->Render(*renderer);
-	renderer->Present();
+	Scene* scene = SceneManager::GetActiveScene();
+	if (scene)
+	{
+		renderer->Clear();
+		scene->Render(*renderer);
+		renderer->Present();
+	}
 }
 
+// Handle input and window events
 void SleeplessEngine::HandleEvents() {
 	Input::PollEvents();
 }
 
-
+// Shutdown and clean up resources
 void SleeplessEngine::Shutdown()
 {
+	// Prevent multiple shutdowns
+	if (shutdownCalled) return;
+	shutdownCalled = true;
+
 	std::cout << "SleeplessEngine is Shutting Down\n";
-	renderer.reset();
-	window.reset();
-	time.reset();
-	assets->Clear();
+
+	// Clean up subsystems
+	if (renderer) renderer.reset();
+	if (window) window.reset();
+	if (time) time.reset();
+	if (assets) {
+		assets->Clear();
+		assets.reset();
+	}
+	Input::Shutdown();
 
 	SDL_Quit();
 }

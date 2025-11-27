@@ -88,7 +88,7 @@ public:
 	static const std::vector<GamepadState>& GetGamepads();
 	static const GamepadState* GetGamepad(int id);
 
-	static bool ShouldQuit();
+	static bool Close();
 private:
 	struct Impl;
 	static std::unique_ptr<Impl> impl;

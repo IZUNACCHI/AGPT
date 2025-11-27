@@ -41,5 +41,8 @@ private:
 	void Update();
 	void PhysicsUpdate();
 	void Render();
+
+	// To prevent multiple shutdowns
+	bool shutdownCalled = false;
 };
 
