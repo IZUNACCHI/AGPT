@@ -19,23 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AnimationClip.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="EngineException.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Input.h" />
-    <ClInclude Include="Rect.hpp" />
+    <ClInclude Include="FRect.hpp" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SleeplessEngine.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Time.hpp" />
-    <ClInclude Include="Timer.hpp" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Vec2.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AnimationClip.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="EngineException.cpp" />

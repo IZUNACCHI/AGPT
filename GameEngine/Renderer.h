@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "Window.h"
-#include "Rect.hpp"
+#include "FRect.hpp"
 #include "Texture.h"
 
 enum class Flip {
@@ -20,7 +20,7 @@ public:
 	void Present();
 
 	void* GetNative() const;
-	void DrawTexture(Texture& tex, const Rect& src, const Rect& dst, Flip flip = Flip::None);
+	void DrawTexture(Texture& tex, const FRect& src, const FRect& dst, Flip flip = Flip::None);
 
 private:
 	struct Impl;

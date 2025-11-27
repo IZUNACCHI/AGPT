@@ -11,7 +11,7 @@ SleeplessEngine::~SleeplessEngine() {
 void SleeplessEngine::Start(const std::string& title, int w, int h)
 {
 	std::cout << "SleeplessEngine Initializing\n";
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD) == 0) {
 		throw EngineException(SDL_GetError());
 	}
 
@@ -52,14 +52,13 @@ void SleeplessEngine::Update() {
 	
 }
 
-void SleeplessEngine::PhysicsUpdate()
-{
+void SleeplessEngine::PhysicsUpdate() {
 	float dt = time->DeltaTime();
 	physAccumulator += dt;
 
 	//Fixed TimeStep
 	while (physAccumulator >= physStep) {
-		//Physics step
+		//physics.Step(physStep);
 		physAccumulator -= physStep;
 	}
 }
@@ -82,6 +81,7 @@ void SleeplessEngine::Shutdown()
 	renderer.reset();
 	window.reset();
 	time.reset();
+	assets->Clear();
 
 	SDL_Quit();
 }

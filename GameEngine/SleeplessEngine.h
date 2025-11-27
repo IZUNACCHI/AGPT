@@ -21,6 +21,8 @@ public:
 	Time& GetTime() { return *time; }
 	AssetManager& GetAssets() { return *assets; }
 
+	static SleeplessEngine* instance;
+
 private:
 	bool running = false;
 

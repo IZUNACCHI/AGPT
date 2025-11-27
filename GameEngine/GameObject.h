@@ -56,7 +56,7 @@ public:
 	std::string name;
 
 private:
-	GameObject* parent = nullptr;
+	GameObject* parent = nullptr; //Not Obligatory
 	std::vector<std::unique_ptr<GameObject>> children;
 	std::vector<std::unique_ptr<Component>> components;
 

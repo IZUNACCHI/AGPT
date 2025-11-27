@@ -33,7 +33,7 @@
     <ClInclude Include="Time.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Rect.hpp">
+    <ClInclude Include="FRect.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AssetManager.h">
@@ -51,10 +51,7 @@
     <ClInclude Include="Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AnimationClip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.hpp">
+    <ClInclude Include="Vec2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -90,9 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationClip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

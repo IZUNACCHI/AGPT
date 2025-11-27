@@ -34,9 +34,9 @@ void* Renderer::GetNative() const {
 	return impl->sdlRenderer;
 }
 
-void Renderer::DrawTexture(Texture& tex, const Rect& src, const Rect& dst, Flip flip) {
-	SDL_FRect s = { (float)src.x, (float)src.y, (float)src.w, (float)src.h };
-	SDL_FRect d = { (float)dst.x, (float)dst.y, (float)dst.w, (float)dst.h };
+void Renderer::DrawTexture(Texture& tex, const FRect& src, const FRect& dst, Flip flip) {
+	SDL_FRect s = { src.x, src.y, src.w, src.h };
+	SDL_FRect d = { dst.x, dst.y, dst.w, dst.h };
 
 	SDL_FlipMode sdlFlip = SDL_FLIP_NONE;
 	switch (flip) {

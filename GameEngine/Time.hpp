@@ -13,5 +13,6 @@ private:
 	float totalTime = 0.f;
 	unsigned long frameCount = 0;
 
+
 	unsigned long long lastTicks = 0;
 };
