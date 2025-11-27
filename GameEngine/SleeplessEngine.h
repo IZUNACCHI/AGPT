@@ -20,6 +20,7 @@ public:
 	Renderer& GetRenderer() { return *renderer; }
 	Time& GetTime() { return *time; }
 	AssetManager& GetAssets() { return *assets; }
+	//Scene& GetScene() { return *scene; } 
 
 	static SleeplessEngine* instance;
 
@@ -30,6 +31,8 @@ private:
 	std::unique_ptr<Renderer> renderer;
 	std::unique_ptr<Time> time;
 	std::unique_ptr<AssetManager> assets;
+	//std::unique_ptr<Scene> scene;
+
 	float physStep = 1.0f / 60.0f; //fixed step for physics
 	float physAccumulator = 0.0f;
 

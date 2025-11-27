@@ -2,7 +2,8 @@
 #include <SDL3/SDL.h>
 #include "Input.h"
 
-SleeplessEngine::SleeplessEngine() {}
+SleeplessEngine::SleeplessEngine() {
+}
 
 SleeplessEngine::~SleeplessEngine() {
 	Shutdown();
@@ -11,7 +12,7 @@ SleeplessEngine::~SleeplessEngine() {
 void SleeplessEngine::Start(const std::string& title, int w, int h)
 {
 	std::cout << "SleeplessEngine Initializing\n";
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD) == 0) {
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
 		throw EngineException(SDL_GetError());
 	}
 
@@ -34,6 +35,7 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	std::cout << "SleeplessEngine Running\n";
 
 	while (running) {
+		//if scene exists
 		time->Update();
 		HandleEvents();
 		if (Input::ShouldQuit()) {
@@ -49,7 +51,7 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 
 
 void SleeplessEngine::Update() {
-	
+	//scene->Update(time->DeltaTime());
 }
 
 void SleeplessEngine::PhysicsUpdate() {
@@ -65,14 +67,13 @@ void SleeplessEngine::PhysicsUpdate() {
 
 void SleeplessEngine::Render() {
 	renderer->Clear();
-	// draw stuff here
+	//scene->Render(*renderer);
 	renderer->Present();
 }
 
 void SleeplessEngine::HandleEvents() {
 	Input::PollEvents();
 }
-
 
 
 void SleeplessEngine::Shutdown()

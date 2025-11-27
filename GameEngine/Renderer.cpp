@@ -1,3 +1,5 @@
+// Modify Renderer.cpp accordingly
+
 #include "Renderer.h"
 #include "EngineException.h"
 #include <SDL3/SDL.h>
@@ -34,18 +36,22 @@ void* Renderer::GetNative() const {
 	return impl->sdlRenderer;
 }
 
-void Renderer::DrawTexture(Texture& tex, const FRect& src, const FRect& dst, Flip flip) {
-	SDL_FRect s = { src.x, src.y, src.w, src.h };
-	SDL_FRect d = { dst.x, dst.y, dst.w, dst.h };
+void Renderer::DrawTexture(Texture& tex, const FRect* src, const FRect& dst, double angle /*= 0.0*/, Flip flip /*= Flip::None*/)
+{
+	SDL_FRect dstRect = { dst.x, dst.y, dst.w, dst.h };
 
 	SDL_FlipMode sdlFlip = SDL_FLIP_NONE;
-	switch (flip) {
-	case Flip::Horizontal: sdlFlip = SDL_FLIP_HORIZONTAL; break;
-	case Flip::Vertical: sdlFlip = SDL_FLIP_VERTICAL; break;
-	case Flip::Both: sdlFlip = (SDL_FlipMode)(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL); break;
-	default: break;
-	}
+	if (flip == Flip::Horizontal)      sdlFlip = SDL_FLIP_HORIZONTAL;
+	else if (flip == Flip::Vertical)   sdlFlip = SDL_FLIP_VERTICAL;
+	else if (flip == Flip::Both)       sdlFlip = (SDL_FlipMode)(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
 
-	SDL_RenderTextureRotated((SDL_Renderer*)impl->sdlRenderer, (SDL_Texture*)tex.GetNative(),
-		&s, &d, 0.0, nullptr, sdlFlip);
+	if (src)
+	{
+		SDL_FRect srcRect = { src->x, src->y, src->w, src->h };
+		SDL_RenderTextureRotated(impl->sdlRenderer, (SDL_Texture*)tex.GetNative(), &srcRect, &dstRect, angle, nullptr, sdlFlip);
+	}
+	else
+	{
+		SDL_RenderTextureRotated(impl->sdlRenderer, (SDL_Texture*)tex.GetNative(), nullptr, &dstRect, angle, nullptr, sdlFlip);
+	}
 }

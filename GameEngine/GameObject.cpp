@@ -1,43 +1,73 @@
 #include "GameObject.h"
 
-void GameObject::SetParent(GameObject* newParent) {
+void GameObject::SetParent(GameObject* newParent = nullptr)
+{
+	//self check
 	if (parent == newParent) return;
 
-	RemoveFromParent();
+	// remove from old parent's children list 
+	if (parent)
+	{
+		auto& siblings = parent->children;
+		siblings.erase(
+			std::remove(siblings.begin(), siblings.end(), this),
+			siblings.end()
+		);
+	}
 
+	// set new parent
 	parent = newParent;
-	if (parent) {
-		parent->children.push_back(std::unique_ptr<GameObject>(this));
+
+	// add to new parent's children list
+	if (parent)
+		parent->children.push_back(this);
+}
+
+void GameObject::AddChild(GameObject* child)
+{
+	// null or self check
+	if (!child || child == this) return;
+
+	// check for cycles
+	GameObject* p = this;
+	while (p)
+	{
+		if (p == child) return; // child is already an ancestor
+		p = p->parent;
 	}
+	// set child's parent to this
+	child->SetParent(this);
 }
 
-GameObject* GameObject::AddChild(const std::string& childName) {
-	auto child = std::make_unique<GameObject>(childName);
-	GameObject* ptr = child.get();
-	child->parent = this;
-	children.push_back(std::move(child));
-	return ptr;
+void GameObject::RemoveChild(GameObject* child)
+{
+	//null check
+	if (!child) return;
+	if (child->parent != this) return; // not a child of this
+
+	child->SetParent(nullptr);// detach from parent
 }
 
-void GameObject::RemoveFromParent() {
+void GameObject::RemoveFromParent()
+{
+	// null check
 	if (!parent) return;
-
-	auto& parentChildren = parent->children;
-	auto it = std::find_if(parentChildren.begin(), parentChildren.end(),
-		[this](const auto& c) { return c.get() == this; });
-	if (it != parentChildren.end()) {
-		parentChildren.erase(it);
-	}
-	parent = nullptr;
+	// detach from parent
+	SetParent(nullptr);
 }
 
-void GameObject::Update() {
-	for (auto& comp : components) {
-		comp->Update();
-	}
+void GameObject::Update(float deltaTime)
+{
+	// Update active components
+	for (auto& comp : components)
+		if (comp->IsActive())
+			comp->Update(deltaTime);
 
-	for (auto& child : children) {
-		child->Update();
+	// Update active children
+	for (auto& child : children)
+	{
+		if (child->active)          // skip inactive children
+			child->Update(deltaTime);
 	}
 }
 

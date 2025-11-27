@@ -1,3 +1,6 @@
+// First, modify Renderer.h to support rotation in DrawTexture
+// Add the angle parameter
+
 #pragma once
 #include <memory>
 #include "Window.h"
@@ -20,7 +23,7 @@ public:
 	void Present();
 
 	void* GetNative() const;
-	void DrawTexture(Texture& tex, const FRect& src, const FRect& dst, Flip flip = Flip::None);
+	void DrawTexture(Texture& tex, const FRect* src = nullptr, const FRect& dst = FRect{}, double angle = 0.0, Flip flip = Flip::None);
 
 private:
 	struct Impl;

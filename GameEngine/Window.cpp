@@ -26,16 +26,8 @@ Window::Window(const std::string& title, int w, int h)
 
 Window::~Window() = default;
 
-int Window::Width() const
-{
-	return Width();
-}
+int Window::Width() const { return impl->width; }
 
-int Window::Height() const
-{
-	return Height();
-}
+int Window::Height() const { return impl->height; }
 
-void* Window::GetNative() const {
-	return impl->sdlWindow;
-}
+void* Window::GetNative() const { return impl->sdlWindow; }
