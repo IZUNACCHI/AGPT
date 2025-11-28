@@ -2,6 +2,8 @@
 #include <SDL3/SDL.h>
 #include "Input.h"
 #include "SceneManager.h"
+#include "Time.h"
+#include "AssetManager.h"
 
 SleeplessEngine::SleeplessEngine() {
 }
@@ -34,8 +36,9 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	std::cout << "\t-Input System\n";
 	Input::Initialize();
 	std::cout << "\t-Physics System\n";
-	SceneManager::Initialize();
+	
 	std::cout << "\t-Scene Manager\n";
+	SceneManager::Initialize();
 
 	std::cout << "\n";
 
@@ -105,12 +108,11 @@ void SleeplessEngine::Shutdown()
 	// Clean up subsystems
 	if (renderer) renderer.reset();
 	if (window) window.reset();
+	if (assets) assets->Clear();
+	if (assets) assets.reset();
 	if (time) time.reset();
-	if (assets) {
-		assets->Clear();
-		assets.reset();
-	}
 	Input::Shutdown();
+
 
 	SDL_Quit();
 }

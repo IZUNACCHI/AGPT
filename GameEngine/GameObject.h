@@ -15,7 +15,7 @@ public:
 		OnInit();
 	}
 
-	~GameObject() {
+	virtual ~GameObject() {
 		OnDestroy();
 		//Detach from parent so parent doesn't hold dangling pointer
 		RemoveFromParent();
@@ -77,11 +77,11 @@ public:
 
 	// Lifecycle methods to be overridden
 	// Init called once on creation
-	virtual void OnInit() = 0;
+	virtual void OnInit();
 	// Update called only if active
-	virtual void OnUpdate(float deltaTime) = 0;
+	virtual void OnUpdate(float deltaTime);
 	// Destroy called once on deletion
-	virtual void OnDestroy() = 0;
+	virtual void OnDestroy();
 
 	// Update traverses hierarchy
 	void Update(float deltaTime);

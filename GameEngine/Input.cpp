@@ -4,6 +4,8 @@
 #include <array>
 #include <ranges>
 
+std::unique_ptr<Input::Impl> Input::impl = nullptr;
+
 struct Input::Impl {
 	// Keyboard
 	std::unordered_map<Key, bool> prevKeyState;
@@ -41,69 +43,69 @@ struct Input::Impl {
 // ------------------------------
 // HELPERS
 // ------------------------------
-static Key TranslateKey(SDL_Keycode key) {
-	switch (key) {
-	case SDLK_a: case SDLK_A: return Key::A;
-	case SDLK_b: case SDLK_B: return Key::B;
-	case SDLK_c: case SDLK_C: return Key::C;
-	case SDLK_d: case SDLK_D: return Key::D;
-	case SDLK_e: case SDLK_E: return Key::E;
-	case SDLK_f: case SDLK_F: return Key::F;
-	case SDLK_g: case SDLK_G: return Key::G;
-	case SDLK_h: case SDLK_H: return Key::H;
-	case SDLK_i: case SDLK_I: return Key::I;
-	case SDLK_j: case SDLK_J: return Key::J;
-	case SDLK_k: case SDLK_K: return Key::K;
-	case SDLK_l: case SDLK_L: return Key::L;
-	case SDLK_m: case SDLK_M: return Key::M;
-	case SDLK_n: case SDLK_N: return Key::N;
-	case SDLK_o: case SDLK_O: return Key::O;
-	case SDLK_p: case SDLK_P: return Key::P;
-	case SDLK_q: case SDLK_Q: return Key::Q;
-	case SDLK_r: case SDLK_R: return Key::R;
-	case SDLK_s: case SDLK_S: return Key::S;
-	case SDLK_t: case SDLK_T: return Key::T;
-	case SDLK_u: case SDLK_U: return Key::U;
-	case SDLK_v: case SDLK_V: return Key::V;
-	case SDLK_w: case SDLK_W: return Key::W;
-	case SDLK_x: case SDLK_X: return Key::X;
-	case SDLK_y: case SDLK_Y: return Key::Y;
-	case SDLK_z: case SDLK_Z: return Key::Z;
-	case SDLK_0: return Key::Num0;
-	case SDLK_1: return Key::Num1;
-	case SDLK_2: return Key::Num2;
-	case SDLK_3: return Key::Num3;
-	case SDLK_4: return Key::Num4;
-	case SDLK_5: return Key::Num5;
-	case SDLK_6: return Key::Num6;
-	case SDLK_7: return Key::Num7;
-	case SDLK_8: return Key::Num8;
-	case SDLK_9: return Key::Num9;
-	case SDLK_SPACE: return Key::Space;
-	case SDLK_RETURN: return Key::Enter;
-	case SDLK_ESCAPE: return Key::Escape;
-	case SDLK_LSHIFT: return Key::LeftShift;
-	case SDLK_RSHIFT: return Key::RightShift;
-	case SDLK_LCTRL: return Key::LeftCtrl;
-	case SDLK_RCTRL: return Key::RightCtrl;
-	case SDLK_LALT: return Key::LeftAlt;
-	case SDLK_RALT: return Key::RightAlt;
-	case SDLK_UP: return Key::Up;
-	case SDLK_DOWN: return Key::Down;
-	case SDLK_LEFT: return Key::Left;
-	case SDLK_RIGHT: return Key::Right;
-	case SDLK_F1: return Key::F1;
-	case SDLK_F2: return Key::F2;
-	case SDLK_F3: return Key::F3;
-	case SDLK_F4: return Key::F4;
-	case SDLK_F5: return Key::F5;
-	case SDLK_F6: return Key::F6;
-	case SDLK_F7: return Key::F7;
-	case SDLK_F8: return Key::F8;
-	case SDLK_F9: return Key::F9;
-	case SDLK_F10: return Key::F10;
-	case SDLK_F11: return Key::F11;
-	case SDLK_F12: return Key::F12;
+static Key TranslateKey(SDL_Scancode scancode) {
+	switch (scancode) {
+	case SDL_SCANCODE_A: return Key::A;
+	case SDL_SCANCODE_B: return Key::B;
+	case SDL_SCANCODE_C: return Key::C;
+	case SDL_SCANCODE_D: return Key::D;
+	case SDL_SCANCODE_E: return Key::E;
+	case SDL_SCANCODE_F: return Key::F;
+	case SDL_SCANCODE_G: return Key::G;
+	case SDL_SCANCODE_H: return Key::H;
+	case SDL_SCANCODE_I: return Key::I;
+	case SDL_SCANCODE_J: return Key::J;
+	case SDL_SCANCODE_K: return Key::K;
+	case SDL_SCANCODE_L: return Key::L;
+	case SDL_SCANCODE_M: return Key::M;
+	case SDL_SCANCODE_N: return Key::N;
+	case SDL_SCANCODE_O: return Key::O;
+	case SDL_SCANCODE_P: return Key::P;
+	case SDL_SCANCODE_Q: return Key::Q;
+	case SDL_SCANCODE_R: return Key::R;
+	case SDL_SCANCODE_S: return Key::S;
+	case SDL_SCANCODE_T: return Key::T;
+	case SDL_SCANCODE_U: return Key::U;
+	case SDL_SCANCODE_V: return Key::V;
+	case SDL_SCANCODE_W: return Key::W;
+	case SDL_SCANCODE_X: return Key::X;
+	case SDL_SCANCODE_Y: return Key::Y;
+	case SDL_SCANCODE_Z: return Key::Z;
+	case SDL_SCANCODE_0: return Key::Num0;
+	case SDL_SCANCODE_1: return Key::Num1;
+	case SDL_SCANCODE_2: return Key::Num2;
+	case SDL_SCANCODE_3: return Key::Num3;
+	case SDL_SCANCODE_4: return Key::Num4;
+	case SDL_SCANCODE_5: return Key::Num5;
+	case SDL_SCANCODE_6: return Key::Num6;
+	case SDL_SCANCODE_7: return Key::Num7;
+	case SDL_SCANCODE_8: return Key::Num8;
+	case SDL_SCANCODE_9: return Key::Num9;
+	case SDL_SCANCODE_SPACE: return Key::Space;
+	case SDL_SCANCODE_RETURN: return Key::Enter;
+	case SDL_SCANCODE_ESCAPE: return Key::Escape;
+	case SDL_SCANCODE_LSHIFT: return Key::LeftShift;
+	case SDL_SCANCODE_RSHIFT: return Key::RightShift;
+	case SDL_SCANCODE_LCTRL: return Key::LeftCtrl;
+	case SDL_SCANCODE_RCTRL: return Key::RightCtrl;
+	case SDL_SCANCODE_LALT: return Key::LeftAlt;
+	case SDL_SCANCODE_RALT: return Key::RightAlt;
+	case SDL_SCANCODE_UP: return Key::Up;
+	case SDL_SCANCODE_DOWN: return Key::Down;
+	case SDL_SCANCODE_LEFT: return Key::Left;
+	case SDL_SCANCODE_RIGHT: return Key::Right;
+	case SDL_SCANCODE_F1: return Key::F1;
+	case SDL_SCANCODE_F2: return Key::F2;
+	case SDL_SCANCODE_F3: return Key::F3;
+	case SDL_SCANCODE_F4: return Key::F4;
+	case SDL_SCANCODE_F5: return Key::F5;
+	case SDL_SCANCODE_F6: return Key::F6;
+	case SDL_SCANCODE_F7: return Key::F7;
+	case SDL_SCANCODE_F8: return Key::F8;
+	case SDL_SCANCODE_F9: return Key::F9;
+	case SDL_SCANCODE_F10: return Key::F10;
+	case SDL_SCANCODE_F11: return Key::F11;
+	case SDL_SCANCODE_F12: return Key::F12;
 	default: return Key::Unknown;
 	}
 }
@@ -157,7 +159,7 @@ void Input::PollEvents() {
 
 		case SDL_EVENT_KEY_DOWN:
 		case SDL_EVENT_KEY_UP: {
-			Key k = TranslateKey(event.key.keysym.sym);
+			Key k = TranslateKey(event.key.scancode);
 			if (k != Key::Unknown) {
 				impl->currKeyState[k] = (event.type == SDL_EVENT_KEY_DOWN);
 			}
@@ -228,8 +230,7 @@ void Input::PollEvents() {
 			if (it != impl->pads.end() && event.gaxis.axis < static_cast<int>(GamepadAxis::Max)) {
 				Sint16 raw = event.gaxis.value;
 				float normalized;
-				if (event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFTTRIGGER ||
-					event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHTTRIGGER) {
+				if (event.gaxis.axis == SDL_EVENT_GAMEPAD_AXIS_MOTION) {
 					normalized = raw / 32767.0f; // 0 to 1
 				}
 				else {
@@ -285,9 +286,7 @@ float Input::GetScrollY() {
 	return s;
 }
 
-// ------------------------------
 // GAMEPAD
-// ------------------------------
 const std::vector<GamepadState>& Input::GetGamepads() {
 	static std::vector<GamepadState> exposed;
 	exposed.clear();
@@ -306,7 +305,7 @@ const std::vector<GamepadState>& Input::GetGamepads() {
 }
 
 int Input::GetGamepadCount() {
-	return std::ranges::count_if(impl->pads, [](const Impl::Pad& p) { return p.connected; });
+    return static_cast<int>(std::ranges::count_if(impl->pads, [](const Impl::Pad& p) { return p.connected; }));
 }
 
 bool Input::IsGamepadConnected(int index) {

@@ -13,12 +13,14 @@
 
 #include "GameObject.h"
 
+// Represents a single frame in an animation
 struct AnimationFrame {
 	Texture* texture = nullptr;  // Optional; if null, use SpriteRenderer's current texture
 	FRect clipRect = { 0.f, 0.f, 0.f, 0.f };  // Frame region; if w <= 0, use full
 	float duration = 0.1f;  // Default duration in seconds
 };
 
+// Represents an animation sequence
 class Animation {
 public:
 	std::string name;
@@ -26,36 +28,43 @@ public:
 	bool loop = false;
 };
 
+// Represents a transition between animation states
 struct Transition {
 	std::string to;
 	std::function<bool()> condition;
 };
 
+// Represents a state in the animation graph
 class AnimationState {
 public:
 	std::unique_ptr<Animation> animation;
 	std::vector<Transition> transitions;
 };
 
+// Represents the entire animation graph
 class AnimationGraph {
 public:
 	std::unordered_map<std::string, AnimationState> states;
 	std::string startState;
 
+	// Adds a state to the graph
 	void AddState(const std::string& name, std::unique_ptr<Animation> anim) {
 		states[name].animation = std::move(anim);
 	}
 
+	// Adds a transition between states
 	void AddTransition(const std::string& from, const std::string& to, std::function<bool()> cond) {
 		states[from].transitions.push_back({ to, std::move(cond) });
 	}
 };
 
+// Component that plays animations based on the AnimationGraph
 class Animator : public Component {
 public:
 	std::unique_ptr<AnimationGraph> graph;
 	std::string currentState;
 
+	// Initialize the animator
 	void Start() override {
 		if (graph && !graph->startState.empty()) {
 			currentState = graph->startState;
@@ -64,6 +73,7 @@ public:
 		}
 	}
 
+	// Update the animator each frame
 	void Update(float deltatime) override {
 		if (!graph || graph->states.find(currentState) == graph->states.end()) return;
 
