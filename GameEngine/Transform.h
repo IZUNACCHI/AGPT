@@ -4,6 +4,9 @@
 
 class Transform : public Component {
 public:
+
+	Transform() { name = "Transform " + GetId(); };
+	~Transform() override = default;
 	// Local properties
 	Vec2 localPosition = { 0.0f, 0.0f };
 	float localRotation = 0.0f; // degrees
@@ -27,9 +30,9 @@ public:
 	void SetWorldRotation(float degrees);
 
 	// --- New World Convenience Mutators (Setters that use relative movement) ---
-	void MoveWorld(const Vec2& deltaWorld);
-	void RotateWorld(float degreesDelta);
-
+	//void MoveWorld(const Vec2& deltaWorld);
+	//void RotateWorld(float degreesDelta);
+	
 private:
 	Transform* GetParentTransform() const;
 };

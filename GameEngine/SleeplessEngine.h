@@ -38,8 +38,8 @@ private:
 
 
 	void HandleEvents();
-	void Update();
-	void PhysicsUpdate();
+	void Update(float deltaTime);
+	void PhysicsUpdate(float deltaTime);
 	void Render();
 
 	// To prevent multiple shutdowns

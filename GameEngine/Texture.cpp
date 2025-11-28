@@ -11,7 +11,10 @@ struct Texture::Impl {
 
 	Impl(Renderer& renderer, const std::string& path) {
 		SDL_Surface* surf = SDL_LoadBMP(path.c_str());
+
 		if (!surf) throw EngineException(SDL_GetError());
+
+		SDL_SetSurfaceColorKey(surf, true, SDL_MapSurfaceRGB(surf, 255, 0, 255));
 
 		tex = SDL_CreateTextureFromSurface(
 			(SDL_Renderer*)renderer.GetNative(), surf

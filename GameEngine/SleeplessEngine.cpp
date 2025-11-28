@@ -35,7 +35,7 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	std::cout << "\t-Input System\n";
 	Input::Initialize();
 	std::cout << "\t-Physics System\n";
-	
+
 	std::cout << "\t-Scene Manager\n";
 	SceneManager::Initialize();
 	//Load initial scene
@@ -51,14 +51,17 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 
 void SleeplessEngine::Run()
 {
+	static float deltaTime = Time::DeltaTime();
 	while (running) {
 		Time::Update();
+		deltaTime = Time::DeltaTime();
 		HandleEvents();
 		if (Input::Close()) {
 			running = false;
 			continue;
 		}
-		Update();
+		PhysicsUpdate(deltaTime);
+		Update(deltaTime);
 		Render();
 	}
 
@@ -66,22 +69,24 @@ void SleeplessEngine::Run()
 }
 
 // 
-void SleeplessEngine::Update() {
+void SleeplessEngine::Update(float deltaTime) {
 	Scene* scene = SceneManager::GetActiveScene();
 	if(scene) {
-		scene->Update(Time::DeltaTime());
+		scene->Update(deltaTime);
 	}
 }
 
 // Fixed timestep physics update
-void SleeplessEngine::PhysicsUpdate() {
-	float dt = Time::DeltaTime();
-	physAccumulator += dt;
-
+void SleeplessEngine::PhysicsUpdate(float deltaTime) {
+	
+	physAccumulator += deltaTime;
+	int maxSubSteps = 10;
+	int subSteps = 0;
 	//Fixed TimeStep
-	while (physAccumulator >= physStep) {
-		//physics.Step(physStep);
+	while (physAccumulator >= physStep && subSteps < maxSubSteps) {
+		
 		physAccumulator -= physStep;
+		subSteps++;
 	}
 }
 

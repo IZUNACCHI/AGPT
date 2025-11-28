@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 #include "Component.h"
+#include "Transform.h"
 
 class Scene;
 
@@ -11,7 +12,9 @@ class Scene;
 class GameObject {
 
 public:
-	GameObject(const std::string& name = "GameObject", bool startActive = true, bool startVisible = true) : name(name), active(startActive), visible(startVisible) {
+	GameObject(const std::string& name = "GameObject", bool startActive = true, bool startVisible = true) : name(name), active(startActive), visible(startVisible), id(Engine::GenerateUniqueId()) {
+		// Automatically add Transform to EVERY GameObject (enforces mandatory component)
+		AddComponent<Transform>();
 		OnInit();
 	}
 
@@ -22,11 +25,12 @@ public:
 		//Components will be automatically deleted due to unique_ptr
 		components.clear();
 		//Remove itself from children's parent pointers
-		for(auto* child : children) {
+		for (auto* child : children) {
 			child->SetParent(nullptr);
 		}
-		
 	}
+
+	uint64_t GetId() const { return id; }
 
 	// Scene reference (not owning)
 	Scene* owningScene = nullptr;
@@ -83,6 +87,12 @@ public:
 	// Destroy called once on deletion
 	virtual void OnDestroy();
 
+	// Collision events to be overridden
+	virtual void OnCollisionEnter(GameObject* other) {}
+	virtual void OnCollisionExit(GameObject* other) {}  // Implement in PhysicsSystem if needed
+	virtual void OnTriggerEnter(GameObject* other) {}
+	virtual void OnTriggerExit(GameObject* other) {}
+
 	// Update traverses hierarchy
 	void Update(float deltaTime);
 	std::string name;
@@ -120,4 +130,5 @@ private:
 	std::vector<GameObject*> children;
 	// Components (owning)
 	std::vector<std::unique_ptr<Component>> components;
+	uint64_t id;
 };

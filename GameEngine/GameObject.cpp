@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include <iostream>
 
 void GameObject::SetParent(GameObject* newParent = nullptr)
 {
@@ -37,7 +38,7 @@ void GameObject::AddChild(GameObject* child)
 	}
 
 	// scene check
-	if (child->owningScene != owningScene) return; 
+	if (child->owningScene != owningScene) return;
 
 	// set child's parent to this
 	child->SetParent(this);
@@ -81,8 +82,9 @@ void GameObject::Update(float deltaTime)
 	OnUpdate(deltaTime);
 	// Update active components
 	for (auto& comp : components)
-		if (comp->IsActive())
+		if (comp->IsActive()) {
 			comp->Update(deltaTime);
+		}
 
 	// Update active children
 	for (auto& child : children)
@@ -91,4 +93,3 @@ void GameObject::Update(float deltaTime)
 			child->Update(deltaTime);
 	}
 }
-

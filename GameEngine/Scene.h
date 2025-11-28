@@ -23,22 +23,18 @@ public:
 	virtual void OnLoad() {}     // Called once when the scene becomes active
 	virtual void OnUnload() {}   // Called just before the scene is destroyed
 
-	// Create a new GameObject of type T (where T is GameObject or a subclass)
-	// Automatically adds a Transform component - every object without Transform cannot be rendered
 	template <typename T = GameObject>
-	T* CreateGameObject(const std::string& name = "GameObject")
+	T* AddGameObject(std::unique_ptr<T> obj)
 	{
 		static_assert(std::is_base_of_v<GameObject, T>, "T must derive from GameObject");
 
-		// Create the subclass instance
-		auto obj = std::make_unique<T>(name);
 		// Set owning scene
 		obj->owningScene = this;
-		// Every GameObject must have a Transform component for now
-		obj->AddComponent<Transform>();
-		// Return raw pointer but keep ownership in the scene
+
+		// Store in objects (move the unique_ptr, upcast to GameObject)
 		T* ptr = obj.get();
 		objects.emplace_back(std::move(obj));
+		ptr->OnInit();
 		return ptr;
 	}
 

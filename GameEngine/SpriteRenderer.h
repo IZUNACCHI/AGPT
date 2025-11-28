@@ -6,6 +6,7 @@
 
 class SpriteRenderer : public Component {
 public:
+	SpriteRenderer() { name = "SpriteRenderer " + std::to_string(GetId()); }
 	Texture* texture = nullptr;
 	FRect clipRect = { 0.f, 0.f, 0.f, 0.f }; 
 	Flip flip = Flip::None;

@@ -11,6 +11,7 @@ public:
 	static void Initialize(Renderer& renderer);
 	static void Shutdown();
 
+	static void SetBasePath(const std::string& base);
 	static Texture* LoadTexture(const std::string& path);  // Example method; returns cached if already loaded
 	static void Clear();  // Clears all loaded assets
 

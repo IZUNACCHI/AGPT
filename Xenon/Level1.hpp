@@ -1,6 +1,9 @@
 #pragma once
 #include "Scene.h"
 #include "GameObjects.hpp"
+#include <memory>
+
+class SpaceShip;
 
 class Level1 : public Scene {
 public:
@@ -12,9 +15,8 @@ private:
 
 void Level1::OnLoad()
 {
-	CreateGameObject<SpaceShip>("Player");
-
-
+	auto ship = std::make_unique<SpaceShip>();
+	AddGameObject(std::move(ship));
 }
 
 

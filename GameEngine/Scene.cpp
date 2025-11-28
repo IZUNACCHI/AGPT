@@ -1,7 +1,7 @@
 #include "Scene.h"
 #include "FRect.hpp"       
 
-Scene::Scene() : instanceId(Engine::GenerateUniqueId()){
+Scene::Scene() : instanceId(Engine::GenerateUniqueId()) {
 }
 
 
@@ -9,23 +9,6 @@ Scene::~Scene()
 {
 	objects.clear();           // destroys everything 
 }
-/*
-template <typename T>
-T* Scene::CreateGameObject(const std::string& name)
-{
-	static_assert(std::is_base_of_v<GameObject, T>, "T must derive from GameObject");
-
-	// Create the subclass instance
-	auto obj = std::make_unique<T>(name);
-	// Set owning scene
-	obj->owningScene = this;
-	// Every GameObject must have a Transform component for now
-	obj->AddComponent<Transform>();
-	// Return raw pointer but keep ownership in the scene
-	T* ptr = obj.get();
-	objects.emplace_back(std::move(obj));
-	return ptr;
-}*/
 
 // Destroy a GameObject from the scene
 void Scene::Destroy(GameObject* go, bool recursive = false)
@@ -44,7 +27,7 @@ void Scene::Destroy(GameObject* go, bool recursive = false)
 	else {
 		// If not recursive, detach children
 		for (GameObject* child : go->GetChildren())
-					go->RemoveChild(child);
+			go->RemoveChild(child);
 	}
 
 	// Find and remove from objects list
