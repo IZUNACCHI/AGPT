@@ -4,6 +4,7 @@ class GameObject;
 
 class Component {
 public:
+	Component(bool startActive = true) : active(startActive) {}
 	virtual ~Component() = default;
 
 	virtual void Start() {}
