@@ -3,31 +3,24 @@
 #include <unordered_map>
 #include <vector>
 
-// ENGINE KEY CODES 
+#include "Vec2.h"
+
 enum class Key {
 	Unknown,
 	A, B, C, D, E, F, G,
 	H, I, J, K, L, M, N,
 	O, P, Q, R, S, T, U,
 	V, W, X, Y, Z,
-
 	Num0, Num1, Num2, Num3, Num4,
 	Num5, Num6, Num7, Num8, Num9,
-
 	Space,
 	Enter,
 	Escape,
-	LeftShift,
-	LeftCtrl,
-	LeftAlt,
-	RightShift,
-	RightCtrl,
-	RightAlt,
-
-	Up,
-	Down,
-	Left,
-	Right
+	LeftShift, RightShift,
+	LeftCtrl, RightCtrl,
+	LeftAlt, RightAlt,
+	Up, Down, Left, Right,
+	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12
 };
 
 enum class MouseButton {
@@ -52,15 +45,47 @@ enum class ButtonState {
 	Released
 };
 
+// Gamepad support
+enum class GamepadAxis : int {
+	Invalid = -1,
+	LeftX = 0,
+	LeftY = 1,
+	RightX = 2,
+	RightY = 3,
+	LeftTrigger = 4,
+	RightTrigger = 5,
+	Max
+};
 
-// GAMEPAD
+enum class GamepadButton : int {
+	Invalid = -1,
+	South = 0,              // Cross (PS)
+	East = 1,              // Circle
+	West = 2,              // Square
+	North = 3,              // Triangle
+	Back = 4,           // View/Share
+	Guide = 5,          // Xbox/PS button
+	Start = 6,          // Menu/Options
+	LeftStick = 7,
+	RightStick = 8,
+	LeftShoulder = 9,   // LB/L1
+	RightShoulder = 10, // RB/R1
+	DPadUp = 11,
+	DPadDown = 12,
+	DPadLeft = 13,
+	DPadRight = 14,
+	Max
+};
+
 struct GamepadState {
-	int id; // internal engine id
-	bool connected = false; 
+	int id = -1;
+	bool connected = false;
 
-	std::unordered_map<int, float> axes;     // normalized [-1..1]
-	std::unordered_map<int, bool> buttons;   // bool
-	std::unordered_map<int, bool> prevButtons;
+	// Axis values: sticks [-1..1], triggers [0..1]
+	float axes[static_cast<int>(GamepadAxis::Max)]{};
+
+	// Button states
+	bool buttons[static_cast<int>(GamepadButton::Max)]{};
 };
 
 class Input {
@@ -69,28 +94,45 @@ public:
 	static void Shutdown();
 	static void PollEvents();
 
-	// keyboard
+	// Keyboard
 	static KeyState GetKey(Key key);
-	static bool IsKeyDown(Key key);
-	static bool IsKeyPressed(Key key);
-	static bool IsKeyReleased(Key key);
+	static bool IsKeyDown(Key key) { return GetKey(key) == KeyState::Down; }
+	static bool IsKeyPressed(Key key) { return GetKey(key) == KeyState::Pressed; }
+	static bool IsKeyReleased(Key key) { return GetKey(key) == KeyState::Released; }
 
-	// mouse
+	// Mouse
 	static ButtonState GetMouseButton(MouseButton btn);
+	static bool IsMouseButtonDown(MouseButton btn) { return GetMouseButton(btn) == ButtonState::Down; }
+	static bool IsMouseButtonPressed(MouseButton btn) { return GetMouseButton(btn) == ButtonState::Pressed; }
+	static bool IsMouseButtonReleased(MouseButton btn) { return GetMouseButton(btn) == ButtonState::Released; }
+
 	static float GetMouseX();
 	static float GetMouseY();
+	static Vec2 GetMousePosition() { return { GetMouseX(), GetMouseY() }; }
 	static float GetMouseDeltaX();
 	static float GetMouseDeltaY();
+	static Vec2 GetMouseDelta() { return { GetMouseDeltaX(), GetMouseDeltaY() }; }
 	static float GetScrollX();
 	static float GetScrollY();
+	static Vec2 GetScroll() { return { GetScrollX(), GetScrollY() }; }
 
-	// gamepad
+	// Gamepad
 	static const std::vector<GamepadState>& GetGamepads();
-	static const GamepadState* GetGamepad(int id);
+	static int GetGamepadCount();
+
+	static bool IsGamepadConnected(int gamepadIndex = 0);
+
+	static bool IsGamepadButtonDown(GamepadButton button, int gamepadIndex = 0);
+	static bool IsGamepadButtonPressed(GamepadButton button, int gamepadIndex = 0);
+	static bool IsGamepadButtonReleased(GamepadButton button, int gamepadIndex = 0);
+
+	static float GetGamepadAxis(GamepadAxis axis, int gamepadIndex = 0);
+	static Vec2 GetGamepadLeftStick(int gamepadIndex = 0);
+	static Vec2 GetGamepadRightStick(int gamepadIndex = 0);
 
 	static bool Close();
+
 private:
 	struct Impl;
 	static std::unique_ptr<Impl> impl;
 };
-

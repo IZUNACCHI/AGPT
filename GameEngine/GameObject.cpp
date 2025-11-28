@@ -60,8 +60,25 @@ void GameObject::RemoveFromParent()
 	SetParent(nullptr);
 }
 
+void GameObject::OnInit()
+{
+
+}
+
+void GameObject::OnUpdate(float deltaTime)
+{
+
+}
+
+void GameObject::OnDestroy()
+{
+
+}
+
+
 void GameObject::Update(float deltaTime)
 {
+	OnUpdate(deltaTime);
 	// Update active components
 	for (auto& comp : components)
 		if (comp->IsActive())

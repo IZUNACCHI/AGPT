@@ -11,9 +11,12 @@ class Scene;
 class GameObject {
 
 public:
-	GameObject(const std::string& name = "GameObject", bool startActive = true, bool startVisible = true) : name(name), active(startActive), visible(startVisible) {}
+	GameObject(const std::string& name = "GameObject", bool startActive = true, bool startVisible = true) : name(name), active(startActive), visible(startVisible) {
+		OnInit();
+	}
 
 	~GameObject() {
+		OnDestroy();
 		//Detach from parent so parent doesn't hold dangling pointer
 		RemoveFromParent();
 		//Components will be automatically deleted due to unique_ptr
@@ -71,6 +74,14 @@ public:
 		}
 		return result;
 	}
+
+	// Lifecycle methods to be overridden
+	// Init called once on creation
+	virtual void OnInit() = 0;
+	// Update called only if active
+	virtual void OnUpdate(float deltaTime) = 0;
+	// Destroy called once on deletion
+	virtual void OnDestroy() = 0;
 
 	// Update traverses hierarchy
 	void Update(float deltaTime);

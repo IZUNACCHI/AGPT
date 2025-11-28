@@ -19,10 +19,10 @@ public:
 		scenes[sceneName] = []() -> std::unique_ptr<Scene> { return std::make_unique<T>(); };
 	}
 
-	// Load by name (string) - perfect for level select screens, save/load, etc.
+	// Load by name (string)
 	static void LoadScene(const std::string& sceneName);
 
-	// Load by type (type-safe, no registration needed) - fastest for normal gameplay
+	// Load by type (template) 
 	template<typename T = Scene>
 	static void LoadScene()
 	{
