@@ -1,29 +1,33 @@
 #include "Scene.h"
 #include "FRect.hpp"       
 
-Scene::Scene() : instanceId(Engine::GenerateUniqueId()){}
+Scene::Scene() : instanceId(Engine::GenerateUniqueId()){
+}
 
 
 Scene::~Scene()
 {
 	objects.clear();           // destroys everything 
 }
-
-GameObject* Scene::CreateGameObject(const std::string& name /*= "GameObject"*/)
+/*
+template <typename T>
+T* Scene::CreateGameObject(const std::string& name)
 {
-	// Create GameObject 
-	auto obj = std::make_unique<GameObject>(name);
+	static_assert(std::is_base_of_v<GameObject, T>, "T must derive from GameObject");
+
+	// Create the subclass instance
+	auto obj = std::make_unique<T>(name);
 	// Set owning scene
 	obj->owningScene = this;
 	// Every GameObject must have a Transform component for now
 	obj->AddComponent<Transform>();
 	// Return raw pointer but keep ownership in the scene
-	GameObject* ptr = obj.get();
-	objects.emplace_back(std::move(obj)); 
+	T* ptr = obj.get();
+	objects.emplace_back(std::move(obj));
 	return ptr;
-}
+}*/
 
-//
+// Destroy a GameObject from the scene
 void Scene::Destroy(GameObject* go, bool recursive = false)
 {
 	// null check
@@ -99,11 +103,11 @@ void Scene::Render(Renderer& renderer)
 		Transform* tr = item.transform;
 		SpriteRenderer* sr = item.sr;
 
-		float wx = tr->GetWorldPositionX();
-		float wy = tr->GetWorldPositionY();
+		float wx = tr->GetWorldPosition().x;
+		float wy = tr->GetWorldPosition().y;
 		float rot = tr->GetWorldRotation();           // degrees
-		float sx = tr->GetWorldScaleX();
-		float sy = tr->GetWorldScaleY();
+		float sx = tr->GetWorldScale().x;
+		float sy = tr->GetWorldScale().y;
 
 		Texture* tex = sr->texture;
 		float texW = static_cast<float>(tex->Width());
@@ -130,4 +134,6 @@ void Scene::Render(Renderer& renderer)
 
 		renderer.DrawTexture(*tex, srcPtr, dst, rot, sr->flip);
 	}
+
+
 }

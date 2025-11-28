@@ -1,8 +1,6 @@
 #pragma once
 #include "Scene.h"
 #include <memory>
-#include <unordered_map>
-#include <functional>
 #include <string>
 
 class SceneManager
@@ -11,36 +9,21 @@ public:
 	// Call once at engine startup (SleeplessEngine will do this automatically)
 	static void Initialize();
 
-	// Register a scene type so it can be loaded by name (optional but recommended for level lists/editors)
-	template<typename T>
-	static void RegisterScene(const std::string& sceneName)
-	{
-		static_assert(std::is_base_of_v<Scene, T>, "T must inherit from Scene");
-		scenes[sceneName] = []() -> std::unique_ptr<Scene> { return std::make_unique<T>(); };
-	}
+	// Set a new active scene, swapping out the current one if it exists
+	// Takes ownership of the provided scene pointer
+	static void SetActiveScene(std::unique_ptr<Scene> newScene);
 
-	// Load by name (string)
-	static void LoadScene(const std::string& sceneName);
-
-	// Load by type (template) 
-	template<typename T = Scene>
-	static void LoadScene()
-	{
-		static_assert(std::is_base_of_v<Scene, T>, "T must inherit from Scene");
-
-		if (currentScene)
-			currentScene->OnUnload();
-
-		currentScene = std::make_unique<T>();
-		currentScene->name = typeid(T).name(); // optional debug name
-		currentScene->OnLoad();
-	}
-
-	// Get the currently active scene (never nullptr after first LoadScene)
+	// Get the currently active scene (may be nullptr if none set)
 	static Scene* GetActiveScene() { return currentScene.get(); }
+
+	// Templated getter for typed access
+	template<typename T = Scene>
+	static T* GetActiveScene()
+	{
+		static_assert(std::is_base_of_v<Scene, T>, "T must inherit from Scene");
+		return static_cast<T*>(currentScene.get());
+	}
 
 private:
 	static std::unique_ptr<Scene> currentScene;
-	static std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> scenes;
 };
-

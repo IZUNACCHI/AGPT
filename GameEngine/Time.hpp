@@ -1,18 +1,18 @@
 #pragma once
+#include <memory>
 
 class Time {
 public:
-	void Update();
+	static void Initialize();
+	static void Shutdown();
 
-	float DeltaTime() const { return deltaTime; }
-	float TotalTime() const { return totalTime; }
-	unsigned long FrameCount() const { return frameCount; }
+	static void Update();
+
+	static float DeltaTime();
+	static float TotalTime();
+	static unsigned long FrameCount();
 
 private:
-	float deltaTime = 0.f;
-	float totalTime = 0.f;
-	unsigned long frameCount = 0;
-
-
-	unsigned long long lastTicks = 0;
+	struct Impl;
+	static std::unique_ptr<Impl> impl;
 };

@@ -1,27 +1,46 @@
 #include "AssetManager.h"
+#include "Renderer.h"
+#include "Texture.h"
 
-AssetManager::AssetManager(Renderer& renderer) : renderer(renderer)
-{
+struct AssetManager::Impl {
+	Renderer* renderer = nullptr;
+	std::unordered_map<std::string, std::unique_ptr<Texture>> textures;  // Cache for loaded textures
 
+	~Impl() {
+		Clear();
+	}
+
+	void Clear() {
+		textures.clear();
+	}
+};
+
+std::unique_ptr<AssetManager::Impl> AssetManager::impl = nullptr;
+
+void AssetManager::Initialize(Renderer& renderer) {
+	impl = std::make_unique<Impl>();
+	impl->renderer = &renderer;
 }
 
-AssetManager::~AssetManager() {
-	Clear();
+void AssetManager::Shutdown() {
+	if (impl) impl->Clear();
+	impl.reset();
 }
 
 Texture* AssetManager::LoadTexture(const std::string& path) {
-	//check if loaded
-	auto it = textures.find(path);
-	if (it != textures.end())
-		return it->second.get();
+	if (!impl || !impl->renderer) return nullptr;
 
-	// load and store
-	auto tex = std::make_unique<Texture>(renderer, path);
+	auto it = impl->textures.find(path);
+	if (it != impl->textures.end()) {
+		return it->second.get();
+	}
+
+	auto tex = std::make_unique<Texture>(*impl->renderer, path);
 	Texture* ptr = tex.get();
-	textures[path] = std::move(tex);
+	impl->textures[path] = std::move(tex);
 	return ptr;
 }
 
 void AssetManager::Clear() {
-	textures.clear();
+	if (impl) impl->Clear();
 }

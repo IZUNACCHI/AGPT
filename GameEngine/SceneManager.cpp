@@ -2,30 +2,24 @@
 
 // Pointer to the current active scene
 std::unique_ptr<Scene> SceneManager::currentScene = nullptr;
-// Map of registered scenes
-std::unordered_map<std::string, std::function<std::unique_ptr<Scene>()>> SceneManager::scenes;
 
-// Initialize the SceneManager with a default empty scene
+// Initialize the SceneManager (no default scene creation)
 void SceneManager::Initialize()
 {
-	// Create and set an initial empty scene
-	currentScene = std::make_unique<Scene>();
-	currentScene->name = "EmptyDefaultScene";
+	// No default scene; user must explicitly set the first scene
 }
 
-// Load a scene by its registered name
-void SceneManager::LoadScene(const std::string& sceneName)
-{	
-	// Find the scene in the registered scenes map
-	auto it = scenes.find(sceneName);
-	// If not found, do nothing
-	if (it == scenes.end()) return;
+// Set a new active scene, unloading the current one if present
+void SceneManager::SetActiveScene(std::unique_ptr<Scene> newScene)
+{
+	if (currentScene)
+	{
+		currentScene->OnUnload();
+	}
 
-	// Unload the current scene if it exists
-	if (currentScene) currentScene->OnUnload();
-
-	// Create the new scene using the registered factory function
-	currentScene = it->second();
-	currentScene->name = sceneName;
-	currentScene->OnLoad();
+	currentScene = std::move(newScene);
+	if (currentScene)
+	{
+		currentScene->OnLoad();
+	}
 }

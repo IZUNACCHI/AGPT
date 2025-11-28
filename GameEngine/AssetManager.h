@@ -2,18 +2,19 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "Texture.h"
-#include "Renderer.h"
+
+class Renderer;
+class Texture;
 
 class AssetManager {
 public:
-	AssetManager(Renderer& renderer);
-	~AssetManager();
+	static void Initialize(Renderer& renderer);
+	static void Shutdown();
 
-	Texture* LoadTexture(const std::string& path);
-	void Clear();
+	static Texture* LoadTexture(const std::string& path);  // Example method; returns cached if already loaded
+	static void Clear();  // Clears all loaded assets
 
 private:
-	Renderer& renderer;
-	std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
+	struct Impl;
+	static std::unique_ptr<Impl> impl;
 };

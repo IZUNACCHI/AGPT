@@ -1,7 +1,6 @@
 #include "SleeplessEngine.h"
 #include <SDL3/SDL.h>
 #include "Input.h"
-#include "SceneManager.h"
 #include "Time.h"
 #include "AssetManager.h"
 
@@ -30,24 +29,30 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 	std::cout << "\t-Renderer\n";
 	renderer = std::make_unique<Renderer>(*window);
 	std::cout << "\t-Time\n";
-	time = std::make_unique<Time>();
+	Time::Initialize();
 	std::cout << "\t-Asset Manager\n";
-	assets = std::make_unique<AssetManager>(*renderer);
+	AssetManager::Initialize(*renderer);
 	std::cout << "\t-Input System\n";
 	Input::Initialize();
 	std::cout << "\t-Physics System\n";
 	
 	std::cout << "\t-Scene Manager\n";
 	SceneManager::Initialize();
-
+	//Load initial scene
 	std::cout << "\n";
 
 	// Main loop
 	running = true;
 	std::cout << "SleeplessEngine Running\n";
 
+}
+
+
+
+void SleeplessEngine::Run()
+{
 	while (running) {
-		time->Update();
+		Time::Update();
 		HandleEvents();
 		if (Input::Close()) {
 			running = false;
@@ -64,13 +69,13 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 void SleeplessEngine::Update() {
 	Scene* scene = SceneManager::GetActiveScene();
 	if(scene) {
-		scene->Update(time->DeltaTime());
+		scene->Update(Time::DeltaTime());
 	}
 }
 
 // Fixed timestep physics update
 void SleeplessEngine::PhysicsUpdate() {
-	float dt = time->DeltaTime();
+	float dt = Time::DeltaTime();
 	physAccumulator += dt;
 
 	//Fixed TimeStep
@@ -108,9 +113,8 @@ void SleeplessEngine::Shutdown()
 	// Clean up subsystems
 	if (renderer) renderer.reset();
 	if (window) window.reset();
-	if (assets) assets->Clear();
-	if (assets) assets.reset();
-	if (time) time.reset();
+	AssetManager::Shutdown();
+	Time::Shutdown();
 	Input::Shutdown();
 
 

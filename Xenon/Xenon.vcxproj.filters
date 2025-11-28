@@ -23,5 +23,8 @@
     <ClInclude Include="GameObjects.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Level1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

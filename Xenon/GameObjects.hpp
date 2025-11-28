@@ -7,23 +7,28 @@
 #include "AssetManager.h"
 
 #pragma region SpaceShip
-//h
+
 class SpaceShip : public GameObject
 {
 public:
-	Transform* transform;
+	Transform* tr;
 	SpriteRenderer* sprite;
 	Animator* animator;
 	float speedY = 100.0f;
 	float speedX = 150.0f;
 
-	void OnInit() override
-	{
-		transform = this->GetComponent<Transform>();
+	SpaceShip(const std::string& name = "SpaceShip") : GameObject(name) {
+		tr = this->GetComponent<Transform>();
+		tr->SetWorldPosition(Vec2(50.0f, 50.0f));
 		sprite = this->AddComponent<SpriteRenderer>();
-		//sprite->texture = AssetManager::LoadTexture("graphics/ship1.bmp");
+		sprite->texture = AssetManager::LoadTexture("graphics/ship1.bmp");
 		//animator = this->AddComponent<Animator>();
 		//animator->graph = std::make_unique<AnimationGraph>();
+	}
+
+	void OnInit() override
+	{
+		
 		
 	}
 
@@ -34,19 +39,19 @@ public:
 		// read input and move the spaceship
 		if (Input::IsKeyDown(Key::A) || Input::IsGamepadButtonDown(GamepadButton::West))
 		{
-			transform->localPositionX -= speedX * deltaTime;
+			tr->MoveLocal(-speedX * deltaTime, 0.0f);
 		}
 		if (Input::IsKeyDown(Key::D) || Input::IsGamepadButtonDown(GamepadButton::East))
 		{
-			transform->localPositionX += speedX * deltaTime;
+			tr->MoveLocal(-speedX * deltaTime, 0.0f);
 		}
 		if (Input::IsKeyDown(Key::W) || Input::IsGamepadButtonDown(GamepadButton::North))
 		{
-			transform->localPositionY += speedY * deltaTime;
+			tr->MoveLocal(0.0f, speedX * deltaTime);
 		}
 		if (Input::IsKeyDown(Key::S) || Input::IsGamepadButtonDown(GamepadButton::South))
 		{
-			transform->localPositionY -= speedY * deltaTime;
+			tr->MoveLocal(0.0f, -speedX * deltaTime);
 		}
 	}
 
