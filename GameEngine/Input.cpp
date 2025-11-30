@@ -3,17 +3,18 @@
 #include <algorithm>
 #include <array>
 #include <ranges>
+#include <iostream>
 
 std::unique_ptr<Input::Impl> Input::impl = nullptr;
 
 struct Input::Impl {
 	// Keyboard
-	std::unordered_map<Key, bool> prevKeyState;
-	std::unordered_map<Key, bool> currKeyState;
+	std::array<bool, static_cast<size_t>(Key::Max)> prevKeyState{};
+	std::array<bool, static_cast<size_t>(Key::Max)> currKeyState{};
 
 	// Mouse
-	std::unordered_map<MouseButton, bool> prevMouse;
-	std::unordered_map<MouseButton, bool> currMouse;
+	std::array<bool, static_cast<size_t>(MouseButton::Max)> prevMouse{};
+	std::array<bool, static_cast<size_t>(MouseButton::Max)> currMouse{};
 
 	float mouseX = 0.f;
 	float mouseY = 0.f;
@@ -35,7 +36,9 @@ struct Input::Impl {
 		std::array<bool, static_cast<size_t>(GamepadButton::Max)> prevButtons{};
 	};
 
-	std::vector<Pad> pads;
+	// Fixed slots so player index never changes when someone plugs/unplugs
+	static constexpr size_t MAX_PADS = 16;
+	std::array<Pad, MAX_PADS> pads{};
 
 	bool quitRequested = false;
 };
@@ -146,8 +149,10 @@ void Input::PollEvents() {
 	impl->prevMouse = impl->currMouse;
 
 	for (auto& pad : impl->pads) {
-		pad.prevAxes = pad.axes;
-		pad.prevButtons = pad.buttons;
+		if (pad.connected) {
+			pad.prevAxes = pad.axes;
+			pad.prevButtons = pad.buttons;
+		}
 	}
 
 	SDL_Event event;
@@ -161,7 +166,8 @@ void Input::PollEvents() {
 		case SDL_EVENT_KEY_UP: {
 			Key k = TranslateKey(event.key.scancode);
 			if (k != Key::Unknown) {
-				impl->currKeyState[k] = (event.type == SDL_EVENT_KEY_DOWN);
+				size_t idx = static_cast<size_t>(k);
+				impl->currKeyState[idx] = (event.type == SDL_EVENT_KEY_DOWN);
 			}
 			break;
 		}
@@ -169,8 +175,9 @@ void Input::PollEvents() {
 		case SDL_EVENT_MOUSE_BUTTON_DOWN:
 		case SDL_EVENT_MOUSE_BUTTON_UP: {
 			MouseButton mb = TranslateMouse(event.button.button);
-			if (mb != MouseButton::X2) {
-				impl->currMouse[mb] = (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
+			if (!(MouseButton::Left > mb && mb > MouseButton::Max)) {
+				size_t idx = static_cast<size_t>(mb);
+				impl->currMouse[idx] = (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN);
 			}
 			break;
 		}
@@ -191,23 +198,27 @@ void Input::PollEvents() {
 
 								  // Gamepad events
 		case SDL_EVENT_GAMEPAD_ADDED: {
-			Impl::Pad newPad;
-			newPad.id = event.gdevice.which;
-			newPad.sdlPad = SDL_OpenGamepad(event.gdevice.which);
-			newPad.connected = (newPad.sdlPad != nullptr);
-			if (newPad.connected) {
-				impl->pads.push_back(std::move(newPad));
+			SDL_JoystickID id = event.gdevice.which;
+			// find free slot
+			for (size_t i = 0; i < Impl::MAX_PADS; ++i) {
+				if (impl->pads[i].id == -1) {
+					impl->pads[i].id = id;
+					impl->pads[i].sdlPad = SDL_OpenGamepad(id);
+					impl->pads[i].connected = (impl->pads[i].sdlPad != nullptr);
+					if (impl->pads[i].connected) std::cout << "Gamepad " << i << " connected\n";
+					break;
+				}
 			}
 			break;
 		}
 
 		case SDL_EVENT_GAMEPAD_REMOVED: {
-			auto it = std::ranges::find_if(impl->pads, [which = event.gdevice.which](const Impl::Pad& p) {
-				return p.id == which;
-				});
-			if (it != impl->pads.end()) {
-				SDL_CloseGamepad(it->sdlPad);
-				impl->pads.erase(it);
+			for (auto& pad : impl->pads) {
+				if (pad.id == event.gdevice.which) {
+					if (pad.sdlPad) SDL_CloseGamepad(pad.sdlPad);
+					pad.id =-1; // reset
+					break;
+				}
 			}
 			break;
 		}
@@ -230,7 +241,7 @@ void Input::PollEvents() {
 			if (it != impl->pads.end() && event.gaxis.axis < static_cast<int>(GamepadAxis::Max)) {
 				Sint16 raw = event.gaxis.value;
 				float normalized;
-				if (event.gaxis.axis == SDL_EVENT_GAMEPAD_AXIS_MOTION) {
+				if (event.gaxis.axis == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || event.gaxis.axis == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) {
 					normalized = raw / 32767.0f; // 0 to 1
 				}
 				else {
@@ -248,26 +259,30 @@ void Input::PollEvents() {
 // KEYBOARD
 // ------------------------------
 KeyState Input::GetKey(Key k) {
-	bool prev = impl->prevKeyState.contains(k) ? impl->prevKeyState[k] : false;
-	bool cur = impl->currKeyState.contains(k) ? impl->currKeyState[k] : false;
+	size_t idx = static_cast<size_t>(k);
+	if (idx >= impl->currKeyState.size()) return KeyState::Up;
 
-	if (cur && !prev) return KeyState::Pressed;
-	if (!cur && prev) return KeyState::Released;
-	if (cur) return KeyState::Down;
-	return KeyState::Up;
+	bool prev = impl->prevKeyState[idx];
+	bool curr = impl->currKeyState[idx];
+
+	if (curr && !prev) return KeyState::Pressed;
+	if (!curr && prev) return KeyState::Released;
+	return curr ? KeyState::Down : KeyState::Up;
 }
 
 // ------------------------------
 // MOUSE
 // ------------------------------
-ButtonState Input::GetMouseButton(MouseButton b) {
-	bool prev = impl->prevMouse.contains(b) ? impl->prevMouse[b] : false;
-	bool cur = impl->currMouse.contains(b) ? impl->currMouse[b] : false;
+ButtonState Input::GetMouseButton(MouseButton btn) {
+	size_t idx = static_cast<size_t>(btn);
+	if (idx >= impl->currMouse.size()) return ButtonState::Up;
 
-	if (cur && !prev) return ButtonState::Pressed;
-	if (!cur && prev) return ButtonState::Released;
-	if (cur) return ButtonState::Down;
-	return ButtonState::Up;
+	bool prev = impl->prevMouse[idx];
+	bool curr = impl->currMouse[idx];
+
+	if (curr && !prev) return ButtonState::Pressed;
+	if (!curr && prev) return ButtonState::Released;
+	return curr ? ButtonState::Down : ButtonState::Up;
 }
 
 float Input::GetMouseX() { return impl->mouseX; }
@@ -367,6 +382,6 @@ Vec2 Input::GetGamepadRightStick(int index) {
 	return { GetGamepadAxis(GamepadAxis::RightX, index), GetGamepadAxis(GamepadAxis::RightY, index) };
 }
 
-bool Input::Close() {
+bool Input::ShouldQuit() {
 	return impl->quitRequested;
 }

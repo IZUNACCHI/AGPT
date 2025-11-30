@@ -6,7 +6,7 @@
 #include "Vec2.h"
 
 enum class Key {
-	Unknown,
+	Unknown = 0,
 	A, B, C, D, E, F, G,
 	H, I, J, K, L, M, N,
 	O, P, Q, R, S, T, U,
@@ -20,15 +20,16 @@ enum class Key {
 	LeftCtrl, RightCtrl,
 	LeftAlt, RightAlt,
 	Up, Down, Left, Right,
-	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12
+	F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, Max
 };
 
 enum class MouseButton {
-	Left,
+	Left = 0,
 	Right,
 	Middle,
 	X1,
-	X2
+	X2,
+	Max
 };
 
 enum class KeyState {
@@ -130,7 +131,7 @@ public:
 	static Vec2 GetGamepadLeftStick(int gamepadIndex = 0);
 	static Vec2 GetGamepadRightStick(int gamepadIndex = 0);
 
-	static bool Close();
+	static bool ShouldQuit();
 
 private:
 	struct Impl;
