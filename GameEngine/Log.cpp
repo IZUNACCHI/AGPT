@@ -3,13 +3,8 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
-#include <sstream>
 
-#if defined(_WIN32)
-#include <windows.h>
-static WORD originalColors = 0;
-static bool colorsInit = false;
-#endif
+bool Log::showDebug = true; // change to false in release if you want
 
 static std::string CurrentTime() {
 	auto now = std::chrono::system_clock::now();
@@ -19,38 +14,37 @@ static std::string CurrentTime() {
 	return ss.str();
 }
 
-static void SetConsoleColor(int color) {
-#if defined(_WIN32)
-	if (!colorsInit) {
-		HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-		CONSOLE_SCREEN_BUFFER_INFO info;
-		GetConsoleScreenBufferInfo(h, &info);
-		originalColors = info.wAttributes;
-		colorsInit = true;
+void Log::log(LogLevel level, std::string_view message) {
+	// Skip debug messages if disabled
+	if (level == LogLevel::Debug && !showDebug) return;
+
+	const char* prefix = "";
+	const char* color = "\033[0m";  // reset
+
+	switch (level) {
+		case LogLevel::Info:    
+			prefix = "[INFO]    "; 
+			color = "\033[94m"; // light blue
+			break; 
+			case LogLevel::Warning:	
+				prefix = "[WARNING] ";
+				color = "\033[93m"; // yellow
+				break; 
+		case LogLevel::Error:   
+			prefix = "[ERROR]   ";
+			color = "\033[91m";  // red
+			break;
+		case LogLevel::Debug:   
+			prefix = "[DEBUG]   ";
+			color = "\033[96m"; // cyan
+			break; 
 	}
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
-#endif
-}
 
-static void ResetConsoleColor() {
-#if defined(_WIN32)
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), originalColors);
-#endif
-}
+	// Print to console with color
+	std::cout << color << "[" << CurrentTime() << "] " << prefix << message << "\033[0m" << std::endl;
 
-void Log::Info(std::string_view msg) {
-	std::cout << "\033[94m"; // light blue
-	std::cout << "[" << CurrentTime() << "] ";
-	std::cout << msg << "\033[0m" << std::endl;
-}
-
-void Log::Warning(std::string_view msg) {
-	std::cout << "\033[93m"; // yellow
-	std::cout << "[" << CurrentTime() << "] WARNING: " << msg << "\033[0m" << std::endl;
-}
-
-void Log::Error(std::string_view msg) {
-	std::cout << "\033[91m"; // red
-	std::cout << "[" << CurrentTime() << "] ERROR: " << msg << "\033[0m" << std::endl;
-	throw EngineException(std::string(msg));
+	// Only Error throws
+	if (level == LogLevel::Error) {
+		throw EngineException(std::string(message));
+	}
 }
