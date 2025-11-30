@@ -2,9 +2,14 @@
 #include <SDL3/SDL.h>
 
 struct Time::Impl {
+	
+	//time since last frame
 	float deltaTime = 0.f;
+	//time since start
 	float totalTime = 0.f;
+	//frame count since start
 	unsigned long frameCount = 0;
+	//last tick count
 	unsigned long long lastTicks = 0;
 };
 

@@ -95,7 +95,7 @@ public:
 	void Update(float deltatime) override {
 		if (!graph || graph->states.find(currentState) == graph->states.end()) return;
 
-		std::cout << "Animator Update: Current State = " << currentState << ", Current Frame = " << currentFrame << ", Current Time = " << currentTime << std::endl;
+		//std::cout << "Animator Update: Current State = " << currentState << ", Current Frame = " << currentFrame << ", Current Time = " << currentTime << std::endl;
 		auto& state = graph->states[currentState];
 		auto* anim = state.animation.get();
 		if (!anim || anim->frames.empty()) return;

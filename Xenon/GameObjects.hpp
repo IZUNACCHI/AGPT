@@ -144,38 +144,38 @@ public:
 	{
 		
 		// Update code for SpaceShip
-		Vec2 aux = Vec2::Zero();
+		movement = Vec2::Zero();
+		
 		// read input and move the spaceship
-		/*
+		
 		if (Input::GetGamepadAxis(GamepadAxis::LeftX) != 0 || Input::GetGamepadAxis(GamepadAxis::LeftY) != 0)
 		{
-			aux.x = Input::GetGamepadAxis(GamepadAxis::LeftX);
-			aux.y = Input::GetGamepadAxis(GamepadAxis::LeftY);
+			movement.x = Input::GetGamepadAxis(GamepadAxis::LeftX);
+			movement.y = Input::GetGamepadAxis(GamepadAxis::LeftY);
 		}
-		else {*/
+		else {
 			if (Input::IsKeyDown(Key::A))// || Input::IsGamepadButtonDown(GamepadButton::DPadLeft))
 			{
-				aux.x += -1;
+				movement.x = -1;
 			}
 			if (Input::IsKeyDown(Key::D))// || Input::IsGamepadButtonDown(GamepadButton::DPadRight))
 			{
-				aux.x += 1;
+				movement.x = 1;
 			}
 			if (Input::IsKeyDown(Key::W))// || Input::IsGamepadButtonDown(GamepadButton::DPadUp))
 			{
-				aux.y += -1;
+				movement.y = -1;
 			}
 			if (Input::IsKeyDown(Key::S))// || Input::IsGamepadButtonDown(GamepadButton::DPadDown))
 			{
-				aux.y += 1;
+				movement.y = 1;
 			}
+		}
 		
 		
-		
-		aux = aux.Normalize() * deltaTime;
-		aux.x *= speedX;
-		aux.y *= speedY;
-		movement = aux;
+		movement = movement.Normalize() * deltaTime;
+		movement.x *= speedX;
+		movement.y *= speedY;
 		tr->MoveLocal(movement.x, movement.y);
 	}
 

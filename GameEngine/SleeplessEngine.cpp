@@ -52,9 +52,12 @@ void SleeplessEngine::Start(const std::string& title, int w, int h)
 void SleeplessEngine::Run()
 {
 	static float deltaTime = Time::DeltaTime();
+	static int fps = 0;
 	while (running) {
 		Time::Update();
 		deltaTime = Time::DeltaTime();
+		fps = static_cast<int>(1.0f / deltaTime);
+		std::cout << "FPS: " << fps << std::endl;
 		HandleEvents();
 		if (Input::Close()) {
 			running = false;

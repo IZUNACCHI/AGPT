@@ -11,7 +11,7 @@ public:
 	int Width() const;
 	int Height() const;
 
-	void* GetNative() const;  // used internally by renderer
+	void* GetNative() const; 
 
 private:
 	struct Impl;
