@@ -6,6 +6,7 @@
 #include "Window.h"
 #include "FRect.hpp"
 #include "Texture.h"
+#include "Vec2.h"
 
 enum class Flip {
 	None,

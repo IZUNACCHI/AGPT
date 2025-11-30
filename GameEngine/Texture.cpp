@@ -16,9 +16,8 @@ struct Texture::Impl {
 
 		SDL_SetSurfaceColorKey(surf, true, SDL_MapSurfaceRGB(surf, 255, 0, 255));
 
-		tex = SDL_CreateTextureFromSurface(
-			(SDL_Renderer*)renderer.GetNative(), surf
-		);
+		tex = SDL_CreateTextureFromSurface((SDL_Renderer*)renderer.GetNative(), surf);
+
 		if (!tex) {
 			SDL_DestroySurface(surf);
 			throw EngineException(SDL_GetError());
