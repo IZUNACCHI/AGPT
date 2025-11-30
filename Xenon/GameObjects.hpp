@@ -17,6 +17,10 @@ public:
 	float speedY = 300.f;
 	float speedX = 300.f;
 	Vec2 movement = Vec2::Zero();
+	bool movingLeft = false;
+	bool movingRight = false;
+	bool movingUp = false;
+	bool movingDown = false;
 
 	void OnInit() override
 	{
@@ -31,8 +35,8 @@ public:
 		animator->graph = std::make_unique<AnimationGraph>();
 		// Common settings
 		Texture* tex = nullptr;  // Use sprite->texture
-		float fw = 64.f;
-		float fh = 64.f;
+		static float fw = 64.f; //in this case these don't change at all.
+		static float fh = 64.f;
 
 		// Idle animation (frame 4, col 3, single frame, looping for stability)
 		auto idleAnim = std::make_unique<Animation>();
@@ -52,7 +56,7 @@ public:
 		leftAnim->frameWidth = fw;
 		leftAnim->frameHeight = fh;
 		leftAnim->loop = false;
-		leftAnim->transitionsOnlyAtEnd = true;
+		leftAnim->transitionsOnlyAtEnd = false;
 		leftAnim->frames.push_back({ 2, 0, 0.1f });  // Frame 3 (col 2)
 		leftAnim->frames.push_back({ 1, 0, 0.1f });  // Frame 2 (col 1)
 		leftAnim->frames.push_back({ 0, 0, 0.1f });  // Frame 1 (col 0)
@@ -65,11 +69,38 @@ public:
 		rightAnim->frameWidth = fw;
 		rightAnim->frameHeight = fh;
 		rightAnim->loop = false;
-		rightAnim->transitionsOnlyAtEnd = true;
+		rightAnim->transitionsOnlyAtEnd = false;
 		rightAnim->frames.push_back({ 3, 0, 0.1f });  // Frame 4 (col 3)
 		rightAnim->frames.push_back({ 4, 0, 0.1f });  // Frame 5 (col 4)
 		rightAnim->frames.push_back({ 5, 0, 0.1f });  // Frame 6 (col 5)
 		animator->graph->AddState("moveRight", std::move(rightAnim));
+
+		// leftToIdle animation (frames 1,2,3,4 -> cols 0,1,2,3, not looping, transitions only at end)
+		auto leftToIdleAnim = std::make_unique<Animation>();
+		leftToIdleAnim->name = "leftToIdle";
+		leftToIdleAnim->texture = tex;
+		leftToIdleAnim->frameWidth = fw;
+		leftToIdleAnim->frameHeight = fh;
+		leftToIdleAnim->loop = false;
+		leftToIdleAnim->transitionsOnlyAtEnd = false;
+		leftToIdleAnim->frames.push_back({ 0, 0, 0.1f });  // Frame 1 (col 0)
+		leftToIdleAnim->frames.push_back({ 1, 0, 0.1f });  // Frame 2 (col 1)
+		leftToIdleAnim->frames.push_back({ 2, 0, 0.1f });  // Frame 3 (col 2)
+		leftToIdleAnim->frames.push_back({ 3, 0, 0.1f });  // Frame 4 (col 3)
+		animator->graph->AddState("leftToIdle", std::move(leftToIdleAnim));
+
+		// rightToIdle animation (frames 6,5,4 -> cols 5,4,3, not looping, transitions only at end)
+		auto rightToIdleAnim = std::make_unique<Animation>();
+		rightToIdleAnim->name = "rightToIdle";
+		rightToIdleAnim->texture = tex;
+		rightToIdleAnim->frameWidth = fw;
+		rightToIdleAnim->frameHeight = fh;
+		rightToIdleAnim->loop = false;
+		rightToIdleAnim->transitionsOnlyAtEnd = false;
+		rightToIdleAnim->frames.push_back({ 5, 0, 0.1f });  // Frame 6 (col 5)
+		rightToIdleAnim->frames.push_back({ 4, 0, 0.1f });  // Frame 5 (col 4)
+		rightToIdleAnim->frames.push_back({ 3, 0, 0.1f });  // Frame 4 (col 3)
+		animator->graph->AddState("rightToIdle", std::move(rightToIdleAnim));
 
 		// Set starting state
 		animator->graph->startState = "idle";
@@ -77,20 +108,32 @@ public:
 		// Add transitions (initially without conditions)
 		animator->graph->AddTransition("idle", "moveLeft", std::function<bool()>());
 		animator->graph->AddTransition("idle", "moveRight", std::function<bool()>());
-		animator->graph->AddTransition("moveLeft", "idle", std::function<bool()>());
+		animator->graph->AddTransition("moveLeft", "leftToIdle", std::function<bool()>());
 		animator->graph->AddTransition("moveLeft", "moveRight", std::function<bool()>());
-		animator->graph->AddTransition("moveRight", "idle", std::function<bool()>());
+		animator->graph->AddTransition("moveRight", "rightToIdle", std::function<bool()>());
 		animator->graph->AddTransition("moveRight", "moveLeft", std::function<bool()>());
+		animator->graph->AddTransition("leftToIdle", "idle", std::function<bool()>());
+		animator->graph->AddTransition("leftToIdle", "moveLeft", std::function<bool()>());
+		animator->graph->AddTransition("leftToIdle", "moveRight", std::function<bool()>());
+		animator->graph->AddTransition("rightToIdle", "idle", std::function<bool()>());
+		animator->graph->AddTransition("rightToIdle", "moveLeft", std::function<bool()>());
+		animator->graph->AddTransition("rightToIdle", "moveRight", std::function<bool()>());
 
-		// Now set the conditions (you can move this "after" or to another function as needed)
-		// Assuming movement.x > 0 means right, < 0 means left, == 0 idle
-		// Adjust the logic as per your needs
+		// Set conditions
 		animator->graph->SetTransitionCondition("idle", "moveLeft", [this]() { return movement.x < 0.f; });
 		animator->graph->SetTransitionCondition("idle", "moveRight", [this]() { return movement.x > 0.f; });
-		animator->graph->SetTransitionCondition("moveLeft", "idle", [this]() { return movement.Length() == 0.0f; });
+		animator->graph->SetTransitionCondition("moveLeft", "leftToIdle", [this]() { return movement.x == 0.0f; });
 		animator->graph->SetTransitionCondition("moveLeft", "moveRight", [this]() { return movement.x > 0.f; });
-		animator->graph->SetTransitionCondition("moveRight", "idle", [this]() { return movement.Length() == 0.0f; });
+		animator->graph->SetTransitionCondition("moveRight", "rightToIdle", [this]() { return movement.x == 0.0f; });
 		animator->graph->SetTransitionCondition("moveRight", "moveLeft", [this]() { return movement.x < 0.f; });
+		animator->graph->SetTransitionCondition("leftToIdle", "idle", []() { return true; });  // Always transition
+		animator->graph->SetTransitionCondition("leftToIdle", "moveLeft", [this]() { return movement.x < 0.f; });
+		animator->graph->SetTransitionCondition("leftToIdle", "moveRight", [this]() { return movement.x > 0.f; });
+		animator->graph->SetTransitionCondition("rightToIdle", "idle", []() { return true; });  // Always transition
+		animator->graph->SetTransitionCondition("rightToIdle", "moveLeft", [this]() { return movement.x < 0.f; });
+		animator->graph->SetTransitionCondition("rightToIdle", "moveRight", [this]() { return movement.x > 0.f; });
+
+
 		animator->Start();
 		animator->SetActive(true);
 	}
@@ -99,39 +142,40 @@ public:
 
 	void OnUpdate(float deltaTime) override
 	{
+		
 		// Update code for SpaceShip
-		movement = Vec2::Zero();
+		Vec2 aux = Vec2::Zero();
 		// read input and move the spaceship
-
+		/*
 		if (Input::GetGamepadAxis(GamepadAxis::LeftX) != 0 || Input::GetGamepadAxis(GamepadAxis::LeftY) != 0)
 		{
-			movement.x = Input::GetGamepadAxis(GamepadAxis::LeftX);
-			movement.y = Input::GetGamepadAxis(GamepadAxis::LeftY);
+			aux.x = Input::GetGamepadAxis(GamepadAxis::LeftX);
+			aux.y = Input::GetGamepadAxis(GamepadAxis::LeftY);
 		}
-		else {
-			if (Input::IsKeyDown(Key::A) || Input::IsGamepadButtonDown(GamepadButton::DPadLeft))
+		else {*/
+			if (Input::IsKeyDown(Key::A))// || Input::IsGamepadButtonDown(GamepadButton::DPadLeft))
 			{
-				movement.x += -1;
+				aux.x += -1;
 			}
-			if (Input::IsKeyDown(Key::D) || Input::IsGamepadButtonDown(GamepadButton::DPadRight))
+			if (Input::IsKeyDown(Key::D))// || Input::IsGamepadButtonDown(GamepadButton::DPadRight))
 			{
-				movement.x += 1;
+				aux.x += 1;
 			}
-			if (Input::IsKeyDown(Key::W) || Input::IsGamepadButtonDown(GamepadButton::DPadUp))
+			if (Input::IsKeyDown(Key::W))// || Input::IsGamepadButtonDown(GamepadButton::DPadUp))
 			{
-				movement.y += -1;
+				aux.y += -1;
 			}
-			if (Input::IsKeyDown(Key::S) || Input::IsGamepadButtonDown(GamepadButton::DPadDown))
+			if (Input::IsKeyDown(Key::S))// || Input::IsGamepadButtonDown(GamepadButton::DPadDown))
 			{
-				movement.y += 1;
+				aux.y += 1;
 			}
-		}
 		
 		
-		movement = movement.Normalize() * deltaTime;
-		movement.x *= speedX;
-		movement.y *= speedY;
 		
+		aux = aux.Normalize() * deltaTime;
+		aux.x *= speedX;
+		aux.y *= speedY;
+		movement = aux;
 		tr->MoveLocal(movement.x, movement.y);
 	}
 

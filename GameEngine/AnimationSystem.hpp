@@ -132,8 +132,7 @@ public:
 		}
 
 		// Check transitions only if allowed (based on transitionsOnlyAtEnd)
-		bool checkTransitions = !anim->transitionsOnlyAtEnd || (currentFrame == anim->frames.size() - 1);
-		if (checkTransitions) {
+		if (!anim->transitionsOnlyAtEnd || (currentFrame == anim->frames.size() - 1)) {
 			for (const auto& trans : state.transitions) {
 				if (trans.condition && trans.condition()) {
 					currentState = trans.to;
