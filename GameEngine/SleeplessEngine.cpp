@@ -1,131 +1,89 @@
+// SleeplessEngine.cpp
 #include "SleeplessEngine.h"
-#include <SDL3/SDL.h>
+#include "Window.h"
+#include "Renderer.h"
 #include "Input.h"
-#include "Time.h"
-#include "AssetManager.h"
+#include "Time.hpp"
+#include "Log.h"
+#include "Scene.h"
 
-SleeplessEngine::SleeplessEngine() {
-}
 
-SleeplessEngine::~SleeplessEngine() {
-	Shutdown();
-}
+struct SleeplessEngine::Impl {
+	Window   window;
+	Renderer renderer;
+	bool     running = false;
+	Scene scene; //loaded level 
 
-void SleeplessEngine::Start(const std::string& title, int w, int h)
-{
-	// reset shutdown flag
-	shutdownCalled = false;
-
-	std::cout << "SleeplessEngine Initializing\n";
-
-	// Initialize SDL, swap if change DISTRIBUTION
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
-		throw EngineException(SDL_GetError());
+	Impl(const std::string& title, int w, int h) : window(title, w, h) , renderer(window){
+		Log::info("SleeplessEngine initializing");
+		Log::info("- Input");
+		Input::Initialize();
+		Log::info("- Time");
+		Time::SetTargetFPS(60);
+		Time::SetFixedTimestep(1.0f / 60.0f);
+		Log::info("- Physics");
+		running = true;
 	}
 
-	// Initialize subsystems
-	std::cout << "\t-Window\n";
-	window = std::make_unique<Window>(title, w, h);
-	std::cout << "\t-Renderer\n";
-	renderer = std::make_unique<Renderer>(*window);
-	std::cout << "\t-Time\n";
-	Time::Initialize();
-	std::cout << "\t-Asset Manager\n";
-	AssetManager::Initialize(*renderer);
-	std::cout << "\t-Input System\n";
-	Input::Initialize();
-	std::cout << "\t-Physics System\n";
+	~Impl() {
+		Log::info("SleeplessEngine in shutdown");
+		Input::Shutdown();
+		Log::info("SleeplessEngine shutdown complete");
+	}
 
-	std::cout << "\t-Scene Manager\n";
-	SceneManager::Initialize();
-	//Load initial scene
-	std::cout << "\n";
+	Impl() = default;
+};
 
-	// Main loop
-	running = true;
-	std::cout << "SleeplessEngine Running\n";
+//Initiate the engine subsystems and create window
+void SleeplessEngine::Start(const InitParams& params){
+	impl = std::make_unique<Impl>(params.title, params.width, params.height);
 
+	if (params.startingScene)
+		LoadScene(params.startingScene);
 }
 
+void SleeplessEngine::Run() {
+	if (!impl) {
+		Log::error("Sleepless Engine not Initialized. Please use Start() to initialize");
+		return;
+	}
 
+	Log::info("Sleepless Engine is now Running");
 
-void SleeplessEngine::Run()
-{
-	static float deltaTime = Time::DeltaTime();
-	static int fps = 0;
-	while (running) {
-		Time::Update();
-		deltaTime = Time::DeltaTime();
-		fps = static_cast<int>(1.0f / deltaTime);
-		std::cout << "FPS: " << fps << std::endl;
-		HandleEvents();
-		if (Input::Close()) {
-			running = false;
-			continue;
+	while (impl->running) {
+		// Update time and frame stats, time calc
+		Time::Update();       
+
+		//Process Input
+		Input::PollEvents();
+		// Check for quit application
+		if (Input::ShouldQuit() || Input::IsKeyPressed(Key::Escape)) {
+			impl->running = false;
+			break;
 		}
-		PhysicsUpdate(deltaTime);
-		Update(deltaTime);
-		Render();
-	}
-
-	Shutdown();
-}
-
-// 
-void SleeplessEngine::Update(float deltaTime) {
-	Scene* scene = SceneManager::GetActiveScene();
-	if(scene) {
-		scene->Update(deltaTime);
-	}
-}
-
-// Fixed timestep physics update
-void SleeplessEngine::PhysicsUpdate(float deltaTime) {
-	
-	physAccumulator += deltaTime;
-	int maxSubSteps = 10;
-	int subSteps = 0;
-	//Fixed TimeStep
-	while (physAccumulator >= physStep && subSteps < maxSubSteps) {
+		// Toggle debug overlay
+		if (Input::IsKeyPressed(Key::F3)) {
+			Log::SetDebugEnabled(!Log::IsDebugEnabled());
+			Log::info(std::string("Debug Overlay ") + (Log::IsDebugEnabled() ? "Enabled" : "Disabled"));
+		}
 		
-		physAccumulator -= physStep;
-		subSteps++;
+		//fixed update
+		impl->scene.Update(Time::FixedDeltaTime() * Time::FixedStepsThisFrame());
+
+		// Clear & draw
+		impl->renderer.Clear();
+
+
+		impl->renderer.Present();
+		Time::WaitIfNeeded();              // respects target FPS
 	}
+
+	Log::info("Sleepless Engine has Stopped Running");
 }
 
-// Render the current scene
-void SleeplessEngine::Render() {
-	Scene* scene = SceneManager::GetActiveScene();
-	if (scene)
-	{
-		renderer->Clear();
-		scene->Render(*renderer);
-		renderer->Present();
-	}
+void SleeplessEngine::Shutdown() {
+	impl.reset();
 }
 
-// Handle input and window events
-void SleeplessEngine::HandleEvents() {
-	Input::PollEvents();
-}
-
-// Shutdown and clean up resources
-void SleeplessEngine::Shutdown()
-{
-	// Prevent multiple shutdowns
-	if (shutdownCalled) return;
-	shutdownCalled = true;
-
-	std::cout << "SleeplessEngine is Shutting Down\n";
-
-	// Clean up subsystems
-	if (renderer) renderer.reset();
-	if (window) window.reset();
-	AssetManager::Shutdown();
-	Time::Shutdown();
-	Input::Shutdown();
-
-
-	SDL_Quit();
-}
-
+Window& SleeplessEngine::GetWindow() { return impl->window; }
+Renderer& SleeplessEngine::GetRenderer() { return impl->renderer; }

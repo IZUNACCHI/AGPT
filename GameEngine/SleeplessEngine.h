@@ -1,48 +1,27 @@
 #pragma once
-#include <iostream>
-#include "Window.h"
-#include "Renderer.h"
-#include "EngineException.h"
-#include "Time.hpp"
-
-#include "AssetManager.h"
-
-#include "SceneManager.h"
+#include <memory>
 
 class SleeplessEngine
 {
 public:
-	SleeplessEngine();
-	~SleeplessEngine();
+	struct InitParams
+	{
+		std::string title = "Sleepless Engine Game";
+		int width = 1280;
+		int height = 720;
+		Scene* startingScene = nullptr;
+	};
 
-	void Start(const std::string& title, int w, int h);
+	static void Start(const InitParams& params);
+	static void Run();                     // never returns until quit
+	static void LoadScene(Scene* newScene); // call from game code anytime
 
-	void Run();
-
-	void Shutdown();
-
-	// Accessors for engine systems
-	Window& GetWindow() { return *window; }
-	Renderer& GetRenderer() { return *renderer; }
-	//Scene& GetScene() { return *scene; } 
-
-	static SleeplessEngine* instance;
+	// Accessors
+	static Renderer& GetRenderer();
+	//static b2World& GetPhysicsWorld();
+	static Scene* GetCurrentScene();
 
 private:
-	bool running = false;
-	std::unique_ptr<Window> window;
-	std::unique_ptr<Renderer> renderer;
-
-	float physStep = 1.0f / 60.0f; //fixed step for physics
-	float physAccumulator = 0.0f;
-
-
-	void HandleEvents();
-	void Update(float deltaTime);
-	void PhysicsUpdate(float deltaTime);
-	void Render();
-
-	// To prevent multiple shutdowns
-	bool shutdownCalled = false;
+	struct Impl;
+	static inline std::unique_ptr<Impl> impl;
 };
-
