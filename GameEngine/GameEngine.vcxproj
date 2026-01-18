@@ -25,6 +25,7 @@
     <ClInclude Include="EngineException.hpp" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="RenderableComponent.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SleeplessEngine.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="RenderableComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SleeplessEngine.cpp" />

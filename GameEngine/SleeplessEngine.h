@@ -21,7 +21,7 @@ namespace Engine {
 
 		// Asset base path
 		std::string assetBasePath = "Dist/graphics/";
-		// Removed: std::unique_ptr<Scene> initialScene;
+		WindowConfig windowConfig{};
 	};
 
 	class SleeplessEngine {
