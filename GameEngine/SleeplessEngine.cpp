@@ -1,89 +1,128 @@
-// SleeplessEngine.cpp
 #include "SleeplessEngine.h"
-#include "Window.h"
-#include "Renderer.h"
-#include "Input.h"
-#include "Time.hpp"
-#include "Log.h"
-#include "Scene.h"
+#include <SDL3/SDL.h>
 
+// Engine subsystems
 
-struct SleeplessEngine::Impl {
-	Window   window;
-	Renderer renderer;
-	bool     running = false;
-	Scene scene; //loaded level 
+namespace Engine {
 
-	Impl(const std::string& title, int w, int h) : window(title, w, h) , renderer(window){
-		Log::info("SleeplessEngine initializing");
-		Log::info("- Input");
-		Input::Initialize();
-		Log::info("- Time");
-		Time::SetTargetFPS(60);
-		Time::SetFixedTimestep(1.0f / 60.0f);
-		Log::info("- Physics");
-		running = true;
+	SleeplessEngine& SleeplessEngine::GetInstance() {
+		static SleeplessEngine instance;
+		return instance;
 	}
 
-	~Impl() {
-		Log::info("SleeplessEngine in shutdown");
-		Input::Shutdown();
-		Log::info("SleeplessEngine shutdown complete");
-	}
+	void SleeplessEngine::Initialize(Config config) {
+		if (m_isInitialized)
+			return;
 
-	Impl() = default;
-};
+		m_config = std::move(config);
 
-//Initiate the engine subsystems and create window
-void SleeplessEngine::Start(const InitParams& params){
-	impl = std::make_unique<Impl>(params.title, params.width, params.height);
+		// --- Time ---
+		m_time.Initialize();
+		m_time.SetFixedDeltaTime(m_config.fixedDeltaTime);
+		m_time.SetMaxDeltaTime(m_config.maximumDeltaTime);
+		m_time.SetTargetFPS(m_config.targetFPS);
 
-	if (params.startingScene)
-		LoadScene(params.startingScene);
-}
-
-void SleeplessEngine::Run() {
-	if (!impl) {
-		Log::error("Sleepless Engine not Initialized. Please use Start() to initialize");
-		return;
-	}
-
-	Log::info("Sleepless Engine is now Running");
-
-	while (impl->running) {
-		// Update time and frame stats, time calc
-		Time::Update();       
-
-		//Process Input
-		Input::PollEvents();
-		// Check for quit application
-		if (Input::ShouldQuit() || Input::IsKeyPressed(Key::Escape)) {
-			impl->running = false;
-			break;
+		// --- SDL ---
+		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+			throw std::runtime_error(SDL_GetError());
 		}
-		// Toggle debug overlay
-		if (Input::IsKeyPressed(Key::F3)) {
-			Log::SetDebugEnabled(!Log::IsDebugEnabled());
-			Log::info(std::string("Debug Overlay ") + (Log::IsDebugEnabled() ? "Enabled" : "Disabled"));
-		}
-		
-		//fixed update
-		impl->scene.Update(Time::FixedDeltaTime() * Time::FixedStepsThisFrame());
 
-		// Clear & draw
-		impl->renderer.Clear();
+		// --- Window / Renderer / Assets ---
+		m_window = std::make_unique<Window>();
+		m_renderer = std::make_unique<Renderer>(*m_window);
+		m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 
+		// Removed initial scene loading from config
+		// User will call SetScene manually
 
-		impl->renderer.Present();
-		Time::WaitIfNeeded();              // respects target FPS
+		m_isInitialized = true;
 	}
 
-	Log::info("Sleepless Engine has Stopped Running");
-}
+	void SleeplessEngine::Run() {
+		if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
+			return;
 
-void SleeplessEngine::Shutdown() {
-	impl.reset();
-}
+		m_isRunning = true;
 
-Window& SleeplessEngine::GetWindow() { return impl->window; }
-Renderer& SleeplessEngine::GetRenderer() { return impl->renderer; }
+		while (m_isRunning) {
+			// 1. Time
+			m_time.Tick();
+
+			// 2. Input
+			// Input::Update();
+
+			// 3. Fixed update
+			int steps = m_time.CalculateFixedSteps();
+			for (int i = 0; i < steps; ++i) {
+				FixedUpdate(m_time.FixedDeltaTime());
+				m_time.ConsumeFixedStep();
+			}
+
+			// 4. Variable update
+			Update(m_time.DeltaTime());
+
+			// 5. Late update
+			LateUpdate(m_time.DeltaTime());
+
+			// 6. Render
+			Render();
+
+			// 7. Cleanup
+			GarbageCollect();
+		}
+	}
+
+	void SleeplessEngine::SetScene(Scene* scene) {
+		if (m_currentScene)
+			m_currentScene->Unload();
+
+		m_currentScene = scene;
+
+		if (m_currentScene)
+			m_currentScene->Start();
+	}
+
+	void SleeplessEngine::Update(float deltaTime) {
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->Update(deltaTime);
+	}
+
+	void SleeplessEngine::FixedUpdate(float fixedDeltaTime) {
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->FixedUpdate(fixedDeltaTime);
+	}
+
+	void SleeplessEngine::LateUpdate(float deltaTime) {
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->LateUpdate(deltaTime);
+	}
+
+	void SleeplessEngine::Render() {
+		m_renderer->Clear();
+
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->Render();
+
+		m_renderer->Present();
+	}
+
+	void SleeplessEngine::GarbageCollect() {
+		// Scene-owned destruction queues
+	}
+
+	void SleeplessEngine::Shutdown() {
+		m_isRunning = false;
+
+		if (m_currentScene)
+			m_currentScene->Unload();
+
+		m_assetManager.reset();
+		m_renderer.reset();
+		m_window.reset();
+
+		SDL_Quit();
+
+		m_isInitialized = false;
+	}
+
+} // namespace Engine

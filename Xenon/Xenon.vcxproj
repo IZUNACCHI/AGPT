@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)</OutDir>
-    <IntDir>$(SolutionDir)bin-int\$(Configuration)-$(Platform)\$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)Build\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\intermediate\Xenon\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)</OutDir>
-    <IntDir>$(SolutionDir)bin-int\$(Configuration)-$(Platform)\$(ProjectName)</IntDir>
+    <OutDir>$(SolutionDir)Build\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\intermediate\Xenon\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,13 +110,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)GameEngine;$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GameEngine\include;$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)x64\Debug;$(SolutionDir)Dist\SDL\lib;$(SolutionDir)Dist\Box2D\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib;$(SolutionDir)Build\lib\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -129,15 +129,21 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)GameEngine\include;$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib;$(SolutionDir)Build\lib\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameObjects.hpp" />
     <ClInclude Include="Level1.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
