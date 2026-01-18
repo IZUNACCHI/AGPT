@@ -19,8 +19,8 @@ namespace Engine {
 		// Constructor without color key (loads as-is)
 		Texture(Renderer& renderer, const std::string& filePath);
 
-		// Constructor with Vector3i color key
-		Texture(Renderer& renderer, const std::string& filePath, const Vector3i* colorKey);
+		// Constructor with optional Vector3i color key
+		Texture(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i& colorKey);
 
 		// Destructor
 		~Texture();
@@ -39,8 +39,6 @@ namespace Engine {
 		bool IsValid() const;
 
 	private:
-		Texture(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i* colorKey);
-
 		std::unique_ptr<Impl> impl;
 	};
 

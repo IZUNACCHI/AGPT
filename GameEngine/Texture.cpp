@@ -8,15 +8,15 @@ namespace Engine {
 		Vector2i windowSize;
 
 		// Constructor for Vector3i color key
-		Impl(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i* colorKey) {
+		Impl(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i& colorKey) {
 			// Create surface from file
 			Surface surface(filePath);
 
 			// Apply color key if requested
-			if (useColorKey && colorKey) {
-				// Dereference the pointer to get Vector3i reference
-				surface.SetColorKey(*colorKey);
+			if (useColorKey) {
+				surface.SetColorKey(colorKey);
 			}
+
 
 			// Create texture from surface
 			texture = SDL_CreateTextureFromSurface(
@@ -35,7 +35,6 @@ namespace Engine {
 		~Impl() {
 			if (texture) {
 				SDL_DestroyTexture(texture);
-				LOG_DEBUG("Texture destroyed");
 			}
 		}
 
@@ -64,19 +63,13 @@ namespace Engine {
 	};
 
 
-	// Private helper constructor for Vector3i
-	Texture::Texture(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i* colorKey)
+	Texture::Texture(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i& colorKey)
 		: impl(std::make_unique<Impl>(renderer, filePath, useColorKey, colorKey)) {
 	}
 
 	// Constructor without color key
 	Texture::Texture(Renderer& renderer, const std::string& filePath)
-		: Texture(renderer, filePath, false, nullptr) {
-	}
-
-	// Constructor with Vector3i color key
-	Texture::Texture(Renderer& renderer, const std::string& filePath, const Vector3i* colorKey)
-		: Texture(renderer, filePath, true, colorKey) {
+		: Texture(renderer, filePath, false, Vector3i::Zero()) {
 	}
 
 	Texture::~Texture() = default;  // unique_ptr handles destruction

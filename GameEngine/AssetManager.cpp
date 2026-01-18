@@ -47,7 +47,7 @@ namespace Engine {
 			std::unique_ptr<Texture> texture;
 
 			if (colorKey != nullptr) {
-				texture = std::make_unique<Texture>(m_renderer, fullPath, *colorKey);
+				texture = std::make_unique<Texture>(m_renderer, fullPath, true, *colorKey);
 			}
 			else {
 				texture = std::make_unique<Texture>(m_renderer, fullPath);
