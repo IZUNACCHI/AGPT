@@ -87,7 +87,7 @@ public:
 		return instance;
 	}
 
-	void init(bool enableFileLogging = false) {
+	void init(bool enableFileLogging = true) {
 		std::lock_guard<std::mutex> lock(logMutex);
 		logToFile = enableFileLogging;
 

@@ -13,63 +13,83 @@ namespace Engine {
 	void SleeplessEngine::Initialize(Config config) {
 		if (m_isInitialized)
 			return;
+		
+			Logger::getInstance().init(true);
+			m_config = std::move(config);
 
-		m_config = std::move(config);
+			// --- Time ---
+			m_time.Initialize();
+			m_time.SetFixedDeltaTime(m_config.fixedDeltaTime);
+			m_time.SetMaxDeltaTime(m_config.maximumDeltaTime);
+			m_time.SetTargetFPS(m_config.targetFPS);
+			try
+			{
+				SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+			// --- SDL ---
+			if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+				THROW_ENGINE_EXCEPTION("Failed to initialize SDL: 1 ") << SDL_GetError();
+			}
 
-		// --- Time ---
-		m_time.Initialize();
-		m_time.SetFixedDeltaTime(m_config.fixedDeltaTime);
-		m_time.SetMaxDeltaTime(m_config.maximumDeltaTime);
-		m_time.SetTargetFPS(m_config.targetFPS);
+			// --- Window / Renderer / Assets ---
+			m_window = std::make_unique<Window>(config.windowConfig);
+			m_window->SetVisible(true);
+			m_renderer = std::make_unique<Renderer>(*m_window);
+			m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 
-		// --- SDL ---
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
-			throw std::runtime_error(SDL_GetError());
-		}
+			// Removed initial scene loading from config
+			// User will call SetScene manually
 
-		// --- Window / Renderer / Assets ---
-		m_window = std::make_unique<Window>();
-		m_renderer = std::make_unique<Renderer>(*m_window);
-		m_assetManager = std::make_unique<AssetManager>(*m_renderer);
-
-		// Removed initial scene loading from config
-		// User will call SetScene manually
-
-		m_isInitialized = true;
+			m_isInitialized = true;
+			}
+			catch (const std::exception& e)
+			{
+				std::cerr << "Engine initialization failed. Shutting down." << e.what() << std::endl;
+				Shutdown();
+			}
+		
 	}
 
 	void SleeplessEngine::Run() {
-		if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
-			return;
+		try
+		{
+			if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
+				THROW_ENGINE_EXCEPTION("Engine not initialized or no scene set");
 
-		m_isRunning = true;
+			m_isRunning = true;
 
-		while (m_isRunning) {
-			// 1. Time
-			m_time.Tick();
+			while (m_isRunning) {
+				// 1. Time
+				m_time.Tick();
 
-			// 2. Input
-			// Input::Update();
+				// 2. Input
+				// Input::Update();
 
-			// 3. Fixed update
-			int steps = m_time.CalculateFixedSteps();
-			for (int i = 0; i < steps; ++i) {
-				FixedUpdate(m_time.FixedDeltaTime());
-				m_time.ConsumeFixedStep();
+				// 3. Fixed update
+				int steps = m_time.CalculateFixedSteps();
+				for (int i = 0; i < steps; ++i) {
+					FixedUpdate(m_time.FixedDeltaTime());
+					m_time.ConsumeFixedStep();
+				}
+
+				// 4. Variable update
+				Update(m_time.DeltaTime());
+
+				// 5. Late update
+				LateUpdate(m_time.DeltaTime());
+
+				// 6. Render
+				Render();
+
+				// 7. Cleanup
+				GarbageCollect();
 			}
-
-			// 4. Variable update
-			Update(m_time.DeltaTime());
-
-			// 5. Late update
-			LateUpdate(m_time.DeltaTime());
-
-			// 6. Render
-			Render();
-
-			// 7. Cleanup
-			GarbageCollect();
 		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Something" << e.what() << std::endl;
+			Shutdown();
+		}
+		
 	}
 
 	void SleeplessEngine::SetScene(Scene* scene) {

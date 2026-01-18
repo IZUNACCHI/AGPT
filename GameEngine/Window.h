@@ -10,7 +10,7 @@ namespace Engine {
 		Vector2i windowSize = Vector2i(800, 600);
 		bool fullscreen = false;
 		bool borderless = false;
-		bool resizable = false;
+		bool resizable = true;
 	};
 
 	class Window {

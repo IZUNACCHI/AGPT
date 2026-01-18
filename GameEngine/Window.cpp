@@ -19,13 +19,13 @@ namespace Engine {
 	Window::Window(const WindowConfig& config)
 		: impl(std::make_unique<Impl>()) {
 
-		if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS) != 0) {
+		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
 			impl.reset();  // Reset unique_ptr before throwing
-			THROW_ENGINE_EXCEPTION("Failed to initialize SDL: ") << SDL_GetError();
+			THROW_ENGINE_EXCEPTION("Failed to initialize SDL: 2") << SDL_GetError();
 		}
 		impl->config = config;
 
-		uint32_t flags = 0;
+		SDL_WindowFlags flags = 0;
 		if (config.fullscreen) flags |= SDL_WINDOW_FULLSCREEN;
 		if (config.borderless) flags |= SDL_WINDOW_BORDERLESS;
 		if (config.resizable) flags |= SDL_WINDOW_RESIZABLE;
