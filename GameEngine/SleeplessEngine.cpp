@@ -152,6 +152,10 @@
 			m_currentScene->Unload();
 
 		Input::Shutdown();
+		if (m_physicsWorld) {
+			m_physicsWorld->Shutdown();
+			m_physicsWorld.reset();
+		}
 		m_assetManager.reset();
 		m_renderer.reset();
 		m_window.reset();
