@@ -63,6 +63,9 @@
     <ClInclude Include="RenderableComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SleeplessEngine.cpp">
@@ -103,6 +106,9 @@
     </ClCompile>
     <ClCompile Include="RenderableComponent.cpp">
       <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

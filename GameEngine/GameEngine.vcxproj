@@ -24,6 +24,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="EngineException.hpp" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="RenderableComponent.h" />
     <ClInclude Include="Renderer.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="RenderableComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
