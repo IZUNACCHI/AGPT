@@ -3,7 +3,6 @@
 
 // Engine subsystems
 
-namespace Engine {
 
 	SleeplessEngine& SleeplessEngine::GetInstance() {
 		static SleeplessEngine instance;
@@ -30,12 +29,12 @@ namespace Engine {
 				THROW_ENGINE_EXCEPTION("Failed to initialize SDL: " + std::string(SDL_GetError()));
 			}
 
-			// --- Window / Renderer / Assets ---
+			// --- Window / Renderer / Assets / Input ---
 			m_window = std::make_unique<Window>(config.windowConfig);
 			m_window->SetVisible(true);
 			m_renderer = std::make_unique<Renderer>(*m_window);
 			m_assetManager = std::make_unique<AssetManager>(*m_renderer);
-
+			Input::Initialize();
 
 			m_isInitialized = true;
 			}
@@ -60,7 +59,12 @@ namespace Engine {
 				m_time.Tick();
 
 				// 2. Input
-				// Input::Update();
+				Input::PollEvents();
+				if (Input::ShouldQuit()) {
+					Shutdown();
+					return;
+				}
+				LOG_INFO("FPS: " + std::to_string(m_time.FPS()));
 
 				// 3. Fixed update
 				int steps = m_time.CalculateFixedSteps();
@@ -134,6 +138,7 @@ namespace Engine {
 		if (m_currentScene)
 			m_currentScene->Unload();
 
+		Input::Shutdown();
 		m_assetManager.reset();
 		m_renderer.reset();
 		m_window.reset();
@@ -142,5 +147,3 @@ namespace Engine {
 
 		m_isInitialized = false;
 	}
-
-} // namespace Engine

@@ -2,8 +2,6 @@
 #include "GameObject.h"
 #include "Logger.h"
 
-namespace Engine {
-
 	void Behaviour::Destroy(float delay) {
 		if (delay <= 0.0f) {
 			if (m_gameObject) {
@@ -29,4 +27,3 @@ namespace Engine {
 		// Note: This would require a scheduler system
 		LOG_WARN("CancelInvoke not implemented yet");
 	}
-}

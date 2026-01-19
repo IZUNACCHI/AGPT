@@ -1,6 +1,5 @@
 #include "Renderer.h"
 
-namespace Engine {
 
 	Renderer::Renderer(Window& window)
 		: m_renderer(nullptr) {
@@ -48,19 +47,7 @@ namespace Engine {
 		}
 	}
 
-	void Renderer::Clear(const Color& color) {
-		if (!m_renderer) {
-			LOG_WARN("Cannot clear - renderer is not valid");
-			return;
-		}
-
-		
-		// Set clear color
-		SDL_SetRenderDrawColor(m_renderer, color.r, color.g, color.b, color.a);
-		
-		// Clear the screen
-		SDL_RenderClear(m_renderer);
-	}
+	
 
 	void Renderer::Clear() {
 		if (!m_renderer) {
@@ -80,5 +67,3 @@ namespace Engine {
 
 		SDL_RenderPresent(m_renderer);
 	}
-
-} // namespace Engine

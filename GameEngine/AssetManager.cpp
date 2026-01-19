@@ -2,7 +2,7 @@
 #include "EngineException.hpp"
 #include <sstream>
 
-namespace Engine {
+
 
 	AssetManager::AssetManager(Renderer& renderer)
 		: m_renderer(renderer) {
@@ -111,5 +111,3 @@ namespace Engine {
 		LOG_INFO(logMsg.str());
 		m_textures.clear();
 	}
-
-} // namespace Engine

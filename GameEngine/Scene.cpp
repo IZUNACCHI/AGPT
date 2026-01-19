@@ -6,7 +6,6 @@
 #include "Logger.h"
 #include <algorithm>
 
-namespace Engine {
 
 	uint32_t Scene::s_nextGameObjectID = 1;
 
@@ -334,4 +333,3 @@ namespace Engine {
 
 		return m_layerRenderOrders[layerIndex];
 	}
-}

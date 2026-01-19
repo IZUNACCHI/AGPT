@@ -1,6 +1,5 @@
 #include "Surface.h"
 
-namespace Engine {
 
     Surface::Surface(const std::string& filePath) {
         m_surface = SDL_LoadBMP(filePath.c_str());
@@ -58,5 +57,3 @@ namespace Engine {
         }
         return Vector2i(m_surface->w, m_surface->h);
     }
-
-} // namespace Engine

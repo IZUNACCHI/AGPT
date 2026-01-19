@@ -1,7 +1,6 @@
 #include "Texture.h"
 #include "Renderer.h"
 
-namespace Engine {
 
 	struct Texture::Impl {
 		SDL_Texture* texture = nullptr;
@@ -96,5 +95,3 @@ namespace Engine {
 	bool Texture::IsValid() const {
 		return impl && impl->texture != nullptr;
 	}
-
-} // namespace Engine

@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "Scene.h"
 
-namespace Engine {
+
 
 	void Component::SetEnabled(bool enabled) {
 		if (m_enabled == enabled) return;
@@ -20,4 +20,3 @@ namespace Engine {
 	Scene* Component::GetScene() const {
 		return m_gameObject ? m_gameObject->GetScene() : nullptr;
 	}
-}

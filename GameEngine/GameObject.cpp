@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <typeinfo>
 
-namespace Engine {
 
 	GameObject::GameObject(uint32_t id, const std::string& name, Scene* scene)
 		: m_id(id), m_name(name), m_scene(scene) {
@@ -250,4 +249,3 @@ namespace Engine {
 			child->GetGameObject()->UpdateActiveInHierarchy();
 		}
 	}
-}

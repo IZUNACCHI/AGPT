@@ -2,8 +2,6 @@
 #include "GameObject.h"
 #include <cmath>
 
-namespace Engine {
-
 	Transform::Transform(GameObject* gameObject)
 		: m_gameObject(gameObject) {
 		m_worldMatrix = Matrix3x3f::Identity();
@@ -190,4 +188,3 @@ namespace Engine {
 
 		m_worldMatrixDirty = false;
 	}
-}

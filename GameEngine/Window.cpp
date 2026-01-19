@@ -3,7 +3,6 @@
 #include "Logger.h"
 #include <SDL3/SDL.h>
 
-namespace Engine {
 
 	struct Window::Impl {
 		SDL_Window* window = nullptr;
@@ -166,5 +165,3 @@ namespace Engine {
 			SDL_SetWindowRelativeMouseMode(impl->window, relative ? true : false);
 		}
 	}
-
-} // namespace Engine
