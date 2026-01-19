@@ -21,13 +21,16 @@
   <ItemGroup>
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Behaviour.h" />
+    <ClInclude Include="Collider2D.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="EngineException.hpp" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="Physics2D.h" />
     <ClInclude Include="RenderableComponent.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="Rigidbody2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SleeplessEngine.h" />
     <ClInclude Include="Surface.h" />
@@ -40,12 +43,15 @@
   <ItemGroup>
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Behaviour.cpp" />
+    <ClCompile Include="Collider2D.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="Physics2D.cpp" />
     <ClCompile Include="RenderableComponent.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="Rigidbody2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SleeplessEngine.cpp" />
     <ClCompile Include="Surface.cpp" />

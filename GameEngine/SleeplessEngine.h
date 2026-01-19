@@ -8,12 +8,9 @@
 #include "Time.hpp"
 #include <string>
 #include "Input.h"
+#include "Physics2D.h"
 
 
-class Scene;
-class Window;
-class Renderer;
-class AssetManager;
 
 struct Config {
 		float fixedDeltaTime = 1.0f / 60.0f;
@@ -35,6 +32,10 @@ public:
 
 	// Changed to raw pointer since user manages scene lifecycle
 	void SetScene(Scene* scene);
+	void ResetPhysicsWorld(const Vector2f& gravity = Vector2f(0.0f, -9.81f));
+	Physics2DWorld* GetPhysicsWorld() const { return m_physicsWorld.get(); }
+	// Expose renderer for debug drawing from renderable components.
+	Renderer* GetRenderer() const { return m_renderer.get(); }
 
 private:
 	SleeplessEngine() = default;
@@ -59,6 +60,7 @@ private:
 	std::unique_ptr<Window> m_window;
 	std::unique_ptr<Renderer> m_renderer;
 	std::unique_ptr<AssetManager> m_assetManager;
+	std::unique_ptr<Physics2DWorld> m_physicsWorld;
 
 	// Changed to raw pointer
 	Scene* m_currentScene = nullptr;

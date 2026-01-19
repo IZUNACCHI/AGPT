@@ -1,7 +1,6 @@
 #include "SleeplessEngine.h"
 #include <SDL3/SDL.h>
 
-// Engine subsystems
 
 
 	SleeplessEngine& SleeplessEngine::GetInstance() {
@@ -35,6 +34,9 @@
 			m_renderer = std::make_unique<Renderer>(*m_window);
 			m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 			Input::Initialize();
+
+			m_physicsWorld = std::make_unique<Physics2DWorld>();
+			m_physicsWorld->Initialize();
 
 			m_isInitialized = true;
 			}
@@ -104,6 +106,13 @@
 			m_currentScene->Start();
 	}
 
+	void SleeplessEngine::ResetPhysicsWorld(const Vector2f& gravity) {
+		if (!m_physicsWorld) {
+			m_physicsWorld = std::make_unique<Physics2DWorld>();
+		}
+		m_physicsWorld->Reset(gravity);
+	}
+
 	void SleeplessEngine::Update(float deltaTime) {
 		if (m_currentScene && m_currentScene->IsActive())
 			m_currentScene->Update(deltaTime);
@@ -112,6 +121,10 @@
 	void SleeplessEngine::FixedUpdate(float fixedDeltaTime) {
 		if (m_currentScene && m_currentScene->IsActive())
 			m_currentScene->FixedUpdate(fixedDeltaTime);
+
+		if (m_physicsWorld) {
+			m_physicsWorld->Step(fixedDeltaTime, 1);
+		}
 	}
 
 	void SleeplessEngine::LateUpdate(float deltaTime) {
