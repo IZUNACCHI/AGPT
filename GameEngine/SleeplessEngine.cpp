@@ -15,7 +15,7 @@ namespace Engine {
 			return;
 		
 			Logger::getInstance().init(true);
-			m_config = std::move(config);
+			m_config = config;
 
 			// --- Time ---
 			m_time.Initialize();
@@ -27,7 +27,7 @@ namespace Engine {
 				SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 			// --- SDL ---
 			if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-				THROW_ENGINE_EXCEPTION("Failed to initialize SDL: 1 ") << SDL_GetError();
+				THROW_ENGINE_EXCEPTION("Failed to initialize SDL: " + std::string(SDL_GetError()));
 			}
 
 			// --- Window / Renderer / Assets ---
@@ -36,8 +36,6 @@ namespace Engine {
 			m_renderer = std::make_unique<Renderer>(*m_window);
 			m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 
-			// Removed initial scene loading from config
-			// User will call SetScene manually
 
 			m_isInitialized = true;
 			}

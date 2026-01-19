@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <array>
 #include <ranges>
+#include <string>
+#include "EngineException.hpp"
 
 std::unique_ptr<Input::Impl> Input::impl = nullptr;
 
@@ -138,7 +140,10 @@ static MouseButton TranslateMouse(Uint8 btn) {
 // lifecycle
 void Input::Initialize() {
 	impl = std::make_unique<Impl>();
-	SDL_InitSubSystem(SDL_INIT_GAMEPAD);
+	if(!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
+		THROW_ENGINE_EXCEPTION("Failed to initialize SDL Gamepad subsystem: " + std::string(SDL_GetError()));
+	}
+	
 }
 
 void Input::Shutdown() {
