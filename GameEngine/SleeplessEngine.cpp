@@ -52,7 +52,7 @@
 		{
 			if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
 				THROW_ENGINE_EXCEPTION("Engine not initialized or no scene set");
-
+			
 			m_isRunning = true;
 
 			while (m_isRunning) {
@@ -65,33 +65,30 @@
 					Shutdown();
 					return;
 				}
-				if (Input::IsKeyPressed(Key::F9)) {
+				if(Input::IsKeyPressed(Key::F9)){
 					Time::ToggleShowFPS();
 				}
 
-				// 3. Start-of-frame flush for new behaviours.
-				StartFrame();
-
-				// 4. Fixed update
+				// 3. Fixed update
 				int steps = Time::CalculateFixedSteps();
 				for (int i = 0; i < steps; ++i) {
 					FixedUpdate(Time::FixedDeltaTime());
 					Time::ConsumeFixedStep();
 				}
 
-				// 5. Variable update
+				// 4. Variable update
 				Update(Time::DeltaTime());
 
-				// 6. Late update
+				// 5. Late update
 				LateUpdate(Time::DeltaTime());
-				// 7. Pre-render flush (removals + destruction).
-				PreRenderFlush();
+				// 6. Garbage collection
+				DestroyPending();
 
-				// 8. Render
+				// 7. Render
 				Render();
 
 				Time::WaitForTargetFPS();
-
+				
 			}
 		}
 		catch (const std::exception& e)
@@ -99,11 +96,17 @@
 			std::cerr << "Something" << e.what() << std::endl;
 			Shutdown();
 		}
-
+		
 	}
 
 	void SleeplessEngine::SetScene(Scene* scene) {
+		if (m_currentScene)
+			m_currentScene->Unload();
+
 		m_currentScene = scene;
+
+		if (m_currentScene)
+			m_currentScene->Start();
 	}
 
 	void SleeplessEngine::ResetPhysicsWorld(const Vector2f& gravity) {
@@ -113,22 +116,14 @@
 		m_physicsWorld->Reset(gravity);
 	}
 
-	void SleeplessEngine::StartFrame() {
-		if (m_currentScene) {
-			m_currentScene->StartFrame();
-		}
-	}
-
 	inline void SleeplessEngine::Update(float deltaTime) {
-		if (m_currentScene) {
+		if (m_currentScene && m_currentScene->IsActive())
 			m_currentScene->Update(deltaTime);
-		}
 	}
 
 	void SleeplessEngine::FixedUpdate(float fixedDeltaTime) {
-		if (m_currentScene) {
-			m_currentScene->FixedStep(fixedDeltaTime);
-		}
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->FixedUpdate(fixedDeltaTime);
 
 		if (m_physicsWorld) {
 			m_physicsWorld->Step(fixedDeltaTime, 1);
@@ -136,27 +131,28 @@
 	}
 
 	void SleeplessEngine::LateUpdate(float deltaTime) {
-		if (m_currentScene) {
+		if (m_currentScene && m_currentScene->IsActive())
 			m_currentScene->LateUpdate(deltaTime);
-		}
 	}
 
 	void SleeplessEngine::Render() {
 		m_renderer->Clear();
 
-		// Render system may be hooked up later.
+		if (m_currentScene && m_currentScene->IsActive())
+			m_currentScene->Render();
 
 		m_renderer->Present();
 	}
 
-	void SleeplessEngine::PreRenderFlush() {
-		if (m_currentScene) {
-			m_currentScene->PreRenderFlush();
-		}
+	void SleeplessEngine::DestroyPending() {
+		//Destroy gameobjects marked for deletion
 	}
 
 	void SleeplessEngine::Shutdown() {
 		m_isRunning = false;
+
+		if (m_currentScene)
+			m_currentScene->Unload();
 
 		Input::Shutdown();
 		if (m_physicsWorld) {

@@ -1,13 +1,12 @@
 #pragma once
 
 #include <box2d/box2d.h>
-#include "Component.h"
-#include "Renderer.h"
+#include "RenderableComponent.h"
 #include "Types.hpp"
 
 class Rigidbody2D;
 
-class Collider2D : public Component {
+class Collider2D : public RenderableComponent {
 public:
 	// Register with physics world and build initial shape.
 	void OnCreate() override;
@@ -16,7 +15,7 @@ public:
 	// Rebuild the collider shape when the physics world is reset.
 	void RebuildShape();
 	// Debug-render the collider shape if enabled.
-	void Draw() ;
+	void Draw() override;
 
 	bool IsTrigger() const { return m_isTrigger; }
 	void SetTrigger(bool isTrigger);

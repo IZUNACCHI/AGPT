@@ -15,8 +15,6 @@ public:
 	};
 
 	void OnCreate() override;
-	void OnEnable() override;
-	void OnDisable() override;
 	void OnDestroy() override;
 	void RecreateBody();
 
@@ -42,3 +40,26 @@ public:
 	void SetPosition(const Vector2f& position);
 	void SetRotation(float rotationDegrees);
 	void SetRotationRadians(float rotationRadians);
+
+	void SetLinearDamping(float damping);
+	void SetAngularDamping(float damping);
+
+	void SetFixedRotation(bool fixedRotation);
+
+	void SyncTransformFromBody();
+
+private:
+	void CreateBody();
+	void DestroyBody();
+	void AttachExistingColliders();
+	void DetachExistingColliders();
+
+	b2BodyId m_bodyId = b2_nullBodyId;
+	BodyType m_bodyType = BodyType::Dynamic;
+	float m_gravityScale = 1.0f;
+	float m_linearDamping = 0.0f;
+	float m_angularDamping = 0.0f;
+	bool m_fixedRotation = false;
+	bool m_allowSleep = true;
+	bool m_isBullet = false;
+};
