@@ -22,23 +22,22 @@
 			m_time.SetTargetFPS(m_config.targetFPS);
 			try
 			{
-				SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-			// --- SDL ---
-			if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-				THROW_ENGINE_EXCEPTION("Failed to initialize SDL: " + std::string(SDL_GetError()));
-			}
+				// --- SDL ---
+				if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+					THROW_ENGINE_EXCEPTION("Failed to initialize SDL: " + std::string(SDL_GetError()));
+				}
 
-			// --- Window / Renderer / Assets / Input ---
-			m_window = std::make_unique<Window>(config.windowConfig);
-			m_window->SetVisible(true);
-			m_renderer = std::make_unique<Renderer>(*m_window);
-			m_assetManager = std::make_unique<AssetManager>(*m_renderer);
-			Input::Initialize();
+				// --- Window / Renderer / Assets / Input ---
+				m_window = std::make_unique<Window>(config.windowConfig);
+				m_window->SetVisible(true);
+				m_renderer = std::make_unique<Renderer>(*m_window);
+				m_assetManager = std::make_unique<AssetManager>(*m_renderer);
+				Input::Initialize();
 
-			m_physicsWorld = std::make_unique<Physics2DWorld>();
-			m_physicsWorld->Initialize();
+				m_physicsWorld = std::make_unique<Physics2DWorld>();
+				m_physicsWorld->Initialize();
 
-			m_isInitialized = true;
+				m_isInitialized = true;
 			}
 			catch (const std::exception& e)
 			{
@@ -53,7 +52,7 @@
 		{
 			if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
 				THROW_ENGINE_EXCEPTION("Engine not initialized or no scene set");
-			m_time.SetTargetFPS(60);
+			
 			m_isRunning = true;
 
 			while (m_isRunning) {
@@ -66,7 +65,9 @@
 					Shutdown();
 					return;
 				}
-				LOG_INFO("FPS: " + std::to_string(m_time.FPS()));
+				if(Input::IsKeyPressed(Key::F9)){
+					m_time.ToggleShowFPS();
+				}
 
 				// 3. Fixed update
 				int steps = m_time.CalculateFixedSteps();

@@ -9,7 +9,7 @@ int main() {
 	startConfig.assetBasePath = "Dist/graphics/";
 	startConfig.windowConfig.title = "Xenon 2000";
 	startConfig.windowConfig.windowSize = Vector2i(800, 640);
-	engine.Initialize(Config{});
+	engine.Initialize(startConfig);
 	Scene mainScene("MainScene");
 	engine.SetScene(&mainScene);
 	engine.Run();

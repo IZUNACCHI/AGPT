@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <thread>
+#include "Logger.h"
 
 
 class Time {
@@ -22,6 +23,7 @@ public:
 		m_startTime = Clock::now();
 		m_lastTime = m_startTime;
 		m_now = m_startTime;
+		m_frameStartTime = m_startTime;
 
 		m_deltaTime = 0.0;
 		m_elapsedTime = 0.0;
@@ -31,13 +33,15 @@ public:
 		m_frameCount = 0;
 		m_fps = 0.0;
 		m_fpsTimer = 0.0;
+		m_showFPS = true;
 	}
 
 	void Tick() {
-		m_now = Clock::now();
+		m_frameStartTime = Clock::now();
+		m_now = m_frameStartTime;
 
-		std::chrono::duration<float> frameDelta = m_now - m_lastTime;
-		m_lastTime = m_now;
+		std::chrono::duration<float> frameDelta = m_frameStartTime - m_lastTime;
+		m_lastTime = m_frameStartTime;
 
 		m_deltaTime = frameDelta.count();
 
@@ -51,8 +55,15 @@ public:
 		// FPS calculation
 		m_frameCount++;
 		m_fpsTimer += m_deltaTime;
-
+		
 		if (m_fpsTimer >= 1.0) {
+			if (m_showFPS) {
+				LOG_INFO("----- FPS Report -----");
+				LOG_INFO("Frames: " + std::to_string(m_frameCount));
+				LOG_INFO("FPS Timer: " + std::to_string(m_fpsTimer));
+				LOG_INFO("FPS: " + std::to_string(m_fps));
+				LOG_INFO("----------------------");
+			}
 			m_fps = static_cast<float>(m_frameCount) / m_fpsTimer;
 			m_frameCount = 0;
 			m_fpsTimer = 0.0;
@@ -90,24 +101,32 @@ public:
 	void SetTargetFPS(float fps) {
 		m_targetFPS = fps;
 		m_targetFrameTime = (fps > 0.0f) ? (1.0f / fps) : 0.0f;
+		return;
 	}
 
 	void WaitForTargetFPS() {
-		if (m_targetFrameTime <= 0.0)
-			return;
+		if (m_targetFrameTime <= 0.0f) return;
 
-		auto frameEnd = Clock::now();
-		std::chrono::duration<float> frameTime = frameEnd - m_lastTime;
-
-		float remaining = m_targetFrameTime - frameTime.count();
-		if (remaining > 0.0) {
-			std::this_thread::sleep_for(
-				std::chrono::duration<float>(remaining)
+		const auto targetEnd =
+			m_frameStartTime + std::chrono::duration_cast<Clock::duration>(
+				std::chrono::duration<float>(m_targetFrameTime)
 			);
+
+		const auto now = Clock::now();
+		if (now < targetEnd) {
+			std::this_thread::sleep_until(targetEnd);
+			//LOG_WARN("Slept");
+			return;
 		}
+		//LOG_WARN("NotSlept");
 	}
 
+
 	float TargetFrameTime() const { return m_targetFrameTime; }
+
+	void ToggleShowFPS() { 
+		m_showFPS = !m_showFPS; 
+	}
 
 private:
 	Time() = default;
@@ -116,6 +135,7 @@ private:
 	TimePoint m_startTime{};
 	TimePoint m_lastTime{};
 	TimePoint m_now{};
+	TimePoint m_frameStartTime{};
 
 	// Times (seconds)
 	float m_deltaTime = 0.0f;
@@ -133,4 +153,6 @@ private:
 	float m_fps = 0.0f;
 	float m_fpsTimer = 0.0f;
 	uint32_t m_frameCount = 0;
+
+	bool m_showFPS = false;
 };
