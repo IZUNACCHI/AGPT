@@ -104,21 +104,37 @@ public:
 		return;
 	}
 
+	//--- Frame rate control ---
 	void WaitForTargetFPS() {
+		// No target FPS set
 		if (m_targetFrameTime <= 0.0f) return;
 
+		// Calculate target end time
 		const auto targetEnd =
 			m_frameStartTime + std::chrono::duration_cast<Clock::duration>(
 				std::chrono::duration<float>(m_targetFrameTime)
 			);
 
-		const auto now = Clock::now();
-		if (now < targetEnd) {
-			std::this_thread::sleep_until(targetEnd);
-			//LOG_WARN("Slept");
+		
+		auto now = Clock::now();
+		// Already past target time
+		if (now >= targetEnd) {
 			return;
 		}
-		//LOG_WARN("NotSlept");
+
+		// Sleep guard duration, to avoid oversleeping by OS scheduler
+		constexpr auto sleepGuard = std::chrono::milliseconds(5);
+
+		// Time remaining
+		auto remaining = targetEnd - now;
+
+		if (remaining > sleepGuard) {
+			std::this_thread::sleep_for(remaining - sleepGuard);
+		}
+
+		while (Clock::now() < targetEnd) {
+			std::this_thread::yield();
+		}
 	}
 
 
