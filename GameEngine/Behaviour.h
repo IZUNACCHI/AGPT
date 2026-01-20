@@ -1,21 +1,14 @@
 #pragma once
 
 #include "Component.h"
-#include <functional>
 
-
-// Base class for all scriptable behaviours
+// MonoBehaviour-like component. Lives in the Scene update list.
 class Behaviour : public Component {
 public:
+	explicit Behaviour(std::string name = "")
+		: Component(std::move(name)) {
+	}
 	virtual ~Behaviour() = default;
 
-	// These can be overridden by user scripts
-	virtual void Start() {}         // Called when GameObject starts 
-	virtual void OnDestroy() override {} // Override Component's OnDestroy
-
-protected:
-	// Helper methods for user scripts
-	void Destroy(float delay = 0.0f);
-	void Invoke(const std::function<void()>& method, float delay);
-	void CancelInvoke();
+	bool IsEligibleForUpdate() const;
 };

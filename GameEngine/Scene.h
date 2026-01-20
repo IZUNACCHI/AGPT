@@ -1,106 +1,101 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <string>
-#include <unordered_map>
-#include <queue>
-#include <array>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+#include "Behaviour.h"
+#include "Component.h"
 #include "GameObject.h"
-#include "Types.hpp"
 
+class Behaviour;
+class Component;
+class GameObject;
+
+// Scene owns all GameObjects and manages lifecycle timing + update passes.
 class Scene {
 public:
-	static const int MAX_LAYERS = 32;
+	explicit Scene(std::string name = "");
+	~Scene() = default;
 
-	Scene(const std::string& name);
-	virtual ~Scene();
+	GameObject* CreateGameObject(std::string name = "");
 
-	// Lifecycle methods
-	virtual void OnCreate() {}     // Called when scene is loaded
-	virtual void OnStart() {}      // Called when scene becomes active
-	virtual void OnUpdate(float deltaTime) {}
-	virtual void OnFixedUpdate(float fixedDeltaTime) {}
-	virtual void OnLateUpdate(float deltaTime) {}
-	virtual void OnRender() {}
-	virtual void OnDestroy() {}    // Called before scene is unloaded
+	template<typename T, typename... Args>
+	T* AddComponent(GameObject& owner, Args&&... args);
 
-	// GameObject management
-	std::shared_ptr<GameObject> CreateGameObject(const std::string& name = "GameObject");
-	std::shared_ptr<GameObject> CreateGameObject(const std::string& name, Transform* parent);
+	void Destroy(GameObject* object);
 
-	void DestroyGameObject(std::shared_ptr<GameObject> obj);
-	void DestroyGameObjectImmediate(std::shared_ptr<GameObject> obj);
+	// Frame flow:
+	//   StartFrame() -> FixedStep() (looped externally) -> Update() -> LateUpdate() -> PreRenderFlush().
+	void StartFrame();
+	void FixedStep(float fixedDt);
+	void Update(float dt);
+	void LateUpdate(float dt);
+	void PreRenderFlush();
 
-	// Scene operations
-	void Start();        // Activate the scene
-	void Update(float deltaTime);
-	void FixedUpdate(float fixedDeltaTime);
-	void LateUpdate(float deltaTime);
-	void Render();
-	void Unload();       // Mark scene for unloading
-	void Clear();        // Clear all game objects
-
-	// Getters
 	const std::string& GetName() const { return m_name; }
-	bool IsActive() const { return m_isActive; }
-	bool IsMarkedForUnload() const { return m_markedForUnload; }
 
-	// GameObject access
-	std::vector<std::shared_ptr<GameObject>>& GetRootGameObjects() { return m_rootGameObjects; }
-	const std::vector<std::shared_ptr<GameObject>>& GetRootGameObjects() const { return m_rootGameObjects; }
-
-	// Find game objects
-	std::shared_ptr<GameObject> FindGameObjectByName(const std::string& name);
-	std::vector<std::shared_ptr<GameObject>> FindGameObjectsByTag(const std::string& tag);
-	std::shared_ptr<GameObject> FindGameObjectByID(uint32_t id);
-
-	// Layer management (similar to Unity's layers)
-	void SetLayerName(int layerIndex, const std::string& layerName);
-	const std::string& GetLayerName(int layerIndex) const;
-	int GetLayerIndex(const std::string& layerName) const;
-
-	// Render order based on layers
-	void SetRenderOrderForLayer(int layerIndex, int order);
-	int GetRenderOrderForLayer(int layerIndex) const;
+	// Hooks reserved for potential physics integration.
+	void RegisterPhysicsComponent(Component*) {}
+	void UnregisterPhysicsComponent(Component*) {}
 
 private:
-	void ProcessDestructionQueue();
-	void AddToUpdateList(std::shared_ptr<GameObject> obj);
-	void AddToRenderList(std::shared_ptr<Component> component);
-	void RemoveFromUpdateList(std::shared_ptr<GameObject> obj);
-	void RemoveFromRenderList(std::shared_ptr<Component> component);
-
-	friend class GameObject;
 	friend class Component;
-	friend class Behaviour;
-	friend class RenderableComponent;
+	friend class GameObject;
+
+	void QueueBehaviourAdd(Behaviour* behaviour);
+	void QueueBehaviourRemove(Behaviour* behaviour);
+	void DestroyHierarchy(GameObject* object, std::unordered_set<GameObject*>& visited);
+	void RemoveFromUpdateList(const std::unordered_set<Behaviour*>& removeSet);
+	void EraseGameObject(GameObject* object);
 
 	std::string m_name;
-	bool m_isActive = false;
-	bool m_markedForUnload = false;
 
-	// GameObject management
-	std::vector<std::shared_ptr<GameObject>> m_rootGameObjects;
-	std::vector<std::shared_ptr<GameObject>> m_allGameObjects;
-	std::unordered_map<uint32_t, std::shared_ptr<GameObject>> m_gameObjectByID;
+	std::vector<std::unique_ptr<GameObject>> m_gameObjects;
 
-	// Update lists (separated for efficiency)
-	std::vector<std::shared_ptr<GameObject>> m_activeGameObjects;      // For Update
-	std::vector<std::shared_ptr<GameObject>> m_fixedUpdateObjects;     // For FixedUpdate
-	std::vector<std::shared_ptr<GameObject>> m_lateUpdateObjects;      // For LateUpdate
+	// Single update list for Fixed/Update/Late.
+	std::vector<Behaviour*> m_updateList;
+	std::unordered_set<Behaviour*> m_updateSet;
 
-	// Render list (components with Draw method)
-	std::vector<std::shared_ptr<Component>> m_renderComponents;
+	// Pending additions/removals for list safety.
+	std::vector<Behaviour*> m_pendingAdd;
+	std::unordered_set<Behaviour*> m_pendingAddSet;
 
-	// Destruction queue
-	std::vector<std::shared_ptr<GameObject>> m_destructionQueue;
+	std::vector<Behaviour*> m_pendingRemove;
+	std::unordered_set<Behaviour*> m_pendingRemoveSet;
 
-	// Layer management (32 layers like Unity)
-	std::array<std::string, MAX_LAYERS> m_layerNames;
-	std::array<int, MAX_LAYERS> m_layerRenderOrders;
-	std::unordered_map<std::string, int> m_layerNameToIndex;
-
-	// Object counter for unique IDs
-	static uint32_t s_nextGameObjectID;
+	std::vector<GameObject*> m_pendingDestroy;
+	std::unordered_set<GameObject*> m_pendingDestroySet;
 };
+
+
+template<typename T, typename... Args>
+T* Scene::AddComponent(GameObject& owner, Args&&... args) {
+	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+
+	auto component = std::make_unique<T>(std::forward<Args>(args)...);
+	T* raw = component.get();
+	owner.AddComponentInternal(std::move(component));
+
+	// Awake/Init is immediate on instantiation.
+	raw->CallAwakeInit();
+	// OnEnable is immediate if enabled + active-in-hierarchy.
+	raw->OnActiveInHierarchyChanged(owner.IsActiveInHierarchy());
+	// OnCreate is immediate in the same frame as instantiation.
+	raw->CallOnCreate();
+
+	if (auto* behaviour = dynamic_cast<Behaviour*>(raw)) {
+		if (behaviour->IsEligibleForUpdate()) {
+			QueueBehaviourAdd(behaviour);
+		}
+	}
+
+	return raw;
+}
+
+template<typename T, typename... Args>
+T* GameObject::AddComponent(Args&&... args) {
+	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+	return m_scene ? m_scene->AddComponent<T>(*this, std::forward<Args>(args)...) : nullptr;
+}

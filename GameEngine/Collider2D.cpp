@@ -3,6 +3,7 @@
 #include "Rigidbody2D.h"
 #include "SleeplessEngine.h"
 #include "Transform.h"
+#include "GameObject.h"
 #include <cmath>
 
 void Collider2D::OnCreate() {
@@ -55,7 +56,7 @@ void Collider2D::Draw() {
 	}
 
 	// Require a valid renderer before drawing.
-	auto* renderer = RenderableComponent::GetRenderer();
+	auto* renderer = SleeplessEngine::GetInstance().GetRenderer();
 	if (!renderer || !renderer->IsValid()) {
 		return;
 	}

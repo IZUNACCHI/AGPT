@@ -41,11 +41,12 @@ private:
 	SleeplessEngine() = default;
 
 	// Core loop phases
+	void StartFrame();
 	void Update(float deltaTime);
 	void FixedUpdate(float fixedDeltaTime);
 	void LateUpdate(float deltaTime);
 	void Render();
-	void DestroyPending();
+	void PreRenderFlush();
 
 private:
 	bool m_isInitialized = false;

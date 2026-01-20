@@ -1,46 +1,53 @@
 #pragma once
 
-#include <memory>
-#include "Types.hpp"
-
+#include <string>
+#include "Object.h"
 
 class GameObject;
 class Scene;
 
-class Component : public std::enable_shared_from_this<Component> {
+// Base class for all components attached to a GameObject.
+class Component : public Object {
 public:
+	explicit Component(std::string name = "");
 	virtual ~Component() = default;
 
-	// Lifecycle methods
-	virtual void OnCreate() {}      // Called when component is added to GameObject
-	virtual void OnDestroy() {}     // Called when component is being destroyed
-	virtual void OnEnable() {}      // Called when GameObject becomes active
-	virtual void OnDisable() {}     // Called when GameObject becomes inactive
+	// Lifecycle callbacks (default no-op).
+	virtual void Awake() {}
+	virtual void Init() {}
+	virtual void OnEnable() {}
+	virtual void OnCreate() {}
+	virtual void FixedUpdate(float) {}
+	virtual void Update(float) {}
+	virtual void LateUpdate(float) {}
+	virtual void OnDisable() {}
+	virtual void OnDestroy() {}
 
-	virtual void Update(float deltaTime) {}
-	virtual void FixedUpdate(float fixedDeltaTime) {}
-	virtual void LateUpdate(float deltaTime) {}
-
-	virtual void Draw() {}          // For renderable components
-
-	// Component state
-	bool IsEnabled() const { return m_enabled; }
 	void SetEnabled(bool enabled);
+	bool IsEnabled() const { return m_enabled; }
 
-	// Getters
 	GameObject* GetGameObject() const { return m_gameObject; }
 	Scene* GetScene() const;
 
-	// Component comparison
-	template<typename T>
-	bool IsType() const { return dynamic_cast<const T*>(this) != nullptr; }
+	bool WasEnabledInHierarchy() const { return m_effectivelyEnabled; }
 
 protected:
-	GameObject* m_gameObject = nullptr;
+	bool IsEffectivelyEnabled() const;
 
 private:
 	friend class GameObject;
 	friend class Scene;
 
+	void SetGameObject(GameObject* owner) { m_gameObject = owner; }
+	void CallAwakeInit();
+	void CallOnCreate();
+	void OnActiveInHierarchyChanged(bool nowActive);
+	void MarkPendingDestroyInternal();
+
 	bool m_enabled = true;
+	bool m_effectivelyEnabled = false;
+	bool m_awakeCalled = false;
+	bool m_createCalled = false;
+	bool m_destroyCalled = false;
+	GameObject* m_gameObject = nullptr;
 };
