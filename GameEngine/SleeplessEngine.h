@@ -45,16 +45,13 @@ private:
 	void FixedUpdate(float fixedDeltaTime);
 	void LateUpdate(float deltaTime);
 	void Render();
-	void GarbageCollect();
+	void DestroyPending();
 
 private:
 	bool m_isInitialized = false;
 	bool m_isRunning = false;
 
 	Config m_config{};
-
-	// --- Time system (defined here) ---
-	Time& m_time = Time::Instance();
 
 	// --- Engine systems ---
 	std::unique_ptr<Window> m_window;

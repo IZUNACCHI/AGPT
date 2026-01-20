@@ -16,10 +16,10 @@
 			m_config = config;
 
 			// --- Time ---
-			m_time.Initialize();
-			m_time.SetFixedDeltaTime(m_config.fixedDeltaTime);
-			m_time.SetMaxDeltaTime(m_config.maximumDeltaTime);
-			m_time.SetTargetFPS(m_config.targetFPS);
+			Time::Initialize();
+			Time::SetFixedDeltaTime(m_config.fixedDeltaTime);
+			Time::SetMaxDeltaTime(m_config.maximumDeltaTime);
+			Time::SetTargetFPS(m_config.targetFPS);
 			try
 			{
 				// --- SDL ---
@@ -57,7 +57,7 @@
 
 			while (m_isRunning) {
 				// 1. Time
-				m_time.Tick();
+				Time::Tick();
 
 				// 2. Input
 				Input::PollEvents();
@@ -66,28 +66,28 @@
 					return;
 				}
 				if(Input::IsKeyPressed(Key::F9)){
-					m_time.ToggleShowFPS();
+					Time::ToggleShowFPS();
 				}
 
 				// 3. Fixed update
-				int steps = m_time.CalculateFixedSteps();
+				int steps = Time::CalculateFixedSteps();
 				for (int i = 0; i < steps; ++i) {
-					FixedUpdate(m_time.FixedDeltaTime());
-					m_time.ConsumeFixedStep();
+					FixedUpdate(Time::FixedDeltaTime());
+					Time::ConsumeFixedStep();
 				}
 
 				// 4. Variable update
-				Update(m_time.DeltaTime());
+				Update(Time::DeltaTime());
 
 				// 5. Late update
-				LateUpdate(m_time.DeltaTime());
+				LateUpdate(Time::DeltaTime());
 				// 6. Garbage collection
-				GarbageCollect();
+				DestroyPending();
 
 				// 7. Render
 				Render();
 
-				m_time.WaitForTargetFPS();
+				Time::WaitForTargetFPS();
 				
 			}
 		}
@@ -144,7 +144,7 @@
 		m_renderer->Present();
 	}
 
-	void SleeplessEngine::GarbageCollect() {
+	void SleeplessEngine::DestroyPending() {
 		//Destroy gameobjects marked for deletion
 	}
 
@@ -162,7 +162,6 @@
 		m_assetManager.reset();
 		m_renderer.reset();
 		m_window.reset();
-
 		SDL_Quit();
 
 		m_isInitialized = false;

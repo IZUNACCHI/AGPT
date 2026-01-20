@@ -18,104 +18,110 @@ public:
 		return instance;
 	}
 
-	// --- Core control ---
-	void Initialize() {
-		m_startTime = Clock::now();
-		m_lastTime = m_startTime;
-		m_now = m_startTime;
-		m_frameStartTime = m_startTime;
+	static void Initialize() {
+		Time& instance = Instance();
+		instance.m_startTime = Clock::now();
+		instance.m_lastTime = instance.m_startTime;
+		instance.m_now = instance.m_startTime;
+		instance.m_frameStartTime = instance.m_startTime;
 
-		m_deltaTime = 0.0;
-		m_elapsedTime = 0.0;
-		m_elapsedFixedTime = 0.0;
-		m_accumulator = 0.0;
+		instance.m_deltaTime = 0.0f;
+		instance.m_elapsedTime = 0.0f;
+		instance.m_elapsedFixedTime = 0.0f;
+		instance.m_accumulator = 0.0f;
 
-		m_frameCount = 0;
-		m_fps = 0.0;
-		m_fpsTimer = 0.0;
-		m_showFPS = true;
+		instance.m_frameCount = 0;
+		instance.m_fps = 0.0f;
+		instance.m_fpsTimer = 0.0f;
+		instance.m_showFPS = true;
 	}
 
-	void Tick() {
-		m_frameStartTime = Clock::now();
-		m_now = m_frameStartTime;
+	static void Tick() {
+		Time& instance = Instance();
+		instance.m_frameStartTime = Clock::now();
+		instance.m_now = instance.m_frameStartTime;
 
-		std::chrono::duration<float> frameDelta = m_frameStartTime - m_lastTime;
-		m_lastTime = m_frameStartTime;
+		std::chrono::duration<float> frameDelta = instance.m_frameStartTime - instance.m_lastTime;
+		instance.m_lastTime = instance.m_frameStartTime;
 
-		m_deltaTime = frameDelta.count();
+		instance.m_deltaTime = frameDelta.count();
 
 		// Clamp delta
-		if (m_deltaTime > m_maxDeltaTime)
-			m_deltaTime = m_maxDeltaTime;
+		if (instance.m_deltaTime > instance.m_maxDeltaTime)
+			instance.m_deltaTime = instance.m_maxDeltaTime;
 
-		m_elapsedTime += m_deltaTime;
-		m_accumulator += m_deltaTime;
+		instance.m_elapsedTime += instance.m_deltaTime;
+		instance.m_accumulator += instance.m_deltaTime;
 
 		// FPS calculation
-		m_frameCount++;
-		m_fpsTimer += m_deltaTime;
-		
-		if (m_fpsTimer >= 1.0) {
-			if (m_showFPS) {
+		instance.m_frameCount++;
+		instance.m_fpsTimer += instance.m_deltaTime;
+
+		if (instance.m_fpsTimer >= 1.0f) {
+			if (instance.m_showFPS) {
 				LOG_INFO("----- FPS Report -----");
-				LOG_INFO("Frames: " + std::to_string(m_frameCount));
-				LOG_INFO("FPS Timer: " + std::to_string(m_fpsTimer));
-				LOG_INFO("FPS: " + std::to_string(m_fps));
+				LOG_INFO("Frames: " + std::to_string(instance.m_frameCount));
+				LOG_INFO("FPS Timer: " + std::to_string(instance.m_fpsTimer));
+				LOG_INFO("FPS: " + std::to_string(instance.m_fps));
 				LOG_INFO("----------------------");
 			}
-			m_fps = static_cast<float>(m_frameCount) / m_fpsTimer;
-			m_frameCount = 0;
-			m_fpsTimer = 0.0;
+			instance.m_fps = static_cast<float>(instance.m_frameCount) / instance.m_fpsTimer;
+			instance.m_frameCount = 0;
+			instance.m_fpsTimer = 0.0f;
 		}
 	}
 
+
 	// --- Fixed timestep ---
-	int CalculateFixedSteps() const {
-		return static_cast<int>(m_accumulator / m_fixedDeltaTime);
+	static int CalculateFixedSteps() {
+		const Time& instance = Instance();
+		return static_cast<int>(instance.m_accumulator / instance.m_fixedDeltaTime);
 	}
 
-	void ConsumeFixedStep() {
-		m_accumulator -= m_fixedDeltaTime;
-		m_elapsedFixedTime += m_fixedDeltaTime;
+	static void ConsumeFixedStep() {
+		Time& instance = Instance();
+		instance.m_accumulator -= instance.m_fixedDeltaTime;
+		instance.m_elapsedFixedTime += instance.m_fixedDeltaTime;
 	}
 
 	// --- Getters ---
-	float Now() const {
-		return std::chrono::duration<float>(m_now - m_startTime).count();
+	static float Now() {
+		const Time& instance = Instance();
+		return std::chrono::duration<float>(instance.m_now - instance.m_startTime).count();
 	}
 
-	float DeltaTime() const { return m_deltaTime; }
-	float FixedDeltaTime() const { return m_fixedDeltaTime; }
-	float ElapsedTime() const { return m_elapsedTime; }
-	float ElapsedFixedTime() const { return m_elapsedFixedTime; }
-	float Accumulator() const { return m_accumulator; }
+	static float DeltaTime() { return Instance().m_deltaTime; }
+	static float FixedDeltaTime() { return Instance().m_fixedDeltaTime; }
+	static float ElapsedTime() { return Instance().m_elapsedTime; }
+	static float ElapsedFixedTime() { return Instance().m_elapsedFixedTime; }
+	static float Accumulator() { return Instance().m_accumulator; }
 
-	float FPS() const { return m_fps; }
-	float TargetFPS() const { return m_targetFPS; }
+	static float FPS() { return Instance().m_fps; }
+	static float TargetFPS() { return Instance().m_targetFPS; }
 
 	// --- Setters ---
-	void SetFixedDeltaTime(float dt) { m_fixedDeltaTime = dt; }
-	void SetMaxDeltaTime(float dt) { m_maxDeltaTime = dt; }
+	static void SetFixedDeltaTime(float dt) { Instance().m_fixedDeltaTime = dt; }
+	static void SetMaxDeltaTime(float dt) { Instance().m_maxDeltaTime = dt; }
 
-	void SetTargetFPS(float fps) {
-		m_targetFPS = fps;
-		m_targetFrameTime = (fps > 0.0f) ? (1.0f / fps) : 0.0f;
+	static void SetTargetFPS(float fps) {
+		Time& instance = Instance();
+		instance.m_targetFPS = fps;
+		instance.m_targetFrameTime = (fps > 0.0f) ? (1.0f / fps) : 0.0f;
 		return;
 	}
 
 	//--- Frame rate control ---
-	void WaitForTargetFPS() {
+	static void WaitForTargetFPS() {
+		Time& instance = Instance();
 		// No target FPS set
-		if (m_targetFrameTime <= 0.0f) return;
+		if (instance.m_targetFrameTime <= 0.0f) return;
 
 		// Calculate target end time
 		const auto targetEnd =
-			m_frameStartTime + std::chrono::duration_cast<Clock::duration>(
-				std::chrono::duration<float>(m_targetFrameTime)
+			instance.m_frameStartTime + std::chrono::duration_cast<Clock::duration>(
+				std::chrono::duration<float>(instance.m_targetFrameTime)
 			);
 
-		
 		auto now = Clock::now();
 		// Already past target time
 		if (now >= targetEnd) {
@@ -138,10 +144,11 @@ public:
 	}
 
 
-	float TargetFrameTime() const { return m_targetFrameTime; }
+	static float TargetFrameTime() { return Instance().m_targetFrameTime; }
 
-	void ToggleShowFPS() { 
-		m_showFPS = !m_showFPS; 
+	static void ToggleShowFPS() {
+		Time& instance = Instance();
+		instance.m_showFPS = !instance.m_showFPS;
 	}
 
 private:
