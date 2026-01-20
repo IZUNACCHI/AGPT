@@ -53,7 +53,7 @@
 		{
 			if (!m_isInitialized || !m_currentScene)  // Still need a scene to run
 				THROW_ENGINE_EXCEPTION("Engine not initialized or no scene set");
-
+			m_time.SetTargetFPS(60);
 			m_isRunning = true;
 
 			while (m_isRunning) {
@@ -80,12 +80,14 @@
 
 				// 5. Late update
 				LateUpdate(m_time.DeltaTime());
+				// 6. Garbage collection
+				GarbageCollect();
 
-				// 6. Render
+				// 7. Render
 				Render();
 
-				// 7. Cleanup
-				GarbageCollect();
+				m_time.WaitForTargetFPS();
+				
 			}
 		}
 		catch (const std::exception& e)
@@ -113,7 +115,7 @@
 		m_physicsWorld->Reset(gravity);
 	}
 
-	void SleeplessEngine::Update(float deltaTime) {
+	inline void SleeplessEngine::Update(float deltaTime) {
 		if (m_currentScene && m_currentScene->IsActive())
 			m_currentScene->Update(deltaTime);
 	}
@@ -142,7 +144,7 @@
 	}
 
 	void SleeplessEngine::GarbageCollect() {
-		// Scene-owned destruction queues
+		//Destroy gameobjects marked for deletion
 	}
 
 	void SleeplessEngine::Shutdown() {
