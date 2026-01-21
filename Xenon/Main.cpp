@@ -1,5 +1,7 @@
+#pragma once
 #include <iostream>
-#include "../GameEngine/SleeplessEngine.h"
+#include "../GameEngine/GameEngine.h"
+#include "Level1.hpp"
 
 
 int main() {
@@ -9,8 +11,8 @@ int main() {
 	startConfig.windowConfig.title = "Xenon 2000";
 	startConfig.windowConfig.windowSize = Vector2i(800, 640);
 	engine.Initialize(startConfig);
-	Scene mainScene("MainScene");
-	engine.SetScene(&mainScene);
+	Level1 level1;
+	engine.SetScene(&level1);
 	engine.Run();
 	return 0;
 

@@ -1,4 +1,5 @@
 #include "SpriteRenderer.h"
+#include "GameObject.h"
 #include "Logger.h"
 #include "Object.h"
 #include "Renderer.h"

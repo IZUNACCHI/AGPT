@@ -1,6 +1,8 @@
 #include "SleeplessEngine.h"
 #include "Object.h"
-#include "SpriteRenderer.h"
+#include "Logger.h"
+#include "Time.hpp"
+#include "Input.h"
 #include <SDL3/SDL.h>
 
 SleeplessEngine& SleeplessEngine::GetInstance() {

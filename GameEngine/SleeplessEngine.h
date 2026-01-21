@@ -5,10 +5,11 @@
 #include "Renderer.h"
 #include "AssetManager.h"
 #include <memory>
-#include "Time.hpp"
 #include <string>
-#include "Input.h"
 #include "Physics2D.h"
+
+#include "SpriteRenderer.h"
+
 
 
 
@@ -34,8 +35,11 @@ public:
 	void SetScene(Scene* scene);
 	void ResetPhysicsWorld(const Vector2f& gravity = Vector2f(0.0f, -9.81f));
 	Physics2DWorld* GetPhysicsWorld() const { return m_physicsWorld.get(); }
-	// Expose renderer for debug drawing from renderable components.
+
+	// Expose renderer
 	Renderer* GetRenderer() const { return m_renderer.get(); }
+	//Ex+pse window 
+	Window* GetWindow() const { return m_window.get(); }
 
 private:
 	SleeplessEngine() = default;
