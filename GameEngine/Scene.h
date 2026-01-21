@@ -1,106 +1,101 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <string>
 #include <unordered_map>
-#include <queue>
-#include <array>
+#include <vector>
 #include "GameObject.h"
-#include "Types.hpp"
 
+class MonoBehaviour;
+
+/// Container for GameObjects and lifecycle processing.
 class Scene {
 public:
-	static const int MAX_LAYERS = 32;
-
+	/// Creates a Scene with the given name.
 	Scene(const std::string& name);
+	/// Destroys the Scene.
 	virtual ~Scene();
 
-	// Lifecycle methods
-	virtual void OnCreate() {}     // Called when scene is loaded
-	virtual void OnStart() {}      // Called when scene becomes active
-	virtual void OnUpdate(float deltaTime) {}
-	virtual void OnFixedUpdate(float fixedDeltaTime) {}
-	virtual void OnLateUpdate(float deltaTime) {}
+	/// Called when the Scene is created.
+	virtual void OnCreate() {}
+	/// Called when the Scene starts.
+	virtual void OnStart() {}
+	/// Called once per frame.
+	virtual void OnUpdate(float) {}
+	/// Called on a fixed timestep.
+	virtual void OnFixedUpdate(float) {}
+	/// Called after Update.
+	virtual void OnLateUpdate(float) {}
+	/// Called during render.
 	virtual void OnRender() {}
-	virtual void OnDestroy() {}    // Called before scene is unloaded
+	/// Called when the Scene is destroyed.
+	virtual void OnDestroy() {}
 
-	// GameObject management
+	/// Creates and adopts a new GameObject.
 	std::shared_ptr<GameObject> CreateGameObject(const std::string& name = "GameObject");
+	/// Creates a new GameObject with a parent Transform.
 	std::shared_ptr<GameObject> CreateGameObject(const std::string& name, Transform* parent);
 
-	void DestroyGameObject(std::shared_ptr<GameObject> obj);
-	void DestroyGameObjectImmediate(std::shared_ptr<GameObject> obj);
-
-	// Scene operations
-	void Start();        // Activate the scene
+	/// Starts the Scene.
+	void Start();
+	/// Updates the Scene.
 	void Update(float deltaTime);
+	/// Updates the Scene on a fixed timestep.
 	void FixedUpdate(float fixedDeltaTime);
+	/// Updates the Scene after Update.
 	void LateUpdate(float deltaTime);
+	/// Renders the Scene.
 	void Render();
-	void Unload();       // Mark scene for unloading
-	void Clear();        // Clear all game objects
+	/// Unloads the Scene and destroys objects.
+	void Unload();
 
-	// Getters
+	/// Returns the Scene name.
 	const std::string& GetName() const { return m_name; }
+	/// Returns whether the Scene is active.
 	bool IsActive() const { return m_isActive; }
-	bool IsMarkedForUnload() const { return m_markedForUnload; }
 
-	// GameObject access
+	/// Returns the root GameObjects for editing.
 	std::vector<std::shared_ptr<GameObject>>& GetRootGameObjects() { return m_rootGameObjects; }
+	/// Returns the root GameObjects for reading.
 	const std::vector<std::shared_ptr<GameObject>>& GetRootGameObjects() const { return m_rootGameObjects; }
 
-	// Find game objects
-	std::shared_ptr<GameObject> FindGameObjectByName(const std::string& name);
-	std::vector<std::shared_ptr<GameObject>> FindGameObjectsByTag(const std::string& tag);
-	std::shared_ptr<GameObject> FindGameObjectByID(uint32_t id);
-
-	// Layer management (similar to Unity's layers)
-	void SetLayerName(int layerIndex, const std::string& layerName);
-	const std::string& GetLayerName(int layerIndex) const;
-	int GetLayerIndex(const std::string& layerName) const;
-
-	// Render order based on layers
-	void SetRenderOrderForLayer(int layerIndex, int order);
-	int GetRenderOrderForLayer(int layerIndex) const;
+	/// Finds a GameObject by name or path across scenes.
+	static std::shared_ptr<GameObject> FindGameObject(const std::string& nameOrPath);
 
 private:
-	void ProcessDestructionQueue();
-	void AddToUpdateList(std::shared_ptr<GameObject> obj);
-	void AddToRenderList(std::shared_ptr<Component> component);
-	void RemoveFromUpdateList(std::shared_ptr<GameObject> obj);
-	void RemoveFromRenderList(std::shared_ptr<Component> component);
-
+	/// Allows GameObject to call into Scene internals.
 	friend class GameObject;
-	friend class Component;
-	friend class Behaviour;
-	friend class RenderableComponent;
+	/// Allows MonoBehaviour to queue lifecycle work.
+	friend class MonoBehaviour;
 
+	/// Queues a MonoBehaviour for lifecycle processing.
+	void QueueLifecycle(MonoBehaviour* behaviour);
+	/// Processes queued lifecycle work.
+	void ProcessLifecycleQueue();
+	/// Adopts a new GameObject into the Scene.
+	void AdoptGameObject(const std::shared_ptr<GameObject>& obj);
+	/// Removes a GameObject from the Scene.
+	void RemoveGameObject(GameObject* obj);
+	/// Updates root object tracking for hierarchy changes.
+	void UpdateRootGameObject(GameObject* obj);
+
+	/// Scene name.
 	std::string m_name;
+	/// Whether the Scene is active.
 	bool m_isActive = false;
+	/// Whether the Scene is marked for unload.
 	bool m_markedForUnload = false;
 
-	// GameObject management
+	/// Root GameObjects for the Scene.
 	std::vector<std::shared_ptr<GameObject>> m_rootGameObjects;
+	/// All GameObjects in the Scene.
 	std::vector<std::shared_ptr<GameObject>> m_allGameObjects;
-	std::unordered_map<uint32_t, std::shared_ptr<GameObject>> m_gameObjectByID;
+	/// Lookup map for GameObjects by instance ID.
+	std::unordered_map<uint32_t, std::shared_ptr<GameObject>> m_gameObjectById;
 
-	// Update lists (separated for efficiency)
-	std::vector<std::shared_ptr<GameObject>> m_activeGameObjects;      // For Update
-	std::vector<std::shared_ptr<GameObject>> m_fixedUpdateObjects;     // For FixedUpdate
-	std::vector<std::shared_ptr<GameObject>> m_lateUpdateObjects;      // For LateUpdate
+	/// Pending lifecycle queue.
+	std::vector<MonoBehaviour*> m_pendingLifecycle;
 
-	// Render list (components with Draw method)
-	std::vector<std::shared_ptr<Component>> m_renderComponents;
-
-	// Destruction queue
-	std::vector<std::shared_ptr<GameObject>> m_destructionQueue;
-
-	// Layer management (32 layers like Unity)
-	std::array<std::string, MAX_LAYERS> m_layerNames;
-	std::array<int, MAX_LAYERS> m_layerRenderOrders;
-	std::unordered_map<std::string, int> m_layerNameToIndex;
-
-	// Object counter for unique IDs
-	static uint32_t s_nextGameObjectID;
+	/// Registry of all active Scenes.
+	static std::vector<Scene*> s_scenes;
 };

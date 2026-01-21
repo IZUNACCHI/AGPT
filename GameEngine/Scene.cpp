@@ -1,335 +1,282 @@
 #include "Scene.h"
-#include "GameObject.h"
-#include "Component.h"
-#include "Behaviour.h"
-#include "RenderableComponent.h"
-#include "Logger.h"
+#include "MonoBehaviour.h"
+#include "Time.hpp"
 #include <algorithm>
 
+std::vector<Scene*> Scene::s_scenes;
 
-	uint32_t Scene::s_nextGameObjectID = 1;
+Scene::Scene(const std::string& name)
+	: m_name(name) {
+	s_scenes.push_back(this);
+}
 
-	Scene::Scene(const std::string& name) : m_name(name) {
-		// Initialize default layer names (similar to Unity)
-		m_layerNames = {
-			"Default", "TransparentFX", "Ignore Raycast", "", "",
-			"Water", "UI", "", "", "",
-			"", "", "", "", "", "",
-			"", "", "", "", "",
-			"", "", "", "", "",
-			"", "", "", "", "", ""
-		};
+Scene::~Scene() {
+	Unload();
+	s_scenes.erase(std::remove(s_scenes.begin(), s_scenes.end(), this), s_scenes.end());
+}
 
-		// Initialize render orders (lower = rendered first)
-		for (int i = 0; i < MAX_LAYERS; ++i) {
-			m_layerRenderOrders[i] = i;
+std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name) {
+	auto obj = std::make_shared<GameObject>(name);
+	Object::RegisterObject(obj);
+	AdoptGameObject(obj);
+	return obj;
+}
+
+std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name, Transform* parent) {
+	auto obj = CreateGameObject(name);
+	if (parent) {
+		obj->GetTransform()->SetParent(parent);
+	}
+	return obj;
+}
+
+void Scene::Start() {
+	if (m_isActive) {
+		return;
+	}
+	m_isActive = true;
+	OnStart();
+	for (const auto& obj : m_allGameObjects) {
+		obj->UpdateActiveInHierarchy();
+		for (const auto& component : obj->GetComponents<MonoBehaviour>()) {
+			QueueLifecycle(component.get());
 		}
+	}
+	ProcessLifecycleQueue();
+}
 
-		// Build layer name to index map
-		for (int i = 0; i < MAX_LAYERS; ++i) {
-			if (!m_layerNames[i].empty()) {
-				m_layerNameToIndex[m_layerNames[i]] = i;
+void Scene::Update(float deltaTime) {
+	if (!m_isActive) {
+		return;
+	}
+
+	ProcessLifecycleQueue();
+	OnUpdate(deltaTime);
+
+	const float now = Time::Now();
+	for (const auto& obj : m_allGameObjects) {
+		if (!obj->IsActiveInHierarchy()) {
+			continue;
+		}
+		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
+			if (behaviour->IsActiveAndEnabled()) {
+				behaviour->TickInvokes(now);
+				behaviour->Update(deltaTime);
 			}
 		}
 	}
 
-	Scene::~Scene() {
-		Unload();
+	ProcessLifecycleQueue();
+}
+
+void Scene::FixedUpdate(float fixedDeltaTime) {
+	if (!m_isActive) {
+		return;
 	}
-
-	void Scene::Start() {
-		if (m_isActive) return;
-
-		m_isActive = true;
-		OnStart();
-
-		// Call Start on all game objects
-		for (auto& obj : m_allGameObjects) {
-			if (obj->IsActive()) {
-				obj->Start();
+	OnFixedUpdate(fixedDeltaTime);
+	for (const auto& obj : m_allGameObjects) {
+		if (!obj->IsActiveInHierarchy()) {
+			continue;
+		}
+		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
+			if (behaviour->IsActiveAndEnabled()) {
+				behaviour->FixedUpdate(fixedDeltaTime);
 			}
 		}
 	}
+}
 
-	void Scene::Update(float deltaTime) {
-		if (!m_isActive) return;
-
-		OnUpdate(deltaTime);
-
-		// Update all active game objects
-		for (auto& obj : m_activeGameObjects) {
-			if (obj->IsActive()) {
-				obj->Update(deltaTime);
+void Scene::LateUpdate(float deltaTime) {
+	if (!m_isActive) {
+		return;
+	}
+	OnLateUpdate(deltaTime);
+	for (const auto& obj : m_allGameObjects) {
+		if (!obj->IsActiveInHierarchy()) {
+			continue;
+		}
+		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
+			if (behaviour->IsActiveAndEnabled()) {
+				behaviour->LateUpdate(deltaTime);
 			}
 		}
 	}
+}
 
-	void Scene::FixedUpdate(float fixedDeltaTime) {
-		if (!m_isActive) return;
+void Scene::Render() {
+	if (!m_isActive) {
+		return;
+	}
+	OnRender();
+}
 
-		OnFixedUpdate(fixedDeltaTime);
+void Scene::Unload() {
+	if (m_markedForUnload) {
+		return;
+	}
+	m_markedForUnload = true;
+	m_isActive = false;
+	OnDestroy();
 
-		// FixedUpdate all relevant game objects
-		for (auto& obj : m_fixedUpdateObjects) {
-			if (obj->IsActive()) {
-				obj->FixedUpdate(fixedDeltaTime);
-			}
-		}
+	for (const auto& obj : m_allGameObjects) {
+		Object::Destroy(obj);
+	}
+}
+
+std::shared_ptr<GameObject> Scene::FindGameObject(const std::string& nameOrPath) {
+	if (nameOrPath.empty()) {
+		return nullptr;
 	}
 
-	void Scene::LateUpdate(float deltaTime) {
-		if (!m_isActive) return;
-
-		OnLateUpdate(deltaTime);
-
-		// LateUpdate all relevant game objects
-		for (auto& obj : m_lateUpdateObjects) {
-			if (obj->IsActive()) {
-				obj->LateUpdate(deltaTime);
-			}
+	for (const auto* scene : s_scenes) {
+		if (!scene) {
+			continue;
 		}
-	}
-
-	void Scene::Render() {
-		if (!m_isActive) return;
-
-		OnRender();
-
-		// Sort render components by layer order
-		std::sort(m_renderComponents.begin(), m_renderComponents.end(),
-			[this](const std::shared_ptr<Component>& a, const std::shared_ptr<Component>& b) {
-				int layerA = a->GetGameObject()->GetLayer();
-				int layerB = b->GetGameObject()->GetLayer();
-
-				// First sort by layer order
-				if (m_layerRenderOrders[layerA] != m_layerRenderOrders[layerB]) {
-					return m_layerRenderOrders[layerA] < m_layerRenderOrders[layerB];
+		if (nameOrPath.find('/') == std::string::npos) {
+			for (const auto& obj : scene->m_allGameObjects) {
+				if (obj && obj->GetName() == nameOrPath) {
+					return obj;
 				}
+			}
+			continue;
+		}
 
-				// Then sort by render order within same layer
-				auto renderableA = std::dynamic_pointer_cast<RenderableComponent>(a);
-				auto renderableB = std::dynamic_pointer_cast<RenderableComponent>(b);
-				if (renderableA && renderableB) {
-					return renderableA->GetRenderOrder() < renderableB->GetRenderOrder();
+		std::vector<std::string> tokens;
+		size_t start = 0;
+		size_t slash = 0;
+		while ((slash = nameOrPath.find('/', start)) != std::string::npos) {
+			tokens.push_back(nameOrPath.substr(start, slash - start));
+			start = slash + 1;
+		}
+		tokens.push_back(nameOrPath.substr(start));
+
+		for (const auto& root : scene->m_rootGameObjects) {
+			if (!root || root->GetName() != tokens.front()) {
+				continue;
+			}
+
+			GameObject* current = root.get();
+			for (size_t i = 1; i < tokens.size() && current; ++i) {
+				auto* transform = current->GetTransform();
+				GameObject* next = nullptr;
+				for (auto* child : transform->GetChildren()) {
+					if (child && child->GetGameObject()->GetName() == tokens[i]) {
+						next = child->GetGameObject();
+						break;
+					}
 				}
+				current = next;
+			}
 
-				return false;
-			});
-
-		// Render all components
-		for (auto& component : m_renderComponents) {
-			if (auto renderable = std::dynamic_pointer_cast<RenderableComponent>(component)) {
-				if (renderable->IsVisible() && component->GetGameObject()->IsActive()) {
-					component->Draw();
+			if (current) {
+				auto found = scene->m_gameObjectById.find(current->GetInstanceID());
+				if (found != scene->m_gameObjectById.end()) {
+					return found->second;
 				}
 			}
 		}
 	}
+	return nullptr;
+}
 
-	void Scene::Unload() {
-		if (m_markedForUnload) return;
+void Scene::QueueLifecycle(MonoBehaviour* behaviour) {
+	if (!behaviour) {
+		return;
+	}
+	if (std::find(m_pendingLifecycle.begin(), m_pendingLifecycle.end(), behaviour) == m_pendingLifecycle.end()) {
+		m_pendingLifecycle.push_back(behaviour);
+	}
+}
 
-		m_markedForUnload = true;
-		m_isActive = false;
-
-		OnDestroy();
-
-		// Mark all game objects for destruction
-		for (auto& obj : m_allGameObjects) {
-			obj->Destroy();
-		}
-
-		ProcessDestructionQueue();
+void Scene::ProcessLifecycleQueue() {
+	if (m_pendingLifecycle.empty()) {
+		return;
 	}
 
-	void Scene::Clear() {
-		// Destroy all game objects
-		for (auto& obj : m_allGameObjects) {
-			obj->Destroy();
+	std::vector<MonoBehaviour*> pending;
+	pending.swap(m_pendingLifecycle);
+
+	std::vector<MonoBehaviour*> startCandidates;
+	for (auto* behaviour : pending) {
+		if (!behaviour || behaviour->IsDestroyed()) {
+			continue;
+		}
+		auto* owner = behaviour->GetGameObject();
+		if (!owner || !owner->IsActiveInHierarchy()) {
+			continue;
 		}
 
-		// Process destruction queue immediately
-		ProcessDestructionQueue();
+		if (!behaviour->DidAwake()) {
+			behaviour->TriggerAwake();
+		}
+
+		if (behaviour->IsEnabled()) {
+			behaviour->TriggerEnable();
+			if (!behaviour->DidStart()) {
+				startCandidates.push_back(behaviour);
+			}
+		}
 	}
 
-	std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name) {
-		auto obj = std::make_shared<GameObject>(s_nextGameObjectID++, name, this);
+	for (auto* behaviour : startCandidates) {
+		if (!behaviour || behaviour->IsDestroyed()) {
+			continue;
+		}
+		auto* owner = behaviour->GetGameObject();
+		if (!owner || !owner->IsActiveInHierarchy() || !behaviour->IsEnabled()) {
+			continue;
+		}
+		behaviour->TriggerStart();
+	}
+}
+
+void Scene::AdoptGameObject(const std::shared_ptr<GameObject>& obj) {
+	if (!obj) {
+		return;
+	}
+	obj->SetScene(this);
+	m_allGameObjects.push_back(obj);
+	m_gameObjectById[obj->GetInstanceID()] = obj;
+
+	if (!obj->GetTransform()->GetParent()) {
 		m_rootGameObjects.push_back(obj);
-		m_allGameObjects.push_back(obj);
-		m_gameObjectByID[obj->GetID()] = obj;
+	}
+}
 
-		return obj;
+void Scene::RemoveGameObject(GameObject* obj) {
+	if (!obj) {
+		return;
 	}
 
-	std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name, Transform* parent) {
-		auto obj = CreateGameObject(name);
-		if (parent) {
-			obj->GetTransform()->SetParent(parent);
-		}
-		return obj;
+	auto it = std::remove_if(m_allGameObjects.begin(), m_allGameObjects.end(),
+		[obj](const std::shared_ptr<GameObject>& entry) { return entry.get() == obj; });
+	m_allGameObjects.erase(it, m_allGameObjects.end());
+
+	auto rootIt = std::remove_if(m_rootGameObjects.begin(), m_rootGameObjects.end(),
+		[obj](const std::shared_ptr<GameObject>& entry) { return entry.get() == obj; });
+	m_rootGameObjects.erase(rootIt, m_rootGameObjects.end());
+
+	m_gameObjectById.erase(obj->GetInstanceID());
+}
+
+void Scene::UpdateRootGameObject(GameObject* obj) {
+	if (!obj) {
+		return;
 	}
 
-	void Scene::DestroyGameObject(std::shared_ptr<GameObject> obj) {
-		if (!obj) return;
-		m_destructionQueue.push_back(obj);
-	}
+	bool isRoot = obj->GetTransform() && obj->GetTransform()->GetParent() == nullptr;
+	auto hasRoot = std::find_if(m_rootGameObjects.begin(), m_rootGameObjects.end(),
+		[obj](const std::shared_ptr<GameObject>& entry) { return entry.get() == obj; });
 
-	void Scene::DestroyGameObjectImmediate(std::shared_ptr<GameObject> obj) {
-		if (!obj) return;
-
-		// Remove from update lists first
-		RemoveFromUpdateList(obj);
-
-		// Remove all components from render list
-		auto components = obj->GetComponents<Component>();
-		for (auto& component : components) {
-			RemoveFromRenderList(component);
-		}
-
-		// Remove from all lists
-		auto it = std::find(m_allGameObjects.begin(), m_allGameObjects.end(), obj);
-		if (it != m_allGameObjects.end()) {
-			m_allGameObjects.erase(it);
-		}
-
-		// Remove from root objects if it's a root
-		auto rootIt = std::find(m_rootGameObjects.begin(), m_rootGameObjects.end(), obj);
-		if (rootIt != m_rootGameObjects.end()) {
-			m_rootGameObjects.erase(rootIt);
-		}
-
-		// Remove from ID map
-		m_gameObjectByID.erase(obj->GetID());
-
-		// Destroy the object
-		obj->DestroyImmediate();
-	}
-
-	void Scene::ProcessDestructionQueue() {
-		if (m_destructionQueue.empty()) return;
-
-		for (auto& obj : m_destructionQueue) {
-			DestroyGameObjectImmediate(obj);
-		}
-		m_destructionQueue.clear();
-	}
-
-	void Scene::AddToUpdateList(std::shared_ptr<GameObject> obj) {
-		// Check if object needs to be in update lists
-		if (obj->HasUpdateComponents() &&
-			std::find(m_activeGameObjects.begin(), m_activeGameObjects.end(), obj) == m_activeGameObjects.end()) {
-			m_activeGameObjects.push_back(obj);
-		}
-		if (obj->HasFixedUpdateComponents() &&
-			std::find(m_fixedUpdateObjects.begin(), m_fixedUpdateObjects.end(), obj) == m_fixedUpdateObjects.end()) {
-			m_fixedUpdateObjects.push_back(obj);
-		}
-		if (obj->HasLateUpdateComponents() &&
-			std::find(m_lateUpdateObjects.begin(), m_lateUpdateObjects.end(), obj) == m_lateUpdateObjects.end()) {
-			m_lateUpdateObjects.push_back(obj);
-		}
-	}
-
-	void Scene::AddToRenderList(std::shared_ptr<Component> component) {
-		if (std::find(m_renderComponents.begin(), m_renderComponents.end(), component) == m_renderComponents.end()) {
-			m_renderComponents.push_back(component);
-		}
-	}
-
-	void Scene::RemoveFromUpdateList(std::shared_ptr<GameObject> obj) {
-		auto removeFromVector = [&obj](std::vector<std::shared_ptr<GameObject>>& vec) {
-			auto it = std::find(vec.begin(), vec.end(), obj);
-			if (it != vec.end()) {
-				vec.erase(it);
-			}
-			};
-
-		removeFromVector(m_activeGameObjects);
-		removeFromVector(m_fixedUpdateObjects);
-		removeFromVector(m_lateUpdateObjects);
-	}
-
-	void Scene::RemoveFromRenderList(std::shared_ptr<Component> component) {
-		auto it = std::find(m_renderComponents.begin(), m_renderComponents.end(), component);
-		if (it != m_renderComponents.end()) {
-			m_renderComponents.erase(it);
-		}
-	}
-
-	std::shared_ptr<GameObject> Scene::FindGameObjectByName(const std::string& name) {
-		for (auto& obj : m_allGameObjects) {
-			if (obj->GetName() == name) {
-				return obj;
+	if (isRoot) {
+		if (hasRoot == m_rootGameObjects.end()) {
+			auto found = m_gameObjectById.find(obj->GetInstanceID());
+			if (found != m_gameObjectById.end()) {
+				m_rootGameObjects.push_back(found->second);
 			}
 		}
-		return nullptr;
 	}
-
-	std::vector<std::shared_ptr<GameObject>> Scene::FindGameObjectsByTag(const std::string& tag) {
-		std::vector<std::shared_ptr<GameObject>> result;
-		for (auto& obj : m_allGameObjects) {
-			if (obj->GetTag() == tag) {
-				result.push_back(obj);
-			}
-		}
-		return result;
+	else if (hasRoot != m_rootGameObjects.end()) {
+		m_rootGameObjects.erase(hasRoot);
 	}
-
-	std::shared_ptr<GameObject> Scene::FindGameObjectByID(uint32_t id) {
-		auto it = m_gameObjectByID.find(id);
-		if (it != m_gameObjectByID.end()) {
-			return it->second;
-		}
-		return nullptr;
-	}
-
-	void Scene::SetLayerName(int layerIndex, const std::string& layerName) {
-		if (layerIndex < 0 || layerIndex >= MAX_LAYERS) {
-			return;
-		}
-
-		// Remove old name from map
-		if (!m_layerNames[layerIndex].empty()) {
-			m_layerNameToIndex.erase(m_layerNames[layerIndex]);
-		}
-
-		m_layerNames[layerIndex] = layerName;
-
-		if (!layerName.empty()) {
-			m_layerNameToIndex[layerName] = layerIndex;
-		}
-	}
-
-	const std::string& Scene::GetLayerName(int layerIndex) const {
-		static const std::string emptyString;
-
-		if (layerIndex < 0 || layerIndex >= MAX_LAYERS) {
-			return emptyString;
-		}
-
-		return m_layerNames[layerIndex];
-	}
-
-	int Scene::GetLayerIndex(const std::string& layerName) const {
-		auto it = m_layerNameToIndex.find(layerName);
-		if (it != m_layerNameToIndex.end()) {
-			return it->second;
-		}
-		return -1; // Layer not found
-	}
-
-	void Scene::SetRenderOrderForLayer(int layerIndex, int order) {
-		if (layerIndex < 0 || layerIndex >= MAX_LAYERS) {
-			return;
-		}
-
-		m_layerRenderOrders[layerIndex] = order;
-	}
-
-	int Scene::GetRenderOrderForLayer(int layerIndex) const {
-		if (layerIndex < 0 || layerIndex >= MAX_LAYERS) {
-			return 0;
-		}
-
-		return m_layerRenderOrders[layerIndex];
-	}
+}

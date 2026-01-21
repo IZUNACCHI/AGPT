@@ -1,84 +1,119 @@
 #pragma once
 
 #include <box2d/box2d.h>
-#include "RenderableComponent.h"
+#include "Component.h"
 #include "Types.hpp"
 
 class Rigidbody2D;
 
-class Collider2D : public RenderableComponent {
+/// Base collider component that owns a Box2D shape.
+class Collider2D : public Component {
 public:
-	// Register with physics world and build initial shape.
-	void OnCreate() override;
-	// Unregister and release Box2D resources.
-	void OnDestroy() override;
-	// Rebuild the collider shape when the physics world is reset.
-	void RebuildShape();
-	// Debug-render the collider shape if enabled.
-	void Draw() override;
+	/// Creates a collider component with default settings.
+	Collider2D() = default;
+	/// Releases collider resources.
+	~Collider2D() override = default;
 
+	/// Initializes the collider with the physics world.
+	void Initialize();
+	/// Shuts down the collider and releases physics resources.
+	void Shutdown();
+	/// Rebuilds the Box2D shape when the physics world is reset.
+	void RebuildShape();
+
+	/// Returns whether the collider behaves as a trigger.
 	bool IsTrigger() const { return m_isTrigger; }
+	/// Sets whether the collider behaves as a trigger.
 	void SetTrigger(bool isTrigger);
 
+	/// Sets the local offset of the collider shape.
 	void SetOffset(const Vector2f& offset);
+	/// Returns the local offset of the collider shape.
 	Vector2f GetOffset() const { return m_offset; }
 
+	/// Sets the collider density used for body mass.
 	void SetDensity(float density);
+	/// Sets the collider friction.
 	void SetFriction(float friction);
+	/// Sets the collider restitution (bounciness).
 	void SetRestitution(float restitution);
 
+	/// Attaches the collider to a rigidbody for dynamic simulation.
 	void AttachToRigidbody(Rigidbody2D* body);
+	/// Detaches the collider from a rigidbody and uses a static body.
 	void DetachFromRigidbody(Rigidbody2D* body);
 
+	/// Returns the Box2D shape handle for this collider.
 	b2ShapeId GetShapeId() const { return m_shapeId; }
-	// Toggle debug visualization.
-	void SetDebugDraw(bool enabled) { m_debugDraw = enabled; }
-	bool IsDebugDrawEnabled() const { return m_debugDraw; }
 
 protected:
-	// Create the Box2D shape for this collider type.
+	/// Creates the Box2D shape for this collider type.
 	virtual b2ShapeId CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) = 0;
-	// Render a simple debug outline for this collider type.
-	virtual void DrawDebugShape(Renderer& renderer) = 0;
+	/// Tears down collider resources when destroyed.
+	void DestroyImmediateInternal() override;
+
+	/// Recreates the Box2D shape on the current body.
 	void RecreateShape();
+	/// Builds the Box2D shape definition from collider settings.
 	b2ShapeDef BuildShapeDef() const;
+	/// Resolves or creates a body for this collider.
 	b2BodyId ResolveBody();
 
+	/// Stored Box2D shape handle.
 	b2ShapeId m_shapeId = b2_nullShapeId;
+	/// Box2D body used for static colliders.
 	b2BodyId m_staticBodyId = b2_nullBodyId;
+	/// Rigidbody currently attached to this collider.
 	Rigidbody2D* m_attachedBody = nullptr;
+	/// Whether this collider owns the static body it created.
 	bool m_ownsBody = false;
 
+	/// Local offset of the collider shape.
 	Vector2f m_offset = Vector2f::Zero();
+	/// Density applied to the shape.
 	float m_density = 1.0f;
+	/// Friction applied to the shape.
 	float m_friction = 0.3f;
+	/// Restitution applied to the shape.
 	float m_restitution = 0.0f;
+	/// Whether the collider acts as a trigger.
 	bool m_isTrigger = false;
-	bool m_debugDraw = true;
 };
 
+/// Box-shaped collider component.
 class BoxCollider2D : public Collider2D {
 public:
+	/// Sets the local size of the box shape.
 	void SetSize(const Vector2f& size);
+	/// Returns the local size of the box shape.
 	Vector2f GetSize() const { return m_size; }
+	/// Clones the collider settings.
+	std::shared_ptr<Component> Clone() const override;
 
 protected:
+	/// Creates the Box2D polygon shape for the box.
 	b2ShapeId CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) override;
-	void DrawDebugShape(Renderer& renderer) override;
 
 private:
+	/// Local size of the box shape.
 	Vector2f m_size = Vector2f(1.0f, 1.0f);
 };
 
+/// Circle-shaped collider component.
 class CircleCollider2D : public Collider2D {
 public:
+	/// Sets the radius of the circle shape.
 	void SetRadius(float radius);
+	/// Returns the radius of the circle shape.
 	float GetRadius() const { return m_radius; }
+	/// Clones the collider settings.
+	std::shared_ptr<Component> Clone() const override;
 
 protected:
+	/// Creates the Box2D circle shape for the collider.
 	b2ShapeId CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) override;
-	void DrawDebugShape(Renderer& renderer) override;
 
 private:
+	/// Radius of the circle shape.
 	float m_radius = 0.5f;
 };

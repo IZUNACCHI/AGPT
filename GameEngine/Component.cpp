@@ -1,22 +1,63 @@
 #include "Component.h"
 #include "GameObject.h"
-#include "Scene.h"
+#include "MonoBehaviour.h"
+#include "Transform.h"
 
+Component::Component(const std::string& name)
+	: Object(name) {
+}
 
+Transform* Component::GetTransform() const {
+	return m_gameObject ? m_gameObject->GetTransform() : nullptr;
+}
 
-	void Component::SetEnabled(bool enabled) {
-		if (m_enabled == enabled) return;
+const std::string& Component::GetName() const {
+	if (m_gameObject) {
+		return m_gameObject->GetName();
+	}
+	return Object::GetName();
+}
 
-		m_enabled = enabled;
+void Component::SetName(const std::string& name) {
+	if (m_gameObject) {
+		m_gameObject->SetName(name);
+		return;
+	}
+	Object::SetName(name);
+}
 
-		if (m_enabled) {
-			OnEnable();
-		}
-		else {
-			OnDisable();
-		}
+size_t Component::GetComponentIndex() const {
+	return m_gameObject ? m_gameObject->GetComponentIndex(this) : 0;
+}
+
+void Component::SendMessage(const std::string& methodName) {
+	if (m_gameObject) {
+		m_gameObject->SendMessage(methodName);
+	}
+}
+
+void Component::SendMessageUp(const std::string& methodName) {
+	if (m_gameObject) {
+		m_gameObject->SendMessageUp(methodName);
+	}
+}
+
+void Component::SendMessageDown(const std::string& methodName) {
+	if (m_gameObject) {
+		m_gameObject->SendMessageDown(methodName);
+	}
+}
+
+void Component::DestroyImmediateInternal() {
+	if (!m_gameObject) {
+		return;
 	}
 
-	Scene* Component::GetScene() const {
-		return m_gameObject ? m_gameObject->GetScene() : nullptr;
+	if (auto behaviour = dynamic_cast<MonoBehaviour*>(this)) {
+		behaviour->TriggerDestroy();
 	}
+
+	auto owner = m_gameObject;
+	m_gameObject = nullptr;
+	owner->RemoveComponent(this);
+}

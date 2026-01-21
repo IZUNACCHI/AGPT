@@ -1,46 +1,113 @@
 #pragma once
 
 #include <memory>
-#include "Types.hpp"
+#include <string>
+#include <vector>
+#include "Object.h"
+#include "GameObject.h"
+#include "Transform.h"
 
 
-class GameObject;
-class Scene;
-
-class Component : public std::enable_shared_from_this<Component> {
+/// Base class for components attached to GameObjects.
+class Component : public Object {
 public:
-	virtual ~Component() = default;
+	/// Creates a component with the given name.
+	explicit Component(const std::string& name = "Component");
+	/// Destroys the component.
+	~Component() override = default;
 
-	// Lifecycle methods
-	virtual void OnCreate() {}      // Called when component is added to GameObject
-	virtual void OnDestroy() {}     // Called when component is being destroyed
-	virtual void OnEnable() {}      // Called when GameObject becomes active
-	virtual void OnDisable() {}     // Called when GameObject becomes inactive
-
-	virtual void Update(float deltaTime) {}
-	virtual void FixedUpdate(float fixedDeltaTime) {}
-	virtual void LateUpdate(float deltaTime) {}
-
-	virtual void Draw() {}          // For renderable components
-
-	// Component state
-	bool IsEnabled() const { return m_enabled; }
-	void SetEnabled(bool enabled);
-
-	// Getters
+	/// Returns the owning GameObject.
 	GameObject* GetGameObject() const { return m_gameObject; }
-	Scene* GetScene() const;
+	/// Returns the owning GameObject's Transform.
+	Transform* GetTransform() const;
 
-	// Component comparison
+	/// Returns the name of the component (mirrors GameObject name).
+	const std::string& GetName() const override;
+	/// Sets the name on the owning GameObject.
+	void SetName(const std::string& name) override;
+
+	/// Returns the first component of type T on this GameObject.
 	template<typename T>
-	bool IsType() const { return dynamic_cast<const T*>(this) != nullptr; }
+	std::shared_ptr<T> GetComponent();
+
+	/// Returns the first component of type T in children.
+	template<typename T>
+	std::shared_ptr<T> GetComponentInChildren();
+
+	/// Returns the first component of type T in parents.
+	template<typename T>
+	std::shared_ptr<T> GetComponentInParent();
+
+	/// Returns all components of type T on this GameObject.
+	template<typename T>
+	std::vector<std::shared_ptr<T>> GetComponents();
+
+	/// Returns all components of type T in children.
+	template<typename T>
+	std::vector<std::shared_ptr<T>> GetComponentsInChildren();
+
+	/// Returns all components of type T in parents.
+	template<typename T>
+	std::vector<std::shared_ptr<T>> GetComponentsInParent();
+
+	/// Returns the index of this component on its GameObject.
+	size_t GetComponentIndex() const;
+
+	/// Sends a message to all MonoBehaviours on the GameObject.
+	void SendMessage(const std::string& methodName);
+	/// Sends a message up the Transform hierarchy.
+	void SendMessageUp(const std::string& methodName);
+	/// Sends a message down the Transform hierarchy.
+	void SendMessageDown(const std::string& methodName);
+
+	/// Clones the component for instantiation.
+	virtual std::shared_ptr<Component> Clone() const { return nullptr; }
 
 protected:
-	GameObject* m_gameObject = nullptr;
-
-private:
+	/// Allows GameObject to manage component ownership.
 	friend class GameObject;
-	friend class Scene;
+	/// Allows Object to manage lifecycle.
+	friend class Object;
 
-	bool m_enabled = true;
+	/// Handles immediate destruction logic for the component.
+	void DestroyImmediateInternal() override;
+
+	/// Owning GameObject pointer.
+	GameObject* m_gameObject = nullptr;
 };
+
+/// Returns the first component of type T on this GameObject.
+template<typename T>
+std::shared_ptr<T> Component::GetComponent() {
+	return m_gameObject ? m_gameObject->GetComponent<T>() : nullptr;
+}
+
+/// Returns the first component of type T in children.
+template<typename T>
+std::shared_ptr<T> Component::GetComponentInChildren() {
+	return m_gameObject ? m_gameObject->GetComponentInChildren<T>() : nullptr;
+}
+
+/// Returns the first component of type T in parents.
+template<typename T>
+std::shared_ptr<T> Component::GetComponentInParent() {
+	return m_gameObject ? m_gameObject->GetComponentInParent<T>() : nullptr;
+}
+
+/// Returns all components of type T on this GameObject.
+template<typename T>
+std::vector<std::shared_ptr<T>> Component::GetComponents() {
+	return m_gameObject ? m_gameObject->GetComponents<T>() : std::vector<std::shared_ptr<T> >();
+}
+
+/// Returns all components of type T in children.
+template<typename T>
+std::vector<std::shared_ptr<T>> Component::GetComponentsInChildren() {
+	return m_gameObject ? m_gameObject->GetComponentsInChildren<T>() : std::vector<std::shared_ptr<T> >();
+}
+
+/// Returns all components of type T in parents.
+template<typename T>
+std::vector<std::shared_ptr<T>> Component::GetComponentsInParent() {
+	return m_gameObject ? m_gameObject->GetComponentsInParent<T>() : std::vector<std::shared_ptr<T> >();
+}
