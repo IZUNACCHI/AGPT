@@ -1,21 +1,30 @@
 #pragma once
 
 #include "Component.h"
-#include <functional>
 
-
-// Base class for all scriptable behaviours
+/// Component that can be enabled or disabled.
 class Behaviour : public Component {
 public:
-	virtual ~Behaviour() = default;
+	/// Creates a Behaviour with the given name.
+	explicit Behaviour(const std::string& name = "Behaviour");
+	/// Destroys the Behaviour.
+	~Behaviour() override = default;
 
-	// These can be overridden by user scripts
-	virtual void Start() {}         // Called when GameObject starts 
-	virtual void OnDestroy() override {} // Override Component's OnDestroy
+	/// Returns whether the component is enabled.
+	bool IsEnabled() const { return m_enabled; }
+	/// Sets whether the component is enabled.
+	void SetEnabled(bool enabled);
+
+	/// Returns true if the component is active and enabled in hierarchy.
+	bool IsActiveAndEnabled() const;
 
 protected:
-	// Helper methods for user scripts
-	void Destroy(float delay = 0.0f);
-	void Invoke(const std::function<void()>& method, float delay);
-	void CancelInvoke();
+	/// Returns whether OnEnable has already been called.
+	virtual bool HasOnEnableBeenCalled() const;
+	/// Responds to enabled state changes.
+	virtual void OnEnabledStateChanged(bool enabled);
+
+private:
+	/// Whether the component is enabled.
+	bool m_enabled = true;
 };

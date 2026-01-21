@@ -1,167 +1,131 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <string>
-#include <unordered_map>
-#include <typeindex>
-#include "Transform.h"
-#include "Types.hpp"
-
+#include <type_traits>
+#include <vector>
+#include "Object.h"
 
 class Scene;
 class Component;
-class Behaviour;
+class MonoBehaviour;
+class Transform;
 
-class GameObject : public std::enable_shared_from_this<GameObject> {
+/// Root entity that owns Components and a Transform.
+class GameObject : public Object {
 public:
-	GameObject(uint32_t id, const std::string& name, Scene* scene);
-	~GameObject();
+	/// Creates a GameObject with the provided name.
+	explicit GameObject(const std::string& name = "GameObject");
+	/// Destroys the GameObject.
+	~GameObject() override;
 
-	// Core methods
-	void Start();
-	void Update(float deltaTime);
-	void FixedUpdate(float fixedDeltaTime);
-	void LateUpdate(float deltaTime);
+	/// Returns the local active state.
+	bool IsActiveSelf() const { return m_activeSelf; }
+	/// Returns true if active in hierarchy.
+	bool IsActiveInHierarchy() const { return m_activeInHierarchy; }
+	/// Returns the layer value.
+	int GetLayer() const { return m_layer; }
+	/// Sets the layer value.
+	void SetLayer(int layer) { m_layer = layer; }
+	/// Returns the owning Scene.
+	Scene* GetScene() const { return m_scene; }
+	/// Returns the Transform component.
+	Transform* GetTransform() const { return m_transform.get(); }
 
-	void SetActive(bool active);
-	bool IsActive() const { return m_isActive && m_isActiveInHierarchy; }
-	bool IsActiveSelf() const { return m_isActive; }
+	/// Sets the active state for this GameObject.
+	void SetActive(bool value);
 
-	// Component management
+	/// Adds a component of type T to this GameObject.
 	template<typename T, typename... Args>
 	std::shared_ptr<T> AddComponent(Args&&... args);
 
+	/// Returns the first component of type T.
 	template<typename T>
-	std::shared_ptr<T> GetComponent();
+	std::shared_ptr<T> GetComponent() const;
 
+	/// Returns all components of type T.
 	template<typename T>
-	std::vector<std::shared_ptr<T>> GetComponents();
+	std::vector<std::shared_ptr<T> > GetComponents() const;
 
+	/// Returns the first component of type T in children.
 	template<typename T>
-	std::shared_ptr<T> GetComponentInChildren();
+	std::shared_ptr<T> GetComponentInChildren() const;
 
+	/// Returns all components of type T in children.
 	template<typename T>
-	std::vector<std::shared_ptr<T>> GetComponentsInChildren();
+	std::vector<std::shared_ptr<T> > GetComponentsInChildren() const;
 
+	/// Returns the first component of type T in parents.
 	template<typename T>
-	std::shared_ptr<T> GetComponentInParent();
+	std::shared_ptr<T> GetComponentInParent() const;
 
+	/// Returns all components of type T in parents.
 	template<typename T>
-	void RemoveComponent();
+	std::vector<std::shared_ptr<T> > GetComponentsInParent() const;
 
-	// Tags and layers
-	void SetTag(const std::string& tag) { m_tag = tag; }
-	const std::string& GetTag() const { return m_tag; }
+	/// Returns the component index on this GameObject.
+	size_t GetComponentIndex(const Component* component) const;
 
-	void SetLayer(int layer);
-	int GetLayer() const { return m_layer; }
+	/// Sends a message to all MonoBehaviours on this GameObject.
+	void SendMessage(const std::string& methodName);
+	/// Sends a message up the Transform hierarchy.
+	void SendMessageUp(const std::string& methodName);
+	/// Sends a message down the Transform hierarchy.
+	void SendMessageDown(const std::string& methodName);
 
-	// Destruction
-	void Destroy();
-	void DestroyImmediate();
-	bool IsMarkedForDestruction() const { return m_markedForDestruction; }
+	/// Clones this GameObject and its Components.
+	std::shared_ptr<GameObject> Clone() const;
 
-	// Getters
-	uint32_t GetID() const { return m_id; }
-	const std::string& GetName() const { return m_name; }
-	Transform* GetTransform() { return m_transform.get(); }
-	Scene* GetScene() { return m_scene; }
-
-	// Component presence checks (for update list optimization)
-	bool HasUpdateComponents() const { return m_hasUpdateComponents; }
-	bool HasFixedUpdateComponents() const { return m_hasFixedUpdateComponents; }
-	bool HasLateUpdateComponents() const { return m_hasLateUpdateComponents; }
-	bool HasRenderComponents() const { return m_hasRenderComponents; }
+	/// Finds a GameObject by name or path across scenes.
+	static std::shared_ptr<GameObject> Find(const std::string& nameOrPath);
+	/// Returns the Scene of a GameObject by instance ID.
+	static Scene* GetScene(int instanceID);
+	/// Sets active state for a list of instance IDs.
+	static void SetGameObjectsActive(const std::vector<int>& instanceIDs, bool value);
 
 private:
+	/// Allows Scene to manage GameObjects.
 	friend class Scene;
+	/// Allows Component to access removal logic.
 	friend class Component;
-	friend class Behaviour;
+	/// Allows MonoBehaviour to access internals.
+	friend class MonoBehaviour;
+	/// Allows Transform to manage hierarchy.
+	friend class Transform;
+	/// Allows Object to manage destruction.
+	friend class Object;
 
-	void AddComponentInternal(std::shared_ptr<Component> component);
-	void RemoveComponentInternal(std::shared_ptr<Component> component);
-	void OnComponentAdded(std::shared_ptr<Component> component);
-	void OnComponentRemoved(std::shared_ptr<Component> component);
+	/// Assigns the owning Scene.
+	void SetScene(Scene* scene) { m_scene = scene; }
+	/// Recomputes active state for hierarchy.
 	void UpdateActiveInHierarchy();
+	/// Registers a component on this GameObject.
+	void RegisterComponent(const std::shared_ptr<Component>& component);
+	/// Unregisters a component from this GameObject.
+	void UnregisterComponent(const std::shared_ptr<Component>& component);
+	/// Removes a component by pointer.
+	void RemoveComponent(const Component* component);
+	/// Handles immediate destruction.
+	void DestroyImmediateInternal() override;
 
-	uint32_t m_id;
-	std::string m_name;
-	std::string m_tag = "Untagged";
-	int m_layer = 0;  // Default layer
+	/// Queues a MonoBehaviour for lifecycle processing.
+	void QueueLifecycle(MonoBehaviour* behaviour);
+	/// Handles activation changes in hierarchy.
+	void HandleActivationChange(bool wasActive);
 
-	bool m_isActive = true;
-	bool m_isActiveInHierarchy = true;
-	bool m_started = false;
-	bool m_markedForDestruction = false;
+	/// Local active state.
+	bool m_activeSelf = true;
+	/// Cached active-in-hierarchy state.
+	bool m_activeInHierarchy = true;
+	/// Layer value.
+	int m_layer = 0;
+	/// Owning Scene pointer.
+	Scene* m_scene = nullptr;
 
-	std::unique_ptr<Transform> m_transform;
-	Scene* m_scene;
-
-	std::vector<std::shared_ptr<Component>> m_components;
-	std::unordered_map<std::type_index, std::shared_ptr<Component>> m_componentByType;
-
-	// Flags for optimization
-	bool m_hasUpdateComponents = false;
-	bool m_hasFixedUpdateComponents = false;
-	bool m_hasLateUpdateComponents = false;
-	bool m_hasRenderComponents = false;
+	/// Transform component.
+	std::shared_ptr<Transform> m_transform;
+	/// All attached components.
+	std::vector<std::shared_ptr<Component> > m_components;
 };
 
-// Template implementations (in header for template methods)
-template<typename T, typename... Args>
-std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
-	static_assert(std::is_base_of<Component, T>::value,
-		"T must derive from Component");
-
-	// Check if component of this type already exists
-	auto existing = GetComponent<T>();
-	if (existing) {
-		return existing;
-	}
-
-	auto component = std::make_shared<T>(std::forward<Args>(args)...);
-	component->m_gameObject = shared_from_this();
-
-	AddComponentInternal(component);
-	OnComponentAdded(component);
-
-	return component;
-}
-
-template<typename T>
-std::shared_ptr<T> GameObject::GetComponent() {
-	static_assert(std::is_base_of<Component, T>::value,
-		"T must derive from Component");
-
-	auto it = m_componentByType.find(typeid(T));
-	if (it != m_componentByType.end()) {
-		return std::static_pointer_cast<T>(it->second);
-	}
-	return nullptr;
-}
-
-template<typename T>
-std::vector<std::shared_ptr<T>> GameObject::GetComponents() {
-	static_assert(std::is_base_of<Component, T>::value,
-		"T must derive from Component");
-
-	std::vector<std::shared_ptr<T>> result;
-	for (auto& component : m_components) {
-		if (auto casted = std::dynamic_pointer_cast<T>(component)) {
-			result.push_back(casted);
-		}
-	}
-	return result;
-}
-
-template<typename T>
-void GameObject::RemoveComponent() {
-	static_assert(std::is_base_of<Component, T>::value,
-		"T must derive from Component");
-
-	auto component = GetComponent<T>();
-	if (component) {
-		RemoveComponentInternal(component);
-	}
-}
+#include "GameObject.inl"

@@ -18,12 +18,12 @@ namespace {
 	}
 }
 
-void Rigidbody2D::OnCreate() {
+void Rigidbody2D::Initialize() {
 	CreateBody();
 	AttachExistingColliders();
 }
 
-void Rigidbody2D::OnDestroy() {
+void Rigidbody2D::Shutdown() {
 	DetachExistingColliders();
 	DestroyBody();
 }
@@ -159,6 +159,18 @@ void Rigidbody2D::SyncTransformFromBody() {
 	transform->SetRotationRadians(angle);
 }
 
+std::shared_ptr<Component> Rigidbody2D::Clone() const {
+	auto clone = std::make_shared<Rigidbody2D>();
+	clone->m_bodyType = m_bodyType;
+	clone->m_gravityScale = m_gravityScale;
+	clone->m_linearDamping = m_linearDamping;
+	clone->m_angularDamping = m_angularDamping;
+	clone->m_fixedRotation = m_fixedRotation;
+	clone->m_allowSleep = m_allowSleep;
+	clone->m_isBullet = m_isBullet;
+	return clone;
+}
+
 void Rigidbody2D::CreateBody() {
 	auto* physicsWorld = GetPhysicsWorld();
 	if (!physicsWorld || !physicsWorld->IsValid()) {
@@ -212,4 +224,9 @@ void Rigidbody2D::DetachExistingColliders() {
 			collider->DetachFromRigidbody(this);
 		}
 	}
+}
+
+void Rigidbody2D::DestroyImmediateInternal() {
+	Shutdown();
+    Component::DestroyImmediateInternal();
 }

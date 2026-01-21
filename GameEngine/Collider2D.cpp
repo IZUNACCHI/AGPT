@@ -3,15 +3,13 @@
 #include "Rigidbody2D.h"
 #include "SleeplessEngine.h"
 #include "Transform.h"
-#include <cmath>
 
-void Collider2D::OnCreate() {
-	// Register collider for reset/rebuild support.
+void Collider2D::Initialize() {
 	if (auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld()) {
 		physicsWorld->RegisterCollider(this);
 	}
 
-	auto rigidbody = GetGameObject()->GetComponent<Rigidbody2D>();
+	auto rigidbody = GetGameObject() ? GetGameObject()->GetComponent<Rigidbody2D>() : nullptr;
 	if (rigidbody) {
 		AttachToRigidbody(rigidbody.get());
 	}
@@ -19,8 +17,7 @@ void Collider2D::OnCreate() {
 	RecreateShape();
 }
 
-void Collider2D::OnDestroy() {
-	// Unregister and clean up Box2D resources.
+void Collider2D::Shutdown() {
 	if (auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld()) {
 		physicsWorld->UnregisterCollider(this);
 	}
@@ -46,21 +43,6 @@ void Collider2D::SetTrigger(bool isTrigger) {
 
 void Collider2D::RebuildShape() {
 	RecreateShape();
-}
-
-void Collider2D::Draw() {
-	// Only draw when debug visualization is enabled.
-	if (!m_debugDraw) {
-		return;
-	}
-
-	// Require a valid renderer before drawing.
-	auto* renderer = RenderableComponent::GetRenderer();
-	if (!renderer || !renderer->IsValid()) {
-		return;
-	}
-
-	DrawDebugShape(*renderer);
 }
 
 void Collider2D::SetOffset(const Vector2f& offset) {
@@ -107,8 +89,12 @@ void Collider2D::DetachFromRigidbody(Rigidbody2D* body) {
 	RecreateShape();
 }
 
+void Collider2D::DestroyImmediateInternal() {
+	Shutdown();
+	Component::DestroyImmediateInternal();
+}
+
 void Collider2D::RecreateShape() {
-	// Destroy old shape and rebuild on the current body.
 	if (b2Shape_IsValid(m_shapeId)) {
 		b2DestroyShape(m_shapeId, true);
 		m_shapeId = b2_nullShapeId;
@@ -137,7 +123,6 @@ b2ShapeDef Collider2D::BuildShapeDef() const {
 }
 
 b2BodyId Collider2D::ResolveBody() {
-	// Prefer an attached rigidbody when available.
 	if (m_attachedBody && b2Body_IsValid(m_attachedBody->GetBodyId())) {
 		m_ownsBody = false;
 		return m_attachedBody->GetBodyId();
@@ -147,7 +132,6 @@ b2BodyId Collider2D::ResolveBody() {
 		return m_staticBodyId;
 	}
 
-	// Lazily create a static body for standalone colliders.
 	auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld();
 	if (!physicsWorld || !physicsWorld->IsValid()) {
 		return b2_nullBodyId;
@@ -172,25 +156,20 @@ void BoxCollider2D::SetSize(const Vector2f& size) {
 	RecreateShape();
 }
 
+std::shared_ptr<Component> BoxCollider2D::Clone() const {
+	auto clone = std::make_shared<BoxCollider2D>();
+	clone->m_offset = m_offset;
+	clone->m_density = m_density;
+	clone->m_friction = m_friction;
+	clone->m_restitution = m_restitution;
+	clone->m_isTrigger = m_isTrigger;
+	clone->m_size = m_size;
+	return clone;
+}
+
 b2ShapeId BoxCollider2D::CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) {
 	b2Polygon box = b2MakeOffsetBox(m_size.x * 0.5f, m_size.y * 0.5f, { m_offset.x, m_offset.y }, b2MakeRot(0.0f));
 	return b2CreatePolygonShape(bodyId, &shapeDef, &box);
-}
-
-void BoxCollider2D::DrawDebugShape(Renderer& renderer) {
-	// Draw an axis-aligned rectangle outline in world space.
-	auto* transform = GetGameObject()->GetTransform();
-	Vector2f position = transform->GetWorldPosition();
-	Vector2f center = position + m_offset;
-
-	SDL_FRect rect{};
-	rect.w = m_size.x;
-	rect.h = m_size.y;
-	rect.x = center.x - rect.w * 0.5f;
-	rect.y = center.y - rect.h * 0.5f;
-
-	SDL_SetRenderDrawColor(renderer.GetNative(), 0, 200, 255, 255);
-	SDL_RenderRect(renderer.GetNative(), &rect);
 }
 
 void CircleCollider2D::SetRadius(float radius) {
@@ -198,29 +177,20 @@ void CircleCollider2D::SetRadius(float radius) {
 	RecreateShape();
 }
 
+std::shared_ptr<Component> CircleCollider2D::Clone() const {
+	auto clone = std::make_shared<CircleCollider2D>();
+	clone->m_offset = m_offset;
+	clone->m_density = m_density;
+	clone->m_friction = m_friction;
+	clone->m_restitution = m_restitution;
+	clone->m_isTrigger = m_isTrigger;
+	clone->m_radius = m_radius;
+	return clone;
+}
+
 b2ShapeId CircleCollider2D::CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) {
 	b2Circle circle{};
 	circle.center = { m_offset.x, m_offset.y };
 	circle.radius = m_radius;
 	return b2CreateCircleShape(bodyId, &shapeDef, &circle);
-}
-
-void CircleCollider2D::DrawDebugShape(Renderer& renderer) {
-	// Draw a simple circle outline approximation.
-	auto* transform = GetGameObject()->GetTransform();
-	Vector2f position = transform->GetWorldPosition();
-	Vector2f center = position + m_offset;
-
-	SDL_SetRenderDrawColor(renderer.GetNative(), 255, 200, 0, 255);
-
-	constexpr int segments = 32;
-	for (int i = 0; i < segments; ++i) {
-		float angleA = (Math::Constants<float>::TwoPi * i) / segments;
-		float angleB = (Math::Constants<float>::TwoPi * (i + 1)) / segments;
-		float x1 = center.x + std::cos(angleA) * m_radius;
-		float y1 = center.y + std::sin(angleA) * m_radius;
-		float x2 = center.x + std::cos(angleB) * m_radius;
-		float y2 = center.y + std::sin(angleB) * m_radius;
-		SDL_RenderLine(renderer.GetNative(), x1, y1, x2, y2);
-	}
 }
