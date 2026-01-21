@@ -1,6 +1,5 @@
 #include "SpriteRenderer.h"
 #include "GameObject.h"
-#include "Logger.h"
 #include "Object.h"
 #include "Renderer.h"
 #include "Transform.h"
@@ -118,12 +117,7 @@ void SpriteRenderer::Render(Renderer& renderer) const {
 	const float dstW = srcW * scale.x;
 	const float dstH = srcH * scale.y;
 
-	SDL_FRect src{ srcX, srcY, srcW, srcH };
-	SDL_FRect dst{ position.x, position.y, dstW, dstH };
-
-	if (SDL_RenderTexture(renderer.GetNative(), m_texture->GetNative(), &src, &dst) != 0) {
-		LOG_WARN("SpriteRenderer render failed: " + std::string(SDL_GetError()));
-	}
+	renderer.DrawTexture(*m_texture, Vector2f(srcX, srcY), Vector2f(srcW, srcH), position, Vector2f(dstW, dstH));
 }
 
 std::shared_ptr<Component> SpriteRenderer::Clone() const {

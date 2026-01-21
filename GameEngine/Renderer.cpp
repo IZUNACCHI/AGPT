@@ -1,5 +1,5 @@
 #include "Renderer.h"
-
+#include "Texture.h"
 
 	Renderer::Renderer(Window& window)
 		: m_renderer(nullptr) {
@@ -66,4 +66,29 @@
 		}
 
 		SDL_RenderPresent(m_renderer);
+	}
+
+	bool Renderer::DrawTexture(const Texture& texture,
+		const Vector2f& sourcePosition,
+		const Vector2f& sourceSize,
+		const Vector2f& destinationPosition,
+		const Vector2f& destinationSize) {
+		if (!m_renderer) {
+			LOG_WARN("Cannot draw texture - renderer is not valid");
+			return false;
+		}
+		if (!texture.IsValid()) {
+			LOG_WARN("Cannot draw texture - texture is not valid");
+			return false;
+		}
+
+		const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
+		const SDL_FRect dst{ destinationPosition.x, destinationPosition.y, destinationSize.x, destinationSize.y };
+
+		if (SDL_RenderTexture(m_renderer, texture.GetNative(), &src, &dst) != 0) {
+			LOG_WARN("Renderer draw texture failed: " + std::string(SDL_GetError()));
+			return false;
+		}
+
+		return true;
 	}

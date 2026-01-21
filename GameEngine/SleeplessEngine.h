@@ -38,8 +38,10 @@ public:
 
 	// Expose renderer
 	Renderer* GetRenderer() const { return m_renderer.get(); }
-	//Ex+pse window 
+	//Expse window 
 	Window* GetWindow() const { return m_window.get(); }
+
+	AssetManager* GetAssetManager() const { return m_assetManager.get(); }
 
 private:
 	SleeplessEngine() = default;

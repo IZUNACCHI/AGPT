@@ -6,6 +6,8 @@
 #include "Window.h"
 #include <SDL3/SDL.h>
 
+class Texture;
+
 class Renderer {
 public:
 	// Constructor takes a window (must already be initialized)
@@ -24,6 +26,7 @@ public:
 	// Renderer operations
 	void Clear();
 	void Present();
+	bool DrawTexture(const Texture& texture, const Vector2f& sourcePosition, const Vector2f& sourceSize, const Vector2f& destinationPosition, const Vector2f& destinationSize);
 
 	// Get native SDL renderer
 	SDL_Renderer* GetNative() const { return m_renderer; }

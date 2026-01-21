@@ -35,6 +35,7 @@ void SleeplessEngine::Initialize(Config config) {
 		m_window->SetVisible(true);
 		m_renderer = std::make_unique<Renderer>(*m_window);
 		m_assetManager = std::make_unique<AssetManager>(*m_renderer);
+		m_assetManager->SetBasePath(m_config.assetBasePath);
 		Input::Initialize();
 
 		m_physicsWorld = std::make_unique<Physics2DWorld>();
