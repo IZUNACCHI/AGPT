@@ -3,7 +3,8 @@
 #include <vector>
 #include "Component.h"
 #include "Types.hpp"
-#include "GameObject.h"
+
+class GameObject;
 
 /// Component that stores position, rotation, scale, and hierarchy.
 class Transform : public Component {

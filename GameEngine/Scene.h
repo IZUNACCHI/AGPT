@@ -65,6 +65,8 @@ public:
 private:
 	/// Allows GameObject to call into Scene internals.
 	friend class GameObject;
+	/// Allows Transform to update root tracking when reparenting.
+	friend class Transform;
 	/// Allows MonoBehaviour to queue lifecycle work.
 	friend class MonoBehaviour;
 

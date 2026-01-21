@@ -150,9 +150,15 @@ void Transform::UpdateWorldMatrix() const {
 		m_worldMatrix = GetLocalMatrix();
 	}
 
-	m_worldPosition = m_worldMatrix.TransformPoint(Vector2f::Zero());
+	m_worldPosition = m_worldMatrix * Vector2f::Zero();
 	m_worldRotation = m_localRotation + (m_parent ? m_parent->GetWorldRotation() : 0.0f);
-	m_worldScale = m_localScale * (m_parent ? m_parent->GetWorldScale() : Vector2f::One());
+	if (m_parent) {
+		auto parentScale = m_parent->GetWorldScale();
+		m_worldScale = Vector2f(m_localScale.x * parentScale.x, m_localScale.y * parentScale.y);
+	}
+	else {
+		m_worldScale = m_localScale;
+	}
 
 	m_worldMatrixDirty = false;
 	m_hasChanged = false;

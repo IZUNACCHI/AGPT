@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "Collider2D.h"
 #include "Rigidbody2D.h"
+#include "Transform.h"
 #include <algorithm>
 
 GameObject::GameObject(const std::string& name)

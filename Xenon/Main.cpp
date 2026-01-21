@@ -3,7 +3,6 @@
 
 
 int main() {
-	/*
 	SleeplessEngine& engine = SleeplessEngine::GetInstance();
 	Config startConfig;
 	startConfig.assetBasePath = "Dist/graphics/";
@@ -12,7 +11,7 @@ int main() {
 	engine.Initialize(startConfig);
 	Scene mainScene("MainScene");
 	engine.SetScene(&mainScene);
-	engine.Run();*/
+	engine.Run();
 	return 0;
 
 }

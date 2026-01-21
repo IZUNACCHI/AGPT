@@ -1,11 +1,13 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 #include "Object.h"
-#include "GameObject.h"
-#include "Transform.h"
+
+class GameObject;
+class Transform;
 
 
 /// Base class for components attached to GameObjects.
@@ -74,40 +76,95 @@ protected:
 
 	/// Owning GameObject pointer.
 	GameObject* m_gameObject = nullptr;
+
+private:
+	using ComponentPredicate = std::function<bool(const std::shared_ptr<Component>&)>;
+
+	std::shared_ptr<Component> FindComponent(const ComponentPredicate& predicate) const;
+	std::shared_ptr<Component> FindComponentInChildren(const ComponentPredicate& predicate) const;
+	std::shared_ptr<Component> FindComponentInParent(const ComponentPredicate& predicate) const;
+	std::vector<std::shared_ptr<Component>> FindComponents(const ComponentPredicate& predicate) const;
+	std::vector<std::shared_ptr<Component>> FindComponentsInChildren(const ComponentPredicate& predicate) const;
+	std::vector<std::shared_ptr<Component>> FindComponentsInParent(const ComponentPredicate& predicate) const;
+
+	static std::shared_ptr<Component> FindComponentInChildren(GameObject* gameObject,
+		const ComponentPredicate& predicate);
+	static void AppendComponentsInChildren(GameObject* gameObject,
+		const ComponentPredicate& predicate,
+		std::vector<std::shared_ptr<Component>>& result);
 };
 
 /// Returns the first component of type T on this GameObject.
 template<typename T>
 std::shared_ptr<T> Component::GetComponent() {
-	return m_gameObject ? m_gameObject->GetComponent<T>() : nullptr;
+	auto component = FindComponent([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	return std::dynamic_pointer_cast<T>(component);
 }
 
 /// Returns the first component of type T in children.
 template<typename T>
 std::shared_ptr<T> Component::GetComponentInChildren() {
-	return m_gameObject ? m_gameObject->GetComponentInChildren<T>() : nullptr;
+	auto component = FindComponentInChildren([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	return std::dynamic_pointer_cast<T>(component);
 }
 
 /// Returns the first component of type T in parents.
 template<typename T>
 std::shared_ptr<T> Component::GetComponentInParent() {
-	return m_gameObject ? m_gameObject->GetComponentInParent<T>() : nullptr;
+	auto component = FindComponentInParent([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	return std::dynamic_pointer_cast<T>(component);
 }
 
 /// Returns all components of type T on this GameObject.
 template<typename T>
 std::vector<std::shared_ptr<T>> Component::GetComponents() {
-	return m_gameObject ? m_gameObject->GetComponents<T>() : std::vector<std::shared_ptr<T> >();
+	auto components = FindComponents([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	std::vector<std::shared_ptr<T>> result;
+	result.reserve(components.size());
+	for (const auto& component : components) {
+		if (auto casted = std::dynamic_pointer_cast<T>(component)) {
+			result.push_back(casted);
+		}
+	}
+	return result;
 }
 
 /// Returns all components of type T in children.
 template<typename T>
 std::vector<std::shared_ptr<T>> Component::GetComponentsInChildren() {
-	return m_gameObject ? m_gameObject->GetComponentsInChildren<T>() : std::vector<std::shared_ptr<T> >();
+	auto components = FindComponentsInChildren([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	std::vector<std::shared_ptr<T>> result;
+	result.reserve(components.size());
+	for (const auto& component : components) {
+		if (auto casted = std::dynamic_pointer_cast<T>(component)) {
+			result.push_back(casted);
+		}
+	}
+	return result;
 }
 
 /// Returns all components of type T in parents.
 template<typename T>
 std::vector<std::shared_ptr<T>> Component::GetComponentsInParent() {
-	return m_gameObject ? m_gameObject->GetComponentsInParent<T>() : std::vector<std::shared_ptr<T> >();
+	auto components = FindComponentsInParent([](const std::shared_ptr<Component>& entry) {
+		return std::dynamic_pointer_cast<T>(entry) != nullptr;
+		});
+	std::vector<std::shared_ptr<T>> result;
+	result.reserve(components.size());
+	for (const auto& component : components) {
+		if (auto casted = std::dynamic_pointer_cast<T>(component)) {
+			result.push_back(casted);
+		}
+	}
+	return result;
 }
