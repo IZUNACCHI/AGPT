@@ -14,7 +14,7 @@ void Behaviour::SetEnabled(bool enabled) {
 }
 
 bool Behaviour::IsActiveAndEnabled() const {
-	return m_enabled && m_gameObject && m_gameObject->IsActiveInHierarchy() && HasOnEnableBeenCalled();
+	return m_enabled && m_gameObject && m_gameObject->IsActiveInHierarchy() && !IsMarkedForDestruction() && HasOnEnableBeenCalled();
 }
 
 bool Behaviour::HasOnEnableBeenCalled() const {

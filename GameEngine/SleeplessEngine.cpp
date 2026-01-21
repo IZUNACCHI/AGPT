@@ -1,5 +1,6 @@
 #include "SleeplessEngine.h"
 #include "Object.h"
+#include "SpriteRenderer.h"
 #include <SDL3/SDL.h>
 
 SleeplessEngine& SleeplessEngine::GetInstance() {
@@ -140,6 +141,7 @@ void SleeplessEngine::Render() {
 	m_renderer->Clear();
 
 	if (m_currentScene && m_currentScene->IsActive()) {
+		SpriteRenderer::RenderAll(*m_renderer);
 		m_currentScene->Render();
 	}
 

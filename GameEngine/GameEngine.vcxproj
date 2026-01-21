@@ -34,6 +34,7 @@
     <ClInclude Include="Rigidbody2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SleeplessEngine.h" />
+    <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Time.hpp" />
@@ -56,6 +57,7 @@
     <ClCompile Include="Rigidbody2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SleeplessEngine.cpp" />
+    <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transform.cpp" />
