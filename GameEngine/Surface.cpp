@@ -36,8 +36,8 @@
 			THROW_ENGINE_EXCEPTION("Cannot set color key on invalid surface");
 		}
 
-		if (!SDL_SetSurfaceColorKey(m_surface, true,
-			SDL_MapSurfaceRGB(m_surface, color.x, color.y, color.z))) {
+		auto colorKey = SDL_MapSurfaceRGB(m_surface, color.x, color.y, color.z);
+		if (!SDL_SetSurfaceColorKey(m_surface, true, colorKey)) {
 			THROW_ENGINE_EXCEPTION("Failed to set color key: ") << SDL_GetError();
 		}
 	}
