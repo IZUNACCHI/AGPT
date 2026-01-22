@@ -17,7 +17,7 @@ public:
 		if (!m_texture) {
 			m_texture = std::make_unique<Texture>(
 				*renderer,
-				"C:\\Users\\Afonso\\source\\repos\\AGPT\\Dist\\graphics\\PULife.bmp"
+				"PULife.bmp"
 			);
 		}
 

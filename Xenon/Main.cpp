@@ -7,7 +7,7 @@
 int main() {
 	SleeplessEngine& engine = SleeplessEngine::GetInstance();
 	Config startConfig;
-	startConfig.assetBasePath = "Dist/graphics/";
+	startConfig.assetBasePath = "../Dist/graphics/";
 	startConfig.windowConfig.title = "Xenon 2000";
 	startConfig.windowConfig.windowSize = Vector2i(800, 640);
 	engine.Initialize(startConfig);
