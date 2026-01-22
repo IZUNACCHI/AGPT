@@ -9,7 +9,7 @@ public:
 
 	void OnStart() override {
 		auto spaceShip = CreateGameObject<SpaceShip>("SpaceShip");
-		spaceShip->GetTransform()->SetPosition();
+		spaceShip->GetTransform()->SetPosition(GetWindow()->GetSize() / 2);
 	}
 
 private:

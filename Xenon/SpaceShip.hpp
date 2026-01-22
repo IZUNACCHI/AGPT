@@ -2,9 +2,10 @@
 #include "../GameEngine/GameEngine.h"
 #include "SpaceShipBehaviour.hpp"
 
-class SpaceShip : public GameObject
-{
-	SpaceShip() : GameObject("SpaceShip") {
+class SpaceShip : public GameObject {
+public:
+	explicit SpaceShip(const std::string& name = "SpaceShip")
+		: GameObject(name) {
 		AddComponent<SpriteRenderer>();
 		AddComponent<Rigidbody2D>();
 		AddComponent<BoxCollider2D>();

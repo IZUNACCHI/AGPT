@@ -83,9 +83,17 @@ public:
 
 	// Copy constructor
 	Vector2(const Vector2& other) = default;
+	template<typename U>
+	Vector2(const Vector2<U>& other) : x(static_cast<T>(other.x)), y(static_cast<T>(other.y)) {}
 
 	// Assignment operator
 	Vector2& operator=(const Vector2& other) = default;
+	template<typename U>
+	Vector2& operator=(const Vector2<U>& other) {
+		x = static_cast<T>(other.x);
+		y = static_cast<T>(other.y);
+		return *this;
+	}
 
 	// Access operators
 	T& operator[](size_t index) {

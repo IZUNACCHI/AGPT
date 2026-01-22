@@ -82,7 +82,7 @@
 	bool Window::IsVisible() const {
 		if (!impl || !impl->window) return false;
 
-		uint32_t flags = SDL_GetWindowFlags(impl->window);
+		uint64_t flags = SDL_GetWindowFlags(impl->window);
 		return (flags & SDL_WINDOW_HIDDEN) == 0;
 	}
 
