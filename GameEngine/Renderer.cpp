@@ -23,7 +23,7 @@
 	}
 
 	Renderer::Renderer(Renderer&& other) noexcept
-		: m_renderer(other.m_renderer) {
+		: m_renderer(other.m_renderer){
 		other.m_renderer = nullptr;
 	}
 
@@ -83,7 +83,14 @@
 		}
 
 		const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
-		const SDL_FRect dst{ destinationPosition.x, destinationPosition.y, destinationSize.x, destinationSize.y };
+		Vector2f screenPosition = destinationPosition;
+		int outputWidth = 0;
+		int outputHeight = 0;
+		if (SDL_GetRenderOutputSize(m_renderer, &outputWidth, &outputHeight)) {
+			screenPosition.x = destinationPosition.x + (static_cast<float>(outputWidth) * 0.5f);
+			screenPosition.y = (static_cast<float>(outputHeight) * 0.5f) - destinationPosition.y;
+		}
+		const SDL_FRect dst{ screenPosition.x, screenPosition.y, destinationSize.x, destinationSize.y };
 
 		if (!SDL_RenderTexture(m_renderer, texture.GetNative(), &src, &dst)) {
 			LOG_WARN("Renderer draw texture failed: " + std::string(SDL_GetError()));

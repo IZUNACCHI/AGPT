@@ -5,6 +5,8 @@
 #include <vector>
 #include "Behaviour.h"
 
+class Collider2D;
+
 /// Script base class with Unity-style lifecycle callbacks.
 class MonoBehaviour : public Behaviour {
 public:
@@ -38,17 +40,18 @@ public:
 	virtual void OnDestroy() {}
 
 	/// Called when a collision begins.
-	virtual void OnCollisionEnter() {}
+	virtual void OnCollisionEnter(Collider2D* other) {}
 	/// Called while a collision stays.
-	virtual void OnCollisionStay() {}
+	virtual void OnCollisionStay(Collider2D* other) {}
 	/// Called when a collision ends.
-	virtual void OnCollisionExit() {}
+	virtual void OnCollisionExit(Collider2D* other) {}
 	/// Called when a trigger begins.
-	virtual void OnTriggerEnter() {}
+	virtual void OnTriggerEnter(Collider2D* other) {}
 	/// Called while a trigger stays.
-	virtual void OnTriggerStay() {}
+	virtual void OnTriggerStay(Collider2D* other) {}
 	/// Called when a trigger ends.
-	virtual void OnTriggerExit() {}
+	virtual void OnTriggerExit(Collider2D* other) {}
+
 	/// Restores default values.
 	virtual void Reset() {}
 

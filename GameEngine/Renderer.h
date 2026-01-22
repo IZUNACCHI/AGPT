@@ -36,4 +36,5 @@ public:
 
 private:
 	SDL_Renderer* m_renderer = nullptr;
+
 };

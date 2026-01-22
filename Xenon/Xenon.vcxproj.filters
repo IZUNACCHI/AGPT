@@ -22,11 +22,14 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="SpaceShip.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Level1.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bumper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
