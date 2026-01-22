@@ -5,10 +5,12 @@
 class SpaceShipBehaviour : public MonoBehaviour {
 
 	SpriteRenderer* sprite = nullptr;
+	Texture* shipTexture = nullptr;
 	Rigidbody2D* rigidbody = nullptr;
 	Transform* transform = nullptr;
 	BoxCollider2D* boxCollider = nullptr;
-	Vector2f velocity = Vector2f::Zero();
+	
+	Vector2f moveSpeed = Vector2f::Zero();
 	
 protected:
 	void Awake() override {
@@ -16,21 +18,29 @@ protected:
 		rigidbody = GetComponent<Rigidbody2D>().get();
 		transform = GetTransform();
 		boxCollider = GetComponent<BoxCollider2D>().get();
+
+		if(sprite) {
+			shipTexture = LoadTexture("Ship2.bmp", Vector3i(255, 0, 255));
+			sprite->SetTexture(shipTexture);
+			sprite->SetFrameSize(Vector2i(64, 64));
+			sprite->SetFrameIndex(3);
+		}
 	}
 
 	void Update(){
 		// Move the spaceship based on user input
+		Vector2f velocity = Vector2f::Zero();
 		const float moveSpeed = 200.0f;
-		if (Input::IsKeyPressed(Key::W)) {
+		if (IsKeyPressed(Key::W)) {
 			velocity.y += 1.0f;
 		}
-		if (Input::IsKeyPressed(Key::S)) {
+		if (IsKeyPressed(Key::S)) {
 			velocity.y -= 1.0f;
 		}
-		if (Input::IsKeyPressed(Key::A)) {
+		if (IsKeyPressed(Key::A)) {
 			velocity.x -= 1.0f;
 		}
-		if (Input::IsKeyPressed(Key::D)) {
+		if (IsKeyPressed(Key::D)) {
 			velocity.x += 1.0f;
 		}
 		if (velocity.LengthSquared() > 0.0f) {

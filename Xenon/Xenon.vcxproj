@@ -140,7 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="SpaceShip.cpp" />
+    <ClCompile Include="SpaceShip.hpp" />
     <ClCompile Include="SpaceShipBehaviour.hpp" />
   </ItemGroup>
   <ItemGroup>

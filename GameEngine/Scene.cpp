@@ -19,23 +19,6 @@ Scene::~Scene() {
 	s_scenes.erase(std::remove(s_scenes.begin(), s_scenes.end(), this), s_scenes.end());
 }
 
-std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name) {
-	// Construct the GameObject, register it with the Object system, and adopt it into this Scene.
-	auto obj = std::make_shared<GameObject>(name);
-	Object::RegisterObject(obj);
-	AdoptGameObject(obj);
-	return obj;
-}
-
-std::shared_ptr<GameObject> Scene::CreateGameObject(const std::string& name, Transform* parent) {
-	// Create the object, then parent it if a Transform is provided.
-	auto obj = CreateGameObject(name);
-	if (parent) {
-		obj->GetTransform()->SetParent(parent);
-	}
-	return obj;
-}
-
 void Scene::Start() {
 	// Only start once; subsequent calls are ignored.
 	if (m_isActive) {
@@ -146,6 +129,15 @@ void Scene::Unload() {
 	for (const auto& obj : m_allGameObjects) {
 		Object::Destroy(obj);
 	}
+}
+
+template<typename T, typename... Args>
+std::shared_ptr<T> Scene::CreateGameObject(const std::string& name, Args&&... args) {
+	static_assert(std::is_base_of<GameObject, T>::value, "T must derive from GameObject");
+	auto obj = std::make_shared<T>(name, std::forward<Args>(args)...);
+	Object::RegisterObject(obj);
+	AdoptGameObject(obj);
+	return obj;
 }
 
 std::shared_ptr<GameObject> Scene::FindGameObject(const std::string& nameOrPath) {

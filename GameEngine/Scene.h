@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <type_traits>
 #include <vector>
 #include "GameObject.h"
 
@@ -31,10 +32,9 @@ public:
 	/// Called when the Scene is destroyed.
 	virtual void OnDestroy() {}
 
-	/// Creates and adopts a new GameObject.
-	std::shared_ptr<GameObject> CreateGameObject(const std::string& name = "GameObject");
-	/// Creates a new GameObject with a parent Transform.
-	std::shared_ptr<GameObject> CreateGameObject(const std::string& name, Transform* parent);
+	/// Creates and adopts a GameObject derived type.
+	template<typename T, typename... Args>
+	std::shared_ptr<T> CreateGameObject(const std::string& name = "GameObject", Args&&... args);
 
 	/// Starts the Scene.
 	void Start();
@@ -61,6 +61,7 @@ public:
 
 	/// Finds a GameObject by name or path across scenes.
 	static std::shared_ptr<GameObject> FindGameObject(const std::string& nameOrPath);
+
 
 private:
 	/// Allows GameObject to call into Scene internals.
@@ -101,3 +102,4 @@ private:
 	/// Registry of all active Scenes.
 	static std::vector<Scene*> s_scenes;
 };
+

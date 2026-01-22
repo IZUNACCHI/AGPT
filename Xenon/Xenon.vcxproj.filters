@@ -21,7 +21,7 @@
     <ClCompile Include="SpaceShipBehaviour.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpaceShip.cpp">
+    <ClCompile Include="SpaceShip.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
