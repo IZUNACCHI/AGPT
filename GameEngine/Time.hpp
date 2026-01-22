@@ -33,7 +33,7 @@ public:
 		instance.m_frameCount = 0;
 		instance.m_fps = 0.0f;
 		instance.m_fpsTimer = 0.0f;
-		instance.m_showFPS = true;
+		instance.m_showFPS = false;
 	}
 
 	static void Tick() {

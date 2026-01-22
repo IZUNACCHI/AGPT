@@ -131,15 +131,6 @@ void Scene::Unload() {
 	}
 }
 
-template<typename T, typename... Args>
-std::shared_ptr<T> Scene::CreateGameObject(const std::string& name, Args&&... args) {
-	static_assert(std::is_base_of<GameObject, T>::value, "T must derive from GameObject");
-	auto obj = std::make_shared<T>(name, std::forward<Args>(args)...);
-	Object::RegisterObject(obj);
-	AdoptGameObject(obj);
-	return obj;
-}
-
 std::shared_ptr<GameObject> Scene::FindGameObject(const std::string& nameOrPath) {
 	// Handle empty input early.
 	if (nameOrPath.empty()) {

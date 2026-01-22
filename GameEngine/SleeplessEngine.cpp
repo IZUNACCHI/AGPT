@@ -39,7 +39,7 @@ void SleeplessEngine::Initialize(Config config) {
 		Input::Initialize();
 
 		m_physicsWorld = std::make_unique<Physics2DWorld>();
-		m_physicsWorld->Initialize();
+		m_physicsWorld->Initialize(Vector2(0, 0));
 
 		m_isInitialized = true;
 	}
