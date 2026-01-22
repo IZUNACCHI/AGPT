@@ -1,9 +1,12 @@
 #pragma once
 
 #include "AssetManager.h"
+#include "Collider2D.h"
 #include "Component.h"
 #include "GameObject.h"
+#include "Input.h"
 #include "Renderer.h"
+#include "Rigidbody2D.h"
 #include "Scene.h"
 #include "SleeplessEngine.h"
 #include "SpriteRenderer.h"
@@ -11,3 +14,4 @@
 #include "Transform.h"
 #include "Types.hpp"
 #include "Window.h"
+#include "MonoBehaviour.h"

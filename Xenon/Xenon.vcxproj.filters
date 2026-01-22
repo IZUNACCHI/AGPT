@@ -18,6 +18,9 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpaceShipBehaviour.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
     <ClCompile Include="SpaceShip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
