@@ -39,7 +39,7 @@ void Scene::Start() {
 	ProcessLifecycleQueue();
 }
 
-void Scene::Update(float deltaTime) {
+void Scene::Update() {
 	// Skip updates if the scene has not started or has been unloaded.
 	if (!m_isActive) {
 		return;
@@ -48,7 +48,7 @@ void Scene::Update(float deltaTime) {
 	// Run lifecycle before update so newly queued behaviours are ready.
 	ProcessLifecycleQueue();
 	// Call derived scene update logic.
-	OnUpdate(deltaTime);
+	OnUpdate();
 
 	const float now = Time::Now();
 	for (const auto& obj : m_allGameObjects) {
@@ -60,7 +60,7 @@ void Scene::Update(float deltaTime) {
 			if (behaviour->IsActiveAndEnabled()) {
 				// Update invoke timers before Update().
 				behaviour->TickInvokes(now);
-				behaviour->Update(deltaTime);
+				behaviour->Update();
 			}
 		}
 	}
@@ -69,39 +69,39 @@ void Scene::Update(float deltaTime) {
 	ProcessLifecycleQueue();
 }
 
-void Scene::FixedUpdate(float fixedDeltaTime) {
+void Scene::FixedUpdate() {
 	// Skip fixed update if the scene is inactive.
 	if (!m_isActive) {
 		return;
 	}
 	// Call derived scene fixed-step logic.
-	OnFixedUpdate(fixedDeltaTime);
+	OnFixedUpdate();
 	for (const auto& obj : m_allGameObjects) {
 		if (!obj->IsActiveInHierarchy()) {
 			continue;
 		}
 		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
 			if (behaviour->IsActiveAndEnabled()) {
-				behaviour->FixedUpdate(fixedDeltaTime);
+				behaviour->FixedUpdate();
 			}
 		}
 	}
 }
 
-void Scene::LateUpdate(float deltaTime) {
+void Scene::LateUpdate() {
 	// Skip late update if the scene is inactive.
 	if (!m_isActive) {
 		return;
 	}
 	// Call derived scene late update logic.
-	OnLateUpdate(deltaTime);
+	OnLateUpdate();
 	for (const auto& obj : m_allGameObjects) {
 		if (!obj->IsActiveInHierarchy()) {
 			continue;
 		}
 		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
 			if (behaviour->IsActiveAndEnabled()) {
-				behaviour->LateUpdate(deltaTime);
+				behaviour->LateUpdate();
 			}
 		}
 	}

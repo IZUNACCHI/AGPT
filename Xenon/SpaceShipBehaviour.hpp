@@ -10,7 +10,7 @@ class SpaceShipBehaviour : public MonoBehaviour {
 	Transform* transform = nullptr;
 	BoxCollider2D* boxCollider = nullptr;
 	
-	Vector2f moveSpeed = Vector2f::Zero();
+	const Vector2f moveSpeed = Vector2f(300, 280);
 	
 protected:
 	void Awake() override {
@@ -27,25 +27,25 @@ protected:
 		}
 	}
 
-	void Update(){
+	void Update() override{
 		// Move the spaceship based on user input
 		Vector2f velocity = Vector2f::Zero();
-		const float moveSpeed = 200.0f;
-		if (IsKeyPressed(Key::W)) {
-			velocity.y += 1.0f;
-		}
-		if (IsKeyPressed(Key::S)) {
+		if (IsKeyDown(Key::W)) {
 			velocity.y -= 1.0f;
 		}
-		if (IsKeyPressed(Key::A)) {
+		if (IsKeyDown(Key::S)) {
+			velocity.y += 1.0f;
+		}
+		if (IsKeyDown(Key::A)) {
 			velocity.x -= 1.0f;
 		}
-		if (IsKeyPressed(Key::D)) {
+		if (IsKeyDown(Key::D)) {
 			velocity.x += 1.0f;
 		}
 		if (velocity.LengthSquared() > 0.0f) {
 			velocity = velocity.Normalized() * moveSpeed;
 		}
+
 		rigidbody->SetLinearVelocity(velocity);
 	}
 };

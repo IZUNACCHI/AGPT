@@ -74,15 +74,15 @@ void SleeplessEngine::Run() {
 			// 3. Fixed update
 			int steps = Time::CalculateFixedSteps();
 			for (int i = 0; i < steps; ++i) {
-				FixedUpdate(Time::FixedDeltaTime());
+				FixedUpdate();
 				Time::ConsumeFixedStep();
 			}
 
 			// 4. Variable update
-			Update(Time::DeltaTime());
+			Update();
 
 			// 5. Late update
-			LateUpdate(Time::DeltaTime());
+			LateUpdate();
 
 			// 6. Garbage collection
 			DestroyPending();
@@ -118,25 +118,25 @@ void SleeplessEngine::ResetPhysicsWorld(const Vector2f& gravity) {
 	m_physicsWorld->Reset(gravity);
 }
 
-inline void SleeplessEngine::Update(float deltaTime) {
+inline void SleeplessEngine::Update() {
 	if (m_currentScene && m_currentScene->IsActive()) {
-		m_currentScene->Update(deltaTime);
+		m_currentScene->Update();
 	}
 }
 
-void SleeplessEngine::FixedUpdate(float fixedDeltaTime) {
+void SleeplessEngine::FixedUpdate() {
 	if (m_currentScene && m_currentScene->IsActive()) {
-		m_currentScene->FixedUpdate(fixedDeltaTime);
+		m_currentScene->FixedUpdate();
 	}
 
 	if (m_physicsWorld) {
-		m_physicsWorld->Step(fixedDeltaTime, 1);
+		m_physicsWorld->Step(Time::FixedDeltaTime(), 1);
 	}
 }
 
-void SleeplessEngine::LateUpdate(float deltaTime) {
+void SleeplessEngine::LateUpdate() {
 	if (m_currentScene && m_currentScene->IsActive()) {
-		m_currentScene->LateUpdate(deltaTime);
+		m_currentScene->LateUpdate();
 	}
 }
 

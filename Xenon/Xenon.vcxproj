@@ -116,7 +116,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib;$(SolutionDir)Build\lib\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -135,7 +135,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib;$(SolutionDir)Build\lib\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -145,11 +145,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Level1.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GameEngine\GameEngine.vcxproj">
-      <Project>{d4ba05e3-c51e-41f2-94ea-c42f7a4e49e4}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Dist\graphics\Ship2.bmp" />

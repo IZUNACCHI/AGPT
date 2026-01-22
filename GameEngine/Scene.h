@@ -22,11 +22,11 @@ public:
 	/// Called when the Scene starts.
 	virtual void OnStart() {}
 	/// Called once per frame.
-	virtual void OnUpdate(float) {}
+	virtual void OnUpdate() {}
 	/// Called on a fixed timestep.
-	virtual void OnFixedUpdate(float) {}
+	virtual void OnFixedUpdate() {}
 	/// Called after Update.
-	virtual void OnLateUpdate(float) {}
+	virtual void OnLateUpdate() {}
 	/// Called during render.
 	virtual void OnRender() {}
 	/// Called when the Scene is destroyed.
@@ -39,11 +39,11 @@ public:
 	/// Starts the Scene.
 	void Start();
 	/// Updates the Scene.
-	void Update(float deltaTime);
+	void Update();
 	/// Updates the Scene on a fixed timestep.
-	void FixedUpdate(float fixedDeltaTime);
+	void FixedUpdate();
 	/// Updates the Scene after Update.
-	void LateUpdate(float deltaTime);
+	void LateUpdate();
 	/// Renders the Scene.
 	void Render();
 	/// Unloads the Scene and destroys objects.

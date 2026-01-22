@@ -25,11 +25,11 @@ public:
 	/// Called before the first Update if the script is enabled.
 	virtual void Start() {}
 	/// Called once per frame while enabled and active.
-	virtual void Update(float) {}
+	virtual void Update() {}
 	/// Called at fixed time steps.
-	virtual void FixedUpdate(float) {}
+	virtual void FixedUpdate() {}
 	/// Called after all Update calls.
-	virtual void LateUpdate(float) {}
+	virtual void LateUpdate() {}
 	/// Called when the behaviour becomes enabled and active.
 	virtual void OnEnable() {}
 	/// Called when the behaviour becomes disabled or inactive.

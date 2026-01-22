@@ -47,9 +47,9 @@ private:
 	SleeplessEngine() = default;
 
 	// Core loop phases
-	void Update(float deltaTime);
-	void FixedUpdate(float fixedDeltaTime);
-	void LateUpdate(float deltaTime);
+	void Update();
+	void FixedUpdate();
+	void LateUpdate();
 	void Render();
 	void DestroyPending();
 
