@@ -85,7 +85,7 @@
 		const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
 		const SDL_FRect dst{ destinationPosition.x, destinationPosition.y, destinationSize.x, destinationSize.y };
 
-		if (SDL_RenderTexture(m_renderer, texture.GetNative(), &src, &dst) != 0) {
+		if (!SDL_RenderTexture(m_renderer, texture.GetNative(), &src, &dst)) {
 			LOG_WARN("Renderer draw texture failed: " + std::string(SDL_GetError()));
 			return false;
 		}
