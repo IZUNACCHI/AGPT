@@ -8,8 +8,7 @@ class SpaceShipBehaviour : public MonoBehaviour {
 	Rigidbody2D* rigidbody = nullptr;
 	Transform* transform = nullptr;
 	BoxCollider2D* boxCollider = nullptr;
-	
-	const Vector2f moveSpeed = Vector2f(30000, 28000);
+	Vector2f moveSpeed = Vector2f(24000, 18000);
 	
 protected:
 	void Awake() override {
@@ -44,15 +43,9 @@ protected:
 		if (velocity.LengthSquared() > 0.0f) {
 			velocity = velocity.Normalized() * moveSpeed * Time::DeltaTime();
 		}
-		if (IsKeyPressed(Key::Tab)) {
-			moveSpeed += Vector2i(10, 10);
-			LOG_INFO("Move Speed = " + std::to_string(moveSpeed.x) + ", " + std::to_string(moveSpeed.y));
-		}
-		else if (IsKeyPressed(Key::LeftShift))
-		{
-			moveSpeed -= Vector2i(10, 10);
-		}
+		
 		rigidbody->SetLinearVelocity(velocity);
+		LOG_INFO("SpaceShip position: (" + std::to_string(transform->GetPosition().x) + ", " + std::to_string(transform->GetPosition().y) + ")");
 	}
 
 	void OnCollisionEnter(Collider2D* other) override {

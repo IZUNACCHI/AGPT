@@ -15,7 +15,7 @@ public:
 		spaceShip->GetTransform()->SetPosition(windowCenter);
 
 		auto bumper = CreateGameObject<Bumper>("Bumper");
-		bumper->GetTransform()->SetPosition(windowCenter + Vector2f(0.9f, 0.0f));
+		bumper->GetTransform()->SetPosition(windowCenter + Vector2f(0.1f, 0.0f));
 
 		auto overlapZone = CreateGameObject<OverlapZone>("OverlapZone");
 		overlapZone->GetTransform()->SetPosition(windowCenter + Vector2f(-0.1f, 0.0f));
