@@ -1,21 +1,59 @@
 #include "Transform.h"
-#include "GameObject.h"
-#include "Scene.h"
+
 #include <algorithm>
 #include <cmath>
 
-Transform::Transform(GameObject* gameObject): Component("Transform") {
+#include <box2d/box2d.h>
+
+#include "GameObject.h"
+#include "Rigidbody2D.h"
+#include "Scene.h"
+
+static void SyncBodyPositionFromTransform(GameObject* go, const Vector2f& worldPos) {
+	if (!go) return;
+
+	auto rb = go->GetComponent<Rigidbody2D>();
+	if (!rb) return;
+
+	b2BodyId bodyId = rb->GetBodyId();
+	if (!b2Body_IsValid(bodyId)) return;
+
+	// Keep current rotation, teleport position.
+	const b2Rot rot = b2Body_GetRotation(bodyId);
+	b2Body_SetTransform(bodyId, b2Vec2{ worldPos.x, worldPos.y }, rot);
+}
+
+static void SyncBodyRotationFromTransform(GameObject* go, float worldRotationDegrees) {
+	if (!go) return;
+
+	auto rb = go->GetComponent<Rigidbody2D>();
+	if (!rb) return;
+
+	b2BodyId bodyId = rb->GetBodyId();
+	if (!b2Body_IsValid(bodyId)) return;
+
+	// Keep current position, teleport rotation.
+	const b2Vec2 pos = b2Body_GetPosition(bodyId);
+	const float rad = worldRotationDegrees * 3.14159265358979323846f / 180.0f;
+	b2Body_SetTransform(bodyId, pos, b2MakeRot(rad));
+}
+
+Transform::Transform(GameObject* gameObject)
+	: Component("Transform") {
 	m_gameObject = gameObject;
 }
 
 void Transform::SetPosition(const Vector2f& position) {
 	m_localPosition = position;
+
+	// If this object has a Rigidbody2D, keep physics in sync with Transform changes.
+	SyncBodyPositionFromTransform(m_gameObject, position);
+
 	SetDirty();
 }
 
 void Transform::SetPosition(float x, float y) {
-	m_localPosition = Vector2f(x, y);
-	SetDirty();
+	SetPosition(Vector2f(x, y));
 }
 
 Vector2f Transform::GetWorldPosition() const {
@@ -25,12 +63,15 @@ Vector2f Transform::GetWorldPosition() const {
 
 void Transform::SetRotation(float rotation) {
 	m_localRotation = rotation;
+
+	// If this object has a Rigidbody2D, keep physics in sync with Transform changes.
+	SyncBodyRotationFromTransform(m_gameObject, rotation);
+
 	SetDirty();
 }
 
 void Transform::SetRotationRadians(float rotation) {
-	m_localRotation = rotation * 180.0f / 3.14159265358979323846f;
-	SetDirty();
+	SetRotation(rotation * 180.0f / 3.14159265358979323846f);
 }
 
 float Transform::GetWorldRotation() const {
@@ -102,18 +143,15 @@ Transform* Transform::GetChild(size_t index) const {
 }
 
 void Transform::Translate(const Vector2f& translation) {
-	m_localPosition += translation;
-	SetDirty();
+	SetPosition(m_localPosition + translation);
 }
 
 void Transform::Translate(float x, float y) {
-	m_localPosition += Vector2f(x, y);
-	SetDirty();
+	Translate(Vector2f(x, y));
 }
 
 void Transform::Rotate(float angle) {
-	m_localRotation += angle;
-	SetDirty();
+	SetRotation(m_localRotation + angle);
 }
 
 Matrix3x3f Transform::GetLocalMatrix() const {
@@ -131,6 +169,7 @@ Matrix3x3f Transform::GetWorldMatrix() const {
 void Transform::SetDirty() {
 	m_hasChanged = true;
 	m_worldMatrixDirty = true;
+
 	for (auto* child : m_children) {
 		if (child) {
 			child->SetDirty();
@@ -152,6 +191,7 @@ void Transform::UpdateWorldMatrix() const {
 
 	m_worldPosition = m_worldMatrix * Vector2f::Zero();
 	m_worldRotation = m_localRotation + (m_parent ? m_parent->GetWorldRotation() : 0.0f);
+
 	if (m_parent) {
 		auto parentScale = m_parent->GetWorldScale();
 		m_worldScale = Vector2f(m_localScale.x * parentScale.x, m_localScale.y * parentScale.y);

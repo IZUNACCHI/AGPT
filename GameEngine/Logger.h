@@ -8,6 +8,7 @@
 #include <chrono>
 #include <ctime>
 #include <mutex>
+#define NOMINMAX
 #include <windows.h>
 
 enum class LogLevel {

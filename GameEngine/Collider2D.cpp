@@ -1,19 +1,28 @@
 #include "Collider2D.h"
+
+#include "EngineException.hpp"
 #include "Physics2D.h"
 #include "Rigidbody2D.h"
 #include "SleeplessEngine.h"
-#include "Transform.h"
 
 void Collider2D::Initialize() {
+	auto* gameObject = GetGameObject();
+	if (!gameObject) {
+		return;
+	}
+
+	// Collider2D is expected to be attached to a Rigidbody2D.
+	auto rb = gameObject->GetComponent<Rigidbody2D>();
+	if (!rb) {
+		THROW_ENGINE_EXCEPTION("GameObject '") << gameObject->GetName()
+			<< "' must have a Rigidbody2D before adding a Collider2D";
+	}
+
 	if (auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld()) {
 		physicsWorld->RegisterCollider(this);
 	}
 
-	auto rigidbody = GetGameObject() ? GetGameObject()->GetComponent<Rigidbody2D>() : nullptr;
-	if (rigidbody) {
-		AttachToRigidbody(rigidbody.get());
-	}
-
+	AttachToRigidbody(rb.get());
 	RecreateShape();
 }
 
@@ -27,10 +36,7 @@ void Collider2D::Shutdown() {
 		m_shapeId = b2_nullShapeId;
 	}
 
-	if (m_ownsBody && b2Body_IsValid(m_staticBodyId)) {
-		b2DestroyBody(m_staticBodyId);
-		m_staticBodyId = b2_nullBodyId;
-	}
+	m_attachedBody = nullptr;
 }
 
 void Collider2D::SetTrigger(bool isTrigger) {
@@ -71,12 +77,6 @@ void Collider2D::AttachToRigidbody(Rigidbody2D* body) {
 	}
 
 	m_attachedBody = body;
-	if (m_ownsBody && b2Body_IsValid(m_staticBodyId)) {
-		b2DestroyBody(m_staticBodyId);
-		m_staticBodyId = b2_nullBodyId;
-		m_ownsBody = false;
-	}
-
 	RecreateShape();
 }
 
@@ -86,7 +86,12 @@ void Collider2D::DetachFromRigidbody(Rigidbody2D* body) {
 	}
 
 	m_attachedBody = nullptr;
-	RecreateShape();
+
+	// Without a rigidbody, this collider can't exist in Box2D.
+	if (b2Shape_IsValid(m_shapeId)) {
+		b2DestroyShape(m_shapeId, true);
+		m_shapeId = b2_nullShapeId;
+	}
 }
 
 void Collider2D::DestroyImmediateInternal() {
@@ -95,14 +100,18 @@ void Collider2D::DestroyImmediateInternal() {
 }
 
 void Collider2D::RecreateShape() {
+	b2BodyId bodyId = ResolveBody();
+	if (!b2Body_IsValid(bodyId)) {
+		if (b2Shape_IsValid(m_shapeId)) {
+			b2DestroyShape(m_shapeId, true);
+			m_shapeId = b2_nullShapeId;
+		}
+		return;
+	}
+
 	if (b2Shape_IsValid(m_shapeId)) {
 		b2DestroyShape(m_shapeId, true);
 		m_shapeId = b2_nullShapeId;
-	}
-
-	b2BodyId bodyId = ResolveBody();
-	if (!b2Body_IsValid(bodyId)) {
-		return;
 	}
 
 	b2ShapeDef shapeDef = BuildShapeDef();
@@ -115,40 +124,26 @@ b2ShapeDef Collider2D::BuildShapeDef() const {
 	shapeDef.density = m_density;
 	shapeDef.material.friction = m_friction;
 	shapeDef.material.restitution = m_restitution;
+
 	shapeDef.isSensor = m_isTrigger;
 	shapeDef.enableSensorEvents = m_isTrigger;
 	shapeDef.enableContactEvents = !m_isTrigger;
 	shapeDef.updateBodyMass = true;
+
 	return shapeDef;
 }
 
-b2BodyId Collider2D::ResolveBody() {
-	if (m_attachedBody && b2Body_IsValid(m_attachedBody->GetBodyId())) {
-		m_ownsBody = false;
-		return m_attachedBody->GetBodyId();
-	}
-
-	if (m_ownsBody && b2Body_IsValid(m_staticBodyId)) {
-		return m_staticBodyId;
-	}
-
-	auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld();
-	if (!physicsWorld || !physicsWorld->IsValid()) {
+b2BodyId Collider2D::ResolveBody() const {
+	if (!m_attachedBody) {
 		return b2_nullBodyId;
 	}
 
-	b2BodyDef bodyDef = b2DefaultBodyDef();
-	bodyDef.type = b2_staticBody;
-	bodyDef.userData = this;
+	b2BodyId bodyId = m_attachedBody->GetBodyId();
+	if (!b2Body_IsValid(bodyId)) {
+		return b2_nullBodyId;
+	}
 
-	auto* transform = GetGameObject()->GetTransform();
-	Vector2f position = transform->GetWorldPosition();
-	bodyDef.position = { position.x, position.y };
-	bodyDef.rotation = b2MakeRot(transform->GetWorldRotation() * Math::Constants<float>::Deg2Rad);
-
-	m_staticBodyId = b2CreateBody(physicsWorld->GetWorldId(), &bodyDef);
-	m_ownsBody = true;
-	return m_staticBodyId;
+	return bodyId;
 }
 
 void BoxCollider2D::SetSize(const Vector2f& size) {
@@ -164,11 +159,17 @@ std::shared_ptr<Component> BoxCollider2D::Clone() const {
 	clone->m_restitution = m_restitution;
 	clone->m_isTrigger = m_isTrigger;
 	clone->m_size = m_size;
+	clone->SetComponentName(GetComponentName());
 	return clone;
 }
 
 b2ShapeId BoxCollider2D::CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) {
-	b2Polygon box = b2MakeOffsetBox(m_size.x * 0.5f, m_size.y * 0.5f, { m_offset.x, m_offset.y }, b2MakeRot(0.0f));
+	b2Polygon box = b2MakeOffsetBox(
+		m_size.x * 0.5f,
+		m_size.y * 0.5f,
+		{ m_offset.x, m_offset.y },
+		b2MakeRot(0.0f)
+	);
 	return b2CreatePolygonShape(bodyId, &shapeDef, &box);
 }
 
@@ -185,6 +186,7 @@ std::shared_ptr<Component> CircleCollider2D::Clone() const {
 	clone->m_restitution = m_restitution;
 	clone->m_isTrigger = m_isTrigger;
 	clone->m_radius = m_radius;
+	clone->SetComponentName(GetComponentName());
 	return clone;
 }
 

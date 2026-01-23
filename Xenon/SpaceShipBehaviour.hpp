@@ -8,7 +8,7 @@ class SpaceShipBehaviour : public MonoBehaviour {
 	Rigidbody2D* rigidbody = nullptr;
 	Transform* transform = nullptr;
 	BoxCollider2D* boxCollider = nullptr;
-	Vector2f moveSpeed = Vector2f(24000, 18000);
+	Vector2f moveSpeed = Vector2f(100, 80);
 	
 protected:
 	void Awake() override {
@@ -24,7 +24,7 @@ protected:
 			sprite->SetFrameIndex(3);
 		}
 		if (rigidbody) {
-			rigidbody->SetBodyType(Rigidbody2D::BodyType::Kinematic);
+			rigidbody->SetBodyType(Rigidbody2D::BodyType::Dynamic);
 		}
 		if (boxCollider) {
 			boxCollider->SetSize(sprite->GetFrameSize());
@@ -47,7 +47,7 @@ protected:
 			velocity.x += 1.0f;
 		}
 		if (velocity.LengthSquared() > 0.0f) {
-			velocity = velocity.Normalized() * moveSpeed * Time::DeltaTime();
+			velocity = velocity.Normalized() * moveSpeed;
 		}
 		
 		rigidbody->SetLinearVelocity(velocity);

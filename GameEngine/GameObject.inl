@@ -2,15 +2,51 @@
 
 #include "Transform.h"
 
+#include "Collider2D.h"
+#include "EngineException.hpp"
+#include "Rigidbody2D.h"
+
 /// Adds a component of type T to this GameObject.
 template<typename T, typename... Args>
 std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
+	// Enforce engine rules at the point of addition.
+	if constexpr (std::is_base_of<Rigidbody2D, T>::value) {
+		if (GetComponent<Rigidbody2D>()) {
+			THROW_ENGINE_EXCEPTION("GameObject '") << GetName() << "' already has a Rigidbody2D";
+		}
+	}
+	if constexpr (std::is_base_of<Collider2D, T>::value) {
+		if (!GetComponent<Rigidbody2D>()) {
+			THROW_ENGINE_EXCEPTION("GameObject '") << GetName()
+				<< "' must have a Rigidbody2D before adding a Collider2D";
+		}
+	}
+
 	auto component = std::make_shared<T>(std::forward<Args>(args)...);
 	component->m_gameObject = this;
 	RegisterComponent(component);
 	return std::dynamic_pointer_cast<T>(component);
+}
+
+/// Returns the first component of type T with the given component name.
+template<typename T>
+std::shared_ptr<T> GameObject::GetComponentByName(const std::string& componentName) const {
+	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
+
+	for (const auto& component : m_components) {
+		if (!component) {
+			continue;
+		}
+		if (component->GetComponentName() != componentName) {
+			continue;
+		}
+		if (auto casted = std::dynamic_pointer_cast<T>(component)) {
+			return casted;
+		}
+	}
+	return nullptr;
 }
 
 /// Returns the first component of type T.

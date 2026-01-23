@@ -1,6 +1,7 @@
 #pragma once
 
 #include <box2d/box2d.h>
+#include <memory>
 #include "Component.h"
 #include "Types.hpp"
 
@@ -14,7 +15,7 @@ public:
 	/// Releases collider resources.
 	~Collider2D() override = default;
 
-	/// Initializes the collider with the physics world.
+	/// Initializes the collider and creates its physics shape.
 	void Initialize();
 	/// Shuts down the collider and releases physics resources.
 	void Shutdown();
@@ -38,9 +39,9 @@ public:
 	/// Sets the collider restitution (bounciness).
 	void SetRestitution(float restitution);
 
-	/// Attaches the collider to a rigidbody for dynamic simulation.
+	/// Attaches the collider to a rigidbody.
 	void AttachToRigidbody(Rigidbody2D* body);
-	/// Detaches the collider from a rigidbody and uses a static body.
+	/// Detaches the collider from a rigidbody (collider becomes inactive until reattached).
 	void DetachFromRigidbody(Rigidbody2D* body);
 
 	/// Returns the Box2D shape handle for this collider.
@@ -56,27 +57,16 @@ protected:
 	void RecreateShape();
 	/// Builds the Box2D shape definition from collider settings.
 	b2ShapeDef BuildShapeDef() const;
-	/// Resolves or creates a body for this collider.
-	b2BodyId ResolveBody();
+	/// Returns the body to attach shapes to (requires Rigidbody2D).
+	b2BodyId ResolveBody() const;
 
-	/// Stored Box2D shape handle.
 	b2ShapeId m_shapeId = b2_nullShapeId;
-	/// Box2D body used for static colliders.
-	b2BodyId m_staticBodyId = b2_nullBodyId;
-	/// Rigidbody currently attached to this collider.
 	Rigidbody2D* m_attachedBody = nullptr;
-	/// Whether this collider owns the static body it created.
-	bool m_ownsBody = false;
 
-	/// Local offset of the collider shape.
 	Vector2f m_offset = Vector2f::Zero();
-	/// Density applied to the shape.
 	float m_density = 1.0f;
-	/// Friction applied to the shape.
 	float m_friction = 0.3f;
-	/// Restitution applied to the shape.
 	float m_restitution = 0.0f;
-	/// Whether the collider acts as a trigger.
 	bool m_isTrigger = false;
 };
 
@@ -95,7 +85,6 @@ protected:
 	b2ShapeId CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) override;
 
 private:
-	/// Local size of the box shape.
 	Vector2f m_size = Vector2f(1.0f, 1.0f);
 };
 
@@ -114,6 +103,5 @@ protected:
 	b2ShapeId CreateShape(b2BodyId bodyId, const b2ShapeDef& shapeDef) override;
 
 private:
-	/// Radius of the circle shape.
 	float m_radius = 0.5f;
 };

@@ -47,6 +47,13 @@ public:
 	template<typename T>
 	std::vector<std::shared_ptr<T> > GetComponents() const;
 
+	/// Returns the first component with the given component name.
+	std::shared_ptr<Component> GetComponentByName(const std::string& componentName) const;
+
+	/// Returns the first component of type T with the given component name.
+	template<typename T>
+	std::shared_ptr<T> GetComponentByName(const std::string& componentName) const;
+
 	/// Returns the first component of type T in children.
 	template<typename T>
 	std::shared_ptr<T> GetComponentInChildren() const;
@@ -66,15 +73,6 @@ public:
 	/// Returns the component index on this GameObject.
 	size_t GetComponentIndex(const Component* component) const;
 
-	/*
-	/// Sends a message to all MonoBehaviours on this GameObject.
-	void SendMessage(const std::string& methodName);
-	/// Sends a message up the Transform hierarchy.
-	void SendMessageUp(const std::string& methodName);
-	/// Sends a message down the Transform hierarchy.
-	void SendMessageDown(const std::string& methodName);
-	*/
-
 	/// Clones this GameObject and its Components.
 	std::shared_ptr<GameObject> Clone() const;
 
@@ -86,15 +84,10 @@ public:
 	static void SetGameObjectsActive(const std::vector<int>& instanceIDs, bool value);
 
 private:
-	/// Allows Scene to manage GameObjects.
 	friend class Scene;
-	/// Allows Component to access removal logic.
 	friend class Component;
-	/// Allows MonoBehaviour to access internals.
 	friend class MonoBehaviour;
-	/// Allows Transform to manage hierarchy.
 	friend class Transform;
-	/// Allows Object to manage destruction.
 	friend class Object;
 
 	/// Assigns the owning Scene.
@@ -115,18 +108,12 @@ private:
 	/// Handles activation changes in hierarchy.
 	void HandleActivationChange(bool wasActive);
 
-	/// Local active state.
 	bool m_activeSelf = true;
-	/// Cached active-in-hierarchy state.
 	bool m_activeInHierarchy = true;
-	/// Layer value.
 	int m_layer = 0;
-	/// Owning Scene pointer.
 	Scene* m_scene = nullptr;
 
-	/// Transform component.
 	std::shared_ptr<Transform> m_transform;
-	/// All attached components.
 	std::vector<std::shared_ptr<Component> > m_components;
 };
 
