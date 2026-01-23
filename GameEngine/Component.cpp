@@ -30,6 +30,7 @@ size_t Component::GetComponentIndex() const {
 	return m_gameObject ? m_gameObject->GetComponentIndex(this) : 0;
 }
 
+/*
 void Component::SendMessage(const std::string& methodName) {
 	if (m_gameObject) {
 		m_gameObject->SendMessage(methodName);
@@ -47,6 +48,7 @@ void Component::SendMessageDown(const std::string& methodName) {
 		m_gameObject->SendMessageDown(methodName);
 	}
 }
+*/
 
 void Component::DestroyImmediateInternal() {
 	if (!m_gameObject) {

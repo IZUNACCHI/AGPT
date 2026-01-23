@@ -24,6 +24,7 @@ void SleeplessEngine::Initialize(Config config) {
 	Time::SetMaxDeltaTime(m_config.maximumDeltaTime);
 	Time::SetTargetFPS(m_config.targetFPS);
 
+
 	try {
 		// --- SDL ---
 		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
@@ -34,6 +35,7 @@ void SleeplessEngine::Initialize(Config config) {
 		m_window = std::make_unique<Window>(config.windowConfig);
 		m_window->SetVisible(true);
 		m_renderer = std::make_unique<Renderer>(*m_window);
+		SpriteRenderer::SetSortOptions(m_config.spriteSortOptions);
 		m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 		m_assetManager->SetBasePath(m_config.assetBasePath);
 		Input::Initialize();
@@ -146,6 +148,10 @@ void SleeplessEngine::Render() {
 	if (m_currentScene && m_currentScene->IsActive()) {
 		SpriteRenderer::RenderAll(*m_renderer);
 		m_currentScene->Render();
+	}
+
+	if (m_config.debugDrawColliders && m_physicsWorld) {
+		m_physicsWorld->DebugDraw(*m_renderer);
 	}
 
 	m_renderer->Present();

@@ -11,6 +11,7 @@
 #include "SleeplessEngine.h"
 #include "SpriteRenderer.h"
 #include "Texture.h"
+#include "Time.hpp"
 #include "Transform.h"
 #include "Types.hpp"
 #include "Window.h"
@@ -68,4 +69,12 @@ inline Window* GetWindow() {
 //renderer shortcuts
 inline Renderer* GetRenderer() {
 	return SleeplessEngine::GetInstance().GetRenderer();
+}
+
+//Time shortcuts
+inline float DeltaTime() {
+	return Time::DeltaTime();
+}
+inline float FixedDeltaTime() {
+	return Time::FixedDeltaTime();
 }

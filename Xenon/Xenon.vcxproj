@@ -144,6 +144,7 @@
     <ClCompile Include="SpaceShipBehaviour.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bumper.hpp" />
     <ClInclude Include="Level1.hpp" />
   </ItemGroup>
   <ItemGroup>

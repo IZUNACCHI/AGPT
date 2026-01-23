@@ -29,6 +29,9 @@
     <ClInclude Include="Level1.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Bumper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Dist\graphics\Ship2.bmp">

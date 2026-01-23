@@ -228,5 +228,5 @@ void Rigidbody2D::DetachExistingColliders() {
 
 void Rigidbody2D::DestroyImmediateInternal() {
 	Shutdown();
-    Component::DestroyImmediateInternal();
+	Component::DestroyImmediateInternal();
 }

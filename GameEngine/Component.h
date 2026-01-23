@@ -9,7 +9,6 @@
 class GameObject;
 class Transform;
 
-
 /// Base class for components attached to GameObjects.
 class Component : public Object {
 public:
@@ -27,6 +26,11 @@ public:
 	const std::string& GetName() const override;
 	/// Sets the name on the owning GameObject.
 	void SetName(const std::string& name) override;
+
+	/// Returns the component's own name (independent of GameObject name).
+	const std::string& GetComponentName() const { return Object::GetName(); }
+	/// Sets the component's own name (independent of GameObject name).
+	void SetComponentName(const std::string& name) { Object::SetName(name); }
 
 	/// Returns the first component of type T on this GameObject.
 	template<typename T>
@@ -54,13 +58,6 @@ public:
 
 	/// Returns the index of this component on its GameObject.
 	size_t GetComponentIndex() const;
-
-	/// Sends a message to all MonoBehaviours on the GameObject.
-	void SendMessage(const std::string& methodName);
-	/// Sends a message up the Transform hierarchy.
-	void SendMessageUp(const std::string& methodName);
-	/// Sends a message down the Transform hierarchy.
-	void SendMessageDown(const std::string& methodName);
 
 	/// Clones the component for instantiation.
 	virtual std::shared_ptr<Component> Clone() const { return nullptr; }

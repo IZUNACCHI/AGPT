@@ -1,6 +1,10 @@
 #include "Physics2D.h"
 #include "Collider2D.h"
+#include "GameObject.h"
+#include "MonoBehaviour.h"
+#include "Renderer.h"
 #include "Rigidbody2D.h"
+#include "Transform.h"
 
 Physics2DWorld::~Physics2DWorld() {
 	Shutdown();
@@ -48,12 +52,73 @@ void Physics2DWorld::Shutdown() {
 	m_worldId = b2_nullWorldId;
 }
 
+Collider2D* ResolveColliderFromShape(b2ShapeId shapeId) {
+	if (!b2Shape_IsValid(shapeId)) {
+		return nullptr;
+	}
+	return static_cast<Collider2D*>(b2Shape_GetUserData(shapeId));
+}
+
+using CollisionCallback = void (MonoBehaviour::*)(Collider2D* other);
+
+void DispatchCollisionEvent(Collider2D* collider, Collider2D* other, CollisionCallback callback) {
+	if (!collider) {
+		return;
+	}
+
+	auto* gameObject = collider->GetGameObject();
+	if (!gameObject) {
+		return;
+	}
+
+	auto behaviours = gameObject->GetComponents<MonoBehaviour>();
+	for (const auto& behaviour : behaviours) {
+		if (behaviour && behaviour->IsActiveAndEnabled()) {
+			((*behaviour).*callback)(other);
+		}
+	}
+}
+
 void Physics2DWorld::Step(float timeStep, int subStepCount) {
 	if (!IsValid()) {
 		return;
 	}
 
 	b2World_Step(m_worldId, timeStep, subStepCount);
+
+	const b2ContactEvents contactEvents = b2World_GetContactEvents(m_worldId);
+	for (int i = 0; i < contactEvents.beginCount; ++i) {
+		const auto& event = contactEvents.beginEvents[i];
+		Collider2D* colliderA = ResolveColliderFromShape(event.shapeIdA);
+		Collider2D* colliderB = ResolveColliderFromShape(event.shapeIdB);
+		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::OnCollisionEnter);
+		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::OnCollisionEnter);
+	}
+
+	for (int i = 0; i < contactEvents.endCount; ++i) {
+		const auto& event = contactEvents.endEvents[i];
+		Collider2D* colliderA = ResolveColliderFromShape(event.shapeIdA);
+		Collider2D* colliderB = ResolveColliderFromShape(event.shapeIdB);
+		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::OnCollisionExit);
+		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::OnCollisionExit);
+	}
+
+	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(m_worldId);
+	for (int i = 0; i < sensorEvents.beginCount; ++i) {
+		const auto& event = sensorEvents.beginEvents[i];
+		Collider2D* sensor = ResolveColliderFromShape(event.sensorShapeId);
+		Collider2D* visitor = ResolveColliderFromShape(event.visitorShapeId);
+		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::OnTriggerEnter);
+		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::OnTriggerEnter);
+	}
+
+	for (int i = 0; i < sensorEvents.endCount; ++i) {
+		const auto& event = sensorEvents.endEvents[i];
+		Collider2D* sensor = ResolveColliderFromShape(event.sensorShapeId);
+		Collider2D* visitor = ResolveColliderFromShape(event.visitorShapeId);
+		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::OnTriggerExit);
+		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::OnTriggerExit);
+	}
 
 	for (auto* body : m_registeredBodies) {
 		if (body) {
@@ -105,4 +170,32 @@ void Physics2DWorld::UnregisterCollider(Collider2D* collider) {
 		return;
 	}
 	m_registeredColliders.erase(collider);
+}
+
+void Physics2DWorld::DebugDraw(Renderer& renderer) const {
+	for (auto* collider : m_registeredColliders) {
+		if (!collider) {
+			continue;
+		}
+		auto* gameObject = collider->GetGameObject();
+		if (!gameObject) {
+			continue;
+		}
+		auto* transform = gameObject->GetTransform();
+		if (!transform) {
+			continue;
+		}
+
+		const Vector2f worldPosition = transform->GetWorldPosition() + collider->GetOffset();
+		const Vector3 color = collider->IsTrigger() ? Vector3(200, 0, 0) : Vector3(0, 200, 0);
+
+		if (auto* box = dynamic_cast<BoxCollider2D*>(collider)) {
+			const Vector2f size = box->GetSize();
+			const Vector2f topLeft = worldPosition;
+			renderer.DrawRectOutline(topLeft, size, color);
+		}
+		else if (auto* circle = dynamic_cast<CircleCollider2D*>(collider)) {
+			renderer.DrawCircleOutline(worldPosition, circle->GetRadius(), color, 32);
+		}
+	}
 }

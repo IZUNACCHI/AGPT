@@ -1,11 +1,16 @@
 #include "GameObject.h"
+
+#include <algorithm>
+
 #include "Component.h"
+#include "EngineException.hpp"
 #include "MonoBehaviour.h"
 #include "Scene.h"
-#include "Collider2D.h"
-#include "Rigidbody2D.h"
 #include "Transform.h"
-#include <algorithm>
+
+// Physics components used for rules/enforcement
+#include "Rigidbody2D.h"
+#include "Collider2D.h"
 
 GameObject::GameObject(const std::string& name)
 	: Object(name) {
@@ -14,6 +19,7 @@ GameObject::GameObject(const std::string& name)
 }
 
 GameObject::~GameObject() {
+	// Ensure behaviours get destruction callbacks.
 	for (const auto& component : m_components) {
 		if (auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component)) {
 			behaviour->TriggerDestroy();
@@ -39,28 +45,14 @@ size_t GameObject::GetComponentIndex(const Component* component) const {
 	return 0;
 }
 
-void GameObject::SendMessage(const std::string& methodName) {
+std::shared_ptr<Component> GameObject::GetComponentByName(const std::string& componentName) const {
 	for (const auto& component : m_components) {
-		if (auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component)) {
-			behaviour->ReceiveMessage(methodName);
+		if (!component) continue;
+		if (component->GetComponentName() == componentName) {
+			return component;
 		}
 	}
-}
-
-void GameObject::SendMessageUp(const std::string& methodName) {
-	SendMessage(methodName);
-	if (auto* parent = m_transform->GetParent()) {
-		parent->GetGameObject()->SendMessageUp(methodName);
-	}
-}
-
-void GameObject::SendMessageDown(const std::string& methodName) {
-	SendMessage(methodName);
-	for (auto* child : m_transform->GetChildren()) {
-		if (child) {
-			child->GetGameObject()->SendMessageDown(methodName);
-		}
-	}
+	return nullptr;
 }
 
 std::shared_ptr<GameObject> GameObject::Clone() const {
@@ -80,14 +72,31 @@ std::shared_ptr<GameObject> GameObject::Clone() const {
 		clone->m_transform->SetScale(m_transform->GetScale());
 	}
 
+	// Clone Rigidbody2D first so colliders validate correctly.
 	for (const auto& component : m_components) {
-		if (component.get() == m_transform.get()) {
+		if (!component) continue;
+		if (component.get() == m_transform.get()) continue;
+
+		if (!std::dynamic_pointer_cast<Rigidbody2D>(component)) {
 			continue;
 		}
+
 		auto cloneComponent = component->Clone();
-		if (!cloneComponent) {
-			continue;
-		}
+		if (!cloneComponent) continue;
+
+		cloneComponent->m_gameObject = clone.get();
+		clone->RegisterComponent(cloneComponent);
+	}
+
+	// Clone remaining components.
+	for (const auto& component : m_components) {
+		if (!component) continue;
+		if (component.get() == m_transform.get()) continue;
+		if (std::dynamic_pointer_cast<Rigidbody2D>(component)) continue;
+
+		auto cloneComponent = component->Clone();
+		if (!cloneComponent) continue;
+
 		cloneComponent->m_gameObject = clone.get();
 		clone->RegisterComponent(cloneComponent);
 	}
@@ -113,9 +122,8 @@ Scene* GameObject::GetScene(int instanceID) {
 void GameObject::SetGameObjectsActive(const std::vector<int>& instanceIDs, bool value) {
 	auto objects = Object::FindObjectsByType<GameObject>(true);
 	for (const auto& obj : objects) {
-		if (!obj) {
-			continue;
-		}
+		if (!obj) continue;
+
 		if (std::find(instanceIDs.begin(), instanceIDs.end(),
 			static_cast<int>(obj->GetInstanceID())) != instanceIDs.end()) {
 			obj->SetActive(value);
@@ -129,7 +137,7 @@ void GameObject::UpdateActiveInHierarchy() {
 		parentActive = parent->GetGameObject()->IsActiveInHierarchy();
 	}
 
-	bool wasActive = m_activeInHierarchy;
+	const bool wasActive = m_activeInHierarchy;
 	m_activeInHierarchy = m_activeSelf && parentActive;
 
 	if (wasActive != m_activeInHierarchy) {
@@ -143,18 +151,61 @@ void GameObject::UpdateActiveInHierarchy() {
 	}
 }
 
+void GameObject::HandleActivationChange(bool wasActive) {
+	const bool isActiveNow = m_activeInHierarchy;
+
+	// If we're turning off, send OnDisable to behaviours that had been enabled.
+	if (!isActiveNow) {
+		for (const auto& component : m_components) {
+			auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component);
+			if (!behaviour) continue;
+
+			// Only disable if it was enabled in the first place.
+			if (behaviour->HasOnEnableBeenCalled()) {
+				behaviour->TriggerDisable();
+			}
+		}
+		return;
+	}
+
+	// If we're turning on, queue lifecycle so Awake/OnEnable/Start run in scene order.
+	for (const auto& component : m_components) {
+		auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component);
+		if (!behaviour) continue;
+
+		QueueLifecycle(behaviour.get());
+	}
+}
+
 void GameObject::RegisterComponent(const std::shared_ptr<Component>& component) {
 	if (!component) {
 		return;
 	}
 
+	// Enforce rules:
+	// - one Rigidbody2D max
+	// - Collider2D requires Rigidbody2D
+	if (std::dynamic_pointer_cast<Rigidbody2D>(component)) {
+		if (GetComponent<Rigidbody2D>()) {
+			THROW_ENGINE_EXCEPTION("GameObject '") << GetName() << "' already has a Rigidbody2D";
+		}
+	}
+	if (std::dynamic_pointer_cast<Collider2D>(component)) {
+		if (!GetComponent<Rigidbody2D>()) {
+			THROW_ENGINE_EXCEPTION("GameObject '") << GetName()
+				<< "' must have a Rigidbody2D before adding a Collider2D";
+		}
+	}
+
 	m_components.push_back(component);
 	Object::RegisterObject(component);
 
+	// If we add a behaviour while active in hierarchy, queue its lifecycle.
 	if (auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component)) {
 		QueueLifecycle(behaviour.get());
 	}
 
+	// Initialize physics components immediately (engine exception rules already applied above).
 	if (auto rigidbody = std::dynamic_pointer_cast<Rigidbody2D>(component)) {
 		rigidbody->Initialize();
 	}
@@ -185,28 +236,32 @@ void GameObject::DestroyImmediateInternal() {
 		return;
 	}
 
+	// Destroy children first.
 	auto children = m_transform->GetChildren();
 	for (auto* child : children) {
-		if (child) {
-			auto* childObject = child->GetGameObject();
-			childObject->DestroyImmediateInternal();
-			childObject->MarkDestroyed();
-		}
+		if (!child) continue;
+
+		auto* childObject = child->GetGameObject();
+		childObject->DestroyImmediateInternal();
+		childObject->MarkDestroyed();
 	}
 
+	// Destroy components.
 	auto components = m_components;
 	for (const auto& component : components) {
-		if (component) {
-			component->DestroyImmediateInternal();
-			Object::UnregisterObject(component->GetInstanceID());
-		}
+		if (!component) continue;
+
+		component->DestroyImmediateInternal();
+		Object::UnregisterObject(component->GetInstanceID());
 	}
 	m_components.clear();
 
+	// Detach from parent.
 	if (m_transform && m_transform->GetParent()) {
 		m_transform->GetParent()->RemoveChild(m_transform.get());
 	}
 
+	// Remove from scene.
 	if (m_scene) {
 		m_scene->RemoveGameObject(this);
 	}
@@ -217,19 +272,4 @@ void GameObject::QueueLifecycle(MonoBehaviour* behaviour) {
 		return;
 	}
 	m_scene->QueueLifecycle(behaviour);
-}
-
-void GameObject::HandleActivationChange(bool wasActive) {
-	for (const auto& component : m_components) {
-		auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component);
-		if (!behaviour) {
-			continue;
-		}
-		if (!wasActive && m_activeInHierarchy) {
-			QueueLifecycle(behaviour.get());
-		}
-		else if (wasActive && !m_activeInHierarchy) {
-			behaviour->TriggerDisable();
-		}
-	}
 }

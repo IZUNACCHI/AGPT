@@ -14,13 +14,23 @@
 
 
 struct Config {
-		float fixedDeltaTime = 1.0f / 60.0f;
-		float maximumDeltaTime = 0.25f;
-		float targetFPS = 60.0f;
+	float fixedDeltaTime = 1.0f / 60.0f;
+	float maximumDeltaTime = 0.25f;
+	float targetFPS = 60.0f;
 
-		// Asset base path
-		std::string assetBasePath = "Dist/graphics/";
-		WindowConfig windowConfig{};
+	// Asset base path
+	std::string assetBasePath = "Dist/graphics/";
+	WindowConfig windowConfig{};
+
+	// Sprite sorting options
+	SpriteRenderer::SortOptions spriteSortOptions{
+		SpriteRenderer::SortAxis::Y,
+		SpriteRenderer::SortAxis::X,
+		true,
+		true
+	};
+
+	bool debugDrawColliders = true;
 };
 
 class SleeplessEngine {

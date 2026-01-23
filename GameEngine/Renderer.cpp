@@ -92,3 +92,71 @@
 
 		return true;
 	}
+
+	bool Renderer::DrawRectOutline(const Vector2f& position, const Vector2f& size, const Vector3i& color) {
+		if (!m_renderer) {
+			LOG_WARN("Cannot draw rect - renderer is not valid");
+			return false;
+		}
+
+		if (!SDL_SetRenderDrawColor(m_renderer, color.x, color.y, color.z, 255)) {
+			LOG_WARN("Renderer draw rect failed to set color: " + std::string(SDL_GetError()));
+			return false;
+		}
+
+		Vector2f screenPosition = position;
+		int outputWidth = 0;
+		int outputHeight = 0;
+		if (SDL_GetRenderOutputSize(m_renderer, &outputWidth, &outputHeight)) {
+			screenPosition.x = position.x + (static_cast<float>(outputWidth) * 0.5f);
+			screenPosition.y = (static_cast<float>(outputHeight) * 0.5f) - position.y;
+		}
+
+		const SDL_FRect rect{ screenPosition.x, screenPosition.y, size.x, size.y };
+		if (!SDL_RenderRect(m_renderer, &rect)) {
+			LOG_WARN("Renderer draw rect failed: " + std::string(SDL_GetError()));
+			return false;
+		}
+
+		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+		return true;
+	}
+
+	bool Renderer::DrawCircleOutline(const Vector2f& center, float radius, const Vector3i& color, int segments) {
+		if (!m_renderer) {
+			LOG_WARN("Cannot draw circle - renderer is not valid");
+			return false;
+		}
+
+		if (radius <= 0.0f || segments < 3) {
+			return false;
+		}
+
+		if (!SDL_SetRenderDrawColor(m_renderer, color.x, color.y, color.z, 255)) {
+			LOG_WARN("Renderer draw circle failed to set color: " + std::string(SDL_GetError()));
+			return false;
+		}
+
+		Vector2f screenCenter = center;
+		int outputWidth = 0;
+		int outputHeight = 0;
+		if (SDL_GetRenderOutputSize(m_renderer, &outputWidth, &outputHeight)) {
+			screenCenter.x = center.x + (static_cast<float>(outputWidth) * 0.5f);
+			screenCenter.y = (static_cast<float>(outputHeight) * 0.5f) - center.y;
+		}
+
+		const float step = (Math::Constants<float>::TwoPi) / static_cast<float>(segments);
+		float angle = 0.0f;
+		float prevX = screenCenter.x + radius;
+		float prevY = screenCenter.y;
+		for (int i = 1; i <= segments; ++i) {
+			angle += step;
+			const float x = screenCenter.x + std::cos(angle) * radius;
+			const float y = screenCenter.y + std::sin(angle) * radius;
+			SDL_RenderLine(m_renderer, prevX, prevY, x, y);
+			prevX = x;
+			prevY = y;
+		}
+		SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+		return true;
+	}

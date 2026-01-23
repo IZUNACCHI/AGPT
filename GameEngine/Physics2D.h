@@ -6,6 +6,7 @@
 
 class Rigidbody2D;
 class Collider2D;
+class Renderer;
 
 /// Wraps a Box2D world and registered physics components.
 class Physics2DWorld {
@@ -16,13 +17,16 @@ public:
 	~Physics2DWorld();
 
 	/// Initializes the Box2D world with the given gravity.
-	void Initialize(const Vector2f& gravity = Vector2f(0.0f, -9.81f));
+	void Initialize(const Vector2f& gravity = Vector2f(0.0f, 0.0f));
 	/// Resets the Box2D world and rebuilds registered objects.
-	void Reset(const Vector2f& gravity = Vector2f(0.0f, -9.81f));
+	void Reset(const Vector2f& gravity = Vector2f(0.0f, 0.0f));
 	/// Shuts down the Box2D world.
 	void Shutdown();
 	/// Steps the Box2D world simulation.
 	void Step(float timeStep, int subStepCount = 1);
+
+	/// Debug draw registered collider shapes.
+	void DebugDraw(Renderer& renderer) const;
 
 	/// Returns the Box2D world handle.
 	b2WorldId GetWorldId() const { return m_worldId; }

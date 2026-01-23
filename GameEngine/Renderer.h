@@ -28,6 +28,10 @@ public:
 	void Present();
 	bool DrawTexture(const Texture& texture, const Vector2f& sourcePosition, const Vector2f& sourceSize, const Vector2f& destinationPosition, const Vector2f& destinationSize);
 
+	bool DrawRectOutline(const Vector2f& position, const Vector2f& size, const Vector3i& color);
+
+	bool DrawCircleOutline(const Vector2f& center, float radius, const Vector3i& color, int segments);
+
 	// Get native SDL renderer
 	SDL_Renderer* GetNative() const { return m_renderer; }
 

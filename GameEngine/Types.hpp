@@ -109,21 +109,57 @@ public:
 		return Vector2(x + other.x, y + other.y);
 	}
 
+	template<typename U>
+	Vector2 operator+(const Vector2<U>& other) const {
+		return Vector2(x + static_cast<T>(other.x), y + static_cast<T>(other.y));
+	}
+
 	Vector2 operator-(const Vector2& other) const {
 		return Vector2(x - other.x, y - other.y);
+	}
+
+	template<typename U>
+	Vector2 operator-(const Vector2<U>& other) const {
+		return Vector2(x - static_cast<T>(other.x), y - static_cast<T>(other.y));
 	}
 
 	Vector2 operator*(T scalar) const {
 		return Vector2(x * scalar, y * scalar);
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector2 operator*(U scalar) const {
+		return Vector2(x * static_cast<T>(scalar), y * static_cast<T>(scalar));
+	}
+
+	Vector2 operator*(const Vector2& other) const {
+		return Vector2(x * other.x, y * other.y);
+	}
+
+	template<typename U>
+	Vector2 operator*(const Vector2<U>& other) const {
+		return Vector2(x * static_cast<T>(other.x), y * static_cast<T>(other.y));
+	}
+
 	Vector2 operator/(T scalar) const {
 		return Vector2(x / scalar, y / scalar);
+	}
+
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector2 operator/(U scalar) const {
+		return Vector2(x / static_cast<T>(scalar), y / static_cast<T>(scalar));
 	}
 
 	Vector2& operator+=(const Vector2& other) {
 		x += other.x;
 		y += other.y;
+		return *this;
+	}
+
+	template<typename U>
+	Vector2& operator+=(const Vector2<U>& other) {
+		x += static_cast<T>(other.x);
+		y += static_cast<T>(other.y);
 		return *this;
 	}
 
@@ -133,15 +169,49 @@ public:
 		return *this;
 	}
 
+	template<typename U>
+	Vector2& operator-=(const Vector2<U>& other) {
+		x -= static_cast<T>(other.x);
+		y -= static_cast<T>(other.y);
+		return *this;
+	}
+
 	Vector2& operator*=(T scalar) {
 		x *= scalar;
 		y *= scalar;
 		return *this;
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector2& operator*=(U scalar) {
+		x *= static_cast<T>(scalar);
+		y *= static_cast<T>(scalar);
+		return *this;
+	}
+
+	Vector2& operator*=(const Vector2& other) {
+		x *= other.x;
+		y *= other.y;
+		return *this;
+	}
+
+	template<typename U>
+	Vector2& operator*=(const Vector2<U>& other) {
+		x *= static_cast<T>(other.x);
+		y *= static_cast<T>(other.y);
+		return *this;
+	}
+
 	Vector2& operator/=(T scalar) {
 		x /= scalar;
 		y /= scalar;
+		return *this;
+	}
+
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector2& operator/=(U scalar) {
+		x /= static_cast<T>(scalar);
+		y /= static_cast<T>(scalar);
 		return *this;
 	}
 
@@ -154,7 +224,18 @@ public:
 		return Math::Approximately(x, other.x) && Math::Approximately(y, other.y);
 	}
 
+	template<typename U>
+	bool operator==(const Vector2<U>& other) const {
+		return Math::Approximately(x, static_cast<T>(other.x))
+			&& Math::Approximately(y, static_cast<T>(other.y));
+	}
+
 	bool operator!=(const Vector2& other) const {
+		return !(*this == other);
+	}
+
+	template<typename U>
+	bool operator!=(const Vector2<U>& other) const {
 		return !(*this == other);
 	}
 
@@ -163,8 +244,18 @@ public:
 		return x * other.x + y * other.y;
 	}
 
+	template<typename U>
+	T Dot(const Vector2<U>& other) const {
+		return x * static_cast<T>(other.x) + y * static_cast<T>(other.y);
+	}
+
 	T Cross(const Vector2& other) const {
 		return x * other.y - y * other.x;
+	}
+
+	template<typename U>
+	T Cross(const Vector2<U>& other) const {
+		return x * static_cast<T>(other.y) - y * static_cast<T>(other.x);
 	}
 
 	T LengthSquared() const {
@@ -197,7 +288,19 @@ public:
 		return dx * dx + dy * dy;
 	}
 
+	template<typename U>
+	T DistanceSquared(const Vector2<U>& other) const {
+		T dx = x - static_cast<T>(other.x);
+		T dy = y - static_cast<T>(other.y);
+		return dx * dx + dy * dy;
+	}
+
 	T Distance(const Vector2& other) const {
+		return static_cast<T>(std::sqrt(DistanceSquared(other)));
+	}
+
+	template<typename U>
+	T Distance(const Vector2<U>& other) const {
 		return static_cast<T>(std::sqrt(DistanceSquared(other)));
 	}
 
@@ -220,6 +323,11 @@ public:
 template<typename T>
 Vector2<T> operator*(T scalar, const Vector2<T>& vector) {
 	return vector * scalar;
+}
+
+template<typename U, typename V, typename = std::enable_if_t<std::is_arithmetic_v<U> && !std::is_same_v<U, V>>>
+Vector2<V> operator*(U scalar, const Vector2<V>& vector) {
+	return vector * static_cast<V>(scalar);
 }
 
 // Vector3 definition
@@ -248,20 +356,64 @@ public:
 		return Vector3(x + other.x, y + other.y, z + other.z);
 	}
 
+	template<typename U>
+	Vector3 operator+(const Vector3<U>& other) const {
+		return Vector3(
+			x + static_cast<T>(other.x),
+			y + static_cast<T>(other.y),
+			z + static_cast<T>(other.z)
+		);
+	}
+
 	Vector3 operator-(const Vector3& other) const {
 		return Vector3(x - other.x, y - other.y, z - other.z);
+	}
+
+	template<typename U>
+	Vector3 operator-(const Vector3<U>& other) const {
+		return Vector3(
+			x - static_cast<T>(other.x),
+			y - static_cast<T>(other.y),
+			z - static_cast<T>(other.z)
+		);
 	}
 
 	Vector3 operator*(T scalar) const {
 		return Vector3(x * scalar, y * scalar, z * scalar);
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector3 operator*(U scalar) const {
+		return Vector3(
+			x * static_cast<T>(scalar),
+			y * static_cast<T>(scalar),
+			z * static_cast<T>(scalar)
+		);
+	}
+
 	Vector3 operator/(T scalar) const {
 		return Vector3(x / scalar, y / scalar, z / scalar);
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector3 operator/(U scalar) const {
+		return Vector3(
+			x / static_cast<T>(scalar),
+			y / static_cast<T>(scalar),
+			z / static_cast<T>(scalar)
+		);
+	}
+
 	Vector3& operator+=(const Vector3& other) {
 		x += other.x; y += other.y; z += other.z;
+		return *this;
+	}
+
+	template<typename U>
+	Vector3& operator+=(const Vector3<U>& other) {
+		x += static_cast<T>(other.x);
+		y += static_cast<T>(other.y);
+		z += static_cast<T>(other.z);
 		return *this;
 	}
 
@@ -270,13 +422,37 @@ public:
 		return *this;
 	}
 
+	template<typename U>
+	Vector3& operator-=(const Vector3<U>& other) {
+		x -= static_cast<T>(other.x);
+		y -= static_cast<T>(other.y);
+		z -= static_cast<T>(other.z);
+		return *this;
+	}
+
 	Vector3& operator*=(T scalar) {
 		x *= scalar; y *= scalar; z *= scalar;
 		return *this;
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector3& operator*=(U scalar) {
+		x *= static_cast<T>(scalar);
+		y *= static_cast<T>(scalar);
+		z *= static_cast<T>(scalar);
+		return *this;
+	}
+
 	Vector3& operator/=(T scalar) {
 		x /= scalar; y /= scalar; z /= scalar;
+		return *this;
+	}
+
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector3& operator/=(U scalar) {
+		x /= static_cast<T>(scalar);
+		y /= static_cast<T>(scalar);
+		z /= static_cast<T>(scalar);
 		return *this;
 	}
 
@@ -291,7 +467,19 @@ public:
 			Math::Approximately(z, other.z);
 	}
 
+	template<typename U>
+	bool operator==(const Vector3<U>& other) const {
+		return Math::Approximately(x, static_cast<T>(other.x)) &&
+			Math::Approximately(y, static_cast<T>(other.y)) &&
+			Math::Approximately(z, static_cast<T>(other.z));
+	}
+
 	bool operator!=(const Vector3& other) const {
+		return !(*this == other);
+	}
+
+	template<typename U>
+	bool operator!=(const Vector3<U>& other) const {
 		return !(*this == other);
 	}
 
@@ -300,11 +488,27 @@ public:
 		return x * other.x + y * other.y + z * other.z;
 	}
 
+	template<typename U>
+	T Dot(const Vector3<U>& other) const {
+		return x * static_cast<T>(other.x)
+			+ y * static_cast<T>(other.y)
+			+ z * static_cast<T>(other.z);
+	}
+
 	Vector3 Cross(const Vector3& other) const {
 		return Vector3(
 			y * other.z - z * other.y,
 			z * other.x - x * other.z,
 			x * other.y - y * other.x
+		);
+	}
+
+	template<typename U>
+	Vector3 Cross(const Vector3<U>& other) const {
+		return Vector3(
+			y * static_cast<T>(other.z) - z * static_cast<T>(other.y),
+			z * static_cast<T>(other.x) - x * static_cast<T>(other.z),
+			x * static_cast<T>(other.y) - y * static_cast<T>(other.x)
 		);
 	}
 
@@ -338,7 +542,20 @@ public:
 		return dx * dx + dy * dy + dz * dz;
 	}
 
+	template<typename U>
+	T DistanceSquared(const Vector3<U>& other) const {
+		T dx = x - static_cast<T>(other.x);
+		T dy = y - static_cast<T>(other.y);
+		T dz = z - static_cast<T>(other.z);
+		return dx * dx + dy * dy + dz * dz;
+	}
+
 	T Distance(const Vector3& other) const {
+		return static_cast<T>(std::sqrt(DistanceSquared(other)));
+	}
+
+	template<typename U>
+	T Distance(const Vector3<U>& other) const {
 		return static_cast<T>(std::sqrt(DistanceSquared(other)));
 	}
 
@@ -376,6 +593,11 @@ Vector3<T> operator*(T scalar, const Vector3<T>& vector) {
 	return vector * scalar;
 }
 
+template<typename U, typename V, typename = std::enable_if_t<std::is_arithmetic_v<U> && !std::is_same_v<U, V>>>
+Vector3<V> operator*(U scalar, const Vector3<V>& vector) {
+	return vector * static_cast<V>(scalar);
+}
+
 // Vector4 definition
 template<typename T>
 class Vector4 {
@@ -402,20 +624,69 @@ public:
 		return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
 	}
 
+	template<typename U>
+	Vector4 operator+(const Vector4<U>& other) const {
+		return Vector4(
+			x + static_cast<T>(other.x),
+			y + static_cast<T>(other.y),
+			z + static_cast<T>(other.z),
+			w + static_cast<T>(other.w)
+		);
+	}
+
 	Vector4 operator-(const Vector4& other) const {
 		return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+	}
+
+	template<typename U>
+	Vector4 operator-(const Vector4<U>& other) const {
+		return Vector4(
+			x - static_cast<T>(other.x),
+			y - static_cast<T>(other.y),
+			z - static_cast<T>(other.z),
+			w - static_cast<T>(other.w)
+		);
 	}
 
 	Vector4 operator*(T scalar) const {
 		return Vector4(x * scalar, y * scalar, z * scalar, w * scalar);
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector4 operator*(U scalar) const {
+		return Vector4(
+			x * static_cast<T>(scalar),
+			y * static_cast<T>(scalar),
+			z * static_cast<T>(scalar),
+			w * static_cast<T>(scalar)
+		);
+	}
+
 	Vector4 operator/(T scalar) const {
 		return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector4 operator/(U scalar) const {
+		return Vector4(
+			x / static_cast<T>(scalar),
+			y / static_cast<T>(scalar),
+			z / static_cast<T>(scalar),
+			w / static_cast<T>(scalar)
+		);
+	}
+
 	Vector4& operator+=(const Vector4& other) {
 		x += other.x; y += other.y; z += other.z; w += other.w;
+		return *this;
+	}
+
+	template<typename U>
+	Vector4& operator+=(const Vector4<U>& other) {
+		x += static_cast<T>(other.x);
+		y += static_cast<T>(other.y);
+		z += static_cast<T>(other.z);
+		w += static_cast<T>(other.w);
 		return *this;
 	}
 
@@ -424,13 +695,40 @@ public:
 		return *this;
 	}
 
+	template<typename U>
+	Vector4& operator-=(const Vector4<U>& other) {
+		x -= static_cast<T>(other.x);
+		y -= static_cast<T>(other.y);
+		z -= static_cast<T>(other.z);
+		w -= static_cast<T>(other.w);
+		return *this;
+	}
+
 	Vector4& operator*=(T scalar) {
 		x *= scalar; y *= scalar; z *= scalar; w *= scalar;
 		return *this;
 	}
 
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector4& operator*=(U scalar) {
+		x *= static_cast<T>(scalar);
+		y *= static_cast<T>(scalar);
+		z *= static_cast<T>(scalar);
+		w *= static_cast<T>(scalar);
+		return *this;
+	}
+
 	Vector4& operator/=(T scalar) {
 		x /= scalar; y /= scalar; z /= scalar; w /= scalar;
+		return *this;
+	}
+
+	template<typename U, typename = std::enable_if_t<std::is_arithmetic_v<U>>>
+	Vector4& operator/=(U scalar) {
+		x /= static_cast<T>(scalar);
+		y /= static_cast<T>(scalar);
+		z /= static_cast<T>(scalar);
+		w /= static_cast<T>(scalar);
 		return *this;
 	}
 
@@ -446,13 +744,34 @@ public:
 			Math::Approximately(w, other.w);
 	}
 
+	template<typename U>
+	bool operator==(const Vector4<U>& other) const {
+		return Math::Approximately(x, static_cast<T>(other.x)) &&
+			Math::Approximately(y, static_cast<T>(other.y)) &&
+			Math::Approximately(z, static_cast<T>(other.z)) &&
+			Math::Approximately(w, static_cast<T>(other.w));
+	}
+
 	bool operator!=(const Vector4& other) const {
+		return !(*this == other);
+	}
+
+	template<typename U>
+	bool operator!=(const Vector4<U>& other) const {
 		return !(*this == other);
 	}
 
 	// Vector operations
 	T Dot(const Vector4& other) const {
 		return x * other.x + y * other.y + z * other.z + w * other.w;
+	}
+
+	template<typename U>
+	T Dot(const Vector4<U>& other) const {
+		return x * static_cast<T>(other.x)
+			+ y * static_cast<T>(other.y)
+			+ z * static_cast<T>(other.z)
+			+ w * static_cast<T>(other.w);
 	}
 
 	T LengthSquared() const {
@@ -505,6 +824,11 @@ using Vector4d = Vector4<double>;
 template<typename T>
 Vector4<T> operator*(T scalar, const Vector4<T>& vector) {
 	return vector * scalar;
+}
+
+template<typename U, typename V, typename = std::enable_if_t<std::is_arithmetic_v<U> && !std::is_same_v<U, V>>>
+Vector4<V> operator*(U scalar, const Vector4<V>& vector) {
+	return vector * static_cast<V>(scalar);
 }
 /*
 	// Color class (uses Vector4)
@@ -594,7 +918,7 @@ Vector4<T> operator*(T scalar, const Vector4<T>& vector) {
 	};
 	*/
 
-// Rect definition
+	// Rect definition
 template<typename T>
 class Rect {
 public:
@@ -701,7 +1025,7 @@ public:
 // Common typedefs for Rect
 using Recti = Rect<int>;
 using Rectf = Rect<float>;
-using Rectu = Rect<unsigned int>;	
+using Rectu = Rect<unsigned int>;
 using Rectd = Rect<double>;
 
 // Matrix3x3f definition
@@ -779,4 +1103,3 @@ public:
 		return Vector2f(x, y);
 	}
 };
-

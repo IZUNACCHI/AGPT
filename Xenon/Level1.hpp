@@ -1,5 +1,6 @@
 #include <memory>
 #include "SpaceShip.hpp"
+#include "Bumper.hpp"
 
 class Level1 : public Scene {
 public:
@@ -8,10 +9,16 @@ public:
 	}
 
 	void OnStart() override {
+
 		auto spaceShip = CreateGameObject<SpaceShip>("SpaceShip");
-		spaceShip->GetTransform()->SetPosition(GetWindow()->GetSize() / 2);
+		spaceShip->GetTransform()->SetPosition(Vector2f::Zero());
+
+		auto bumper = CreateGameObject<Bumper>("Bumper");
+		bumper->GetTransform()->SetPosition(Vector2(400, 400));
+
+
+		auto overlapZone = CreateGameObject<OverlapZone>("OverlapZone");
+		overlapZone->GetTransform()->SetPosition(Vector2(200, 200));
 	}
 
-private:
-	std::unique_ptr<Texture> m_texture;
 };
