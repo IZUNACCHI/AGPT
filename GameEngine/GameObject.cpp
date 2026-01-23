@@ -38,7 +38,7 @@ size_t GameObject::GetComponentIndex(const Component* component) const {
 	}
 	return 0;
 }
-
+/*
 void GameObject::SendMessage(const std::string& methodName) {
 	for (const auto& component : m_components) {
 		if (auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component)) {
@@ -62,6 +62,7 @@ void GameObject::SendMessageDown(const std::string& methodName) {
 		}
 	}
 }
+*/
 
 std::shared_ptr<GameObject> GameObject::Clone() const {
 	auto clone = std::make_shared<GameObject>(GetName());

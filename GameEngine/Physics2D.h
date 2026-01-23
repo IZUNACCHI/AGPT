@@ -6,6 +6,7 @@
 
 class Rigidbody2D;
 class Collider2D;
+class Renderer;
 
 /// Wraps a Box2D world and registered physics components.
 class Physics2DWorld {
@@ -23,6 +24,9 @@ public:
 	void Shutdown();
 	/// Steps the Box2D world simulation.
 	void Step(float timeStep, int subStepCount = 1);
+
+	/// Debug draw registered collider shapes.
+	void DebugDraw(Renderer& renderer) const;
 
 	/// Returns the Box2D world handle.
 	b2WorldId GetWorldId() const { return m_worldId; }

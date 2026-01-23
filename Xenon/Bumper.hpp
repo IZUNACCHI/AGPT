@@ -5,15 +5,22 @@ class BumperBehaviour : public MonoBehaviour {
 	SpriteRenderer* sprite = nullptr;
 	BoxCollider2D* boxCollider = nullptr;
 	Texture* bumperTexture = nullptr;
+	Rigidbody2D* rigidbody = nullptr;
 
 protected:
 	void Awake() override {
 		sprite = GetComponent<SpriteRenderer>().get();
+		rigidbody = GetComponent<Rigidbody2D>().get();
 		boxCollider = GetComponent<BoxCollider2D>().get();
+
+		if(rigidbody) {
+			rigidbody->SetBodyType(Rigidbody2D::BodyType::Dynamic);
+		}
 
 		if (sprite) {
 			bumperTexture = LoadTexture("Burner1.bmp", Vector3i(255, 0, 255));
 			sprite->SetTexture(bumperTexture);
+			sprite->SetLayerOrder(-2);
 		}
 
 		if (boxCollider) {
@@ -47,6 +54,7 @@ protected:
 		if (sprite) {
 			overlapTexture = LoadTexture("destroyable.bmp", Vector3i(255, 0, 255));
 			sprite->SetTexture(overlapTexture);
+			sprite->SetLayerOrder(-1);
 		}
 
 		if (boxCollider) {

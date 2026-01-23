@@ -21,6 +21,16 @@ struct Config {
 		// Asset base path
 		std::string assetBasePath = "Dist/graphics/";
 		WindowConfig windowConfig{};
+
+		// Sprite sorting options
+		SpriteRenderer::SortOptions spriteSortOptions{
+			SpriteRenderer::SortAxis::Y,
+			SpriteRenderer::SortAxis::X,
+			true,
+			true
+		};
+
+		bool debugDrawColliders = true;
 };
 
 class SleeplessEngine {

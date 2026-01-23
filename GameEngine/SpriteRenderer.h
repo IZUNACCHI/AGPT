@@ -9,6 +9,19 @@ class Renderer;
 /// Component that renders a sprite frame from a BMP-backed texture.
 class SpriteRenderer : public Component {
 public:
+	enum class SortAxis {
+		None,
+		X,
+		Y
+	};
+
+	struct SortOptions {
+		SortAxis primaryAxis = SortAxis::None;
+		SortAxis secondaryAxis = SortAxis::None;
+		bool primaryAscending = true;
+		bool secondaryAscending = true;
+	};
+
 	SpriteRenderer();
 	explicit SpriteRenderer(Texture* texture);
 	~SpriteRenderer() override = default;
@@ -24,6 +37,9 @@ public:
 
 	void SetLayerOrder(int order) { m_layerOrder = order; }
 	int GetLayerOrder() const { return m_layerOrder; }
+
+	static void SetSortOptions(const SortOptions& options);
+	static SortOptions GetSortOptions();
 
 	static void RenderAll(Renderer& renderer);
 

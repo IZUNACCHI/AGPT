@@ -9,16 +9,16 @@ public:
 	}
 
 	void OnStart() override {
-		const Vector2f windowCenter = GetWindow()->GetSize() / 2;
 
 		auto spaceShip = CreateGameObject<SpaceShip>("SpaceShip");
-		spaceShip->GetTransform()->SetPosition(windowCenter);
+		spaceShip->GetTransform()->SetPosition(Vector2f::Zero());
 
 		auto bumper = CreateGameObject<Bumper>("Bumper");
-		bumper->GetTransform()->SetPosition(windowCenter);
+		bumper->GetTransform()->SetPosition(Vector2(100, 100));
+		
 
 		auto overlapZone = CreateGameObject<OverlapZone>("OverlapZone");
-		overlapZone->GetTransform()->SetPosition(windowCenter);
+		overlapZone->GetTransform()->SetPosition(Vector2(-100, -100));
 	}
 
 };

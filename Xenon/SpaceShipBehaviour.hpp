@@ -14,7 +14,7 @@ protected:
 	void Awake() override {
 		sprite = GetComponent<SpriteRenderer>().get();
 		rigidbody = GetComponent<Rigidbody2D>().get();
-		rigidbody->SetBodyType(Rigidbody2D::BodyType::Kinematic);
+		
 		transform = GetTransform();
 		boxCollider = GetComponent<BoxCollider2D>().get();
 
@@ -22,6 +22,12 @@ protected:
 			sprite->SetTexture(LoadTexture("Ship2.bmp", Vector3i(255, 0, 255)));
 			sprite->SetFrameSize(Vector2i(64, 64));
 			sprite->SetFrameIndex(3);
+		}
+		if (rigidbody) {
+			rigidbody->SetBodyType(Rigidbody2D::BodyType::Kinematic);
+		}
+		if (boxCollider) {
+			boxCollider->SetSize(sprite->GetFrameSize());
 		}
 	}
 
@@ -45,7 +51,6 @@ protected:
 		}
 		
 		rigidbody->SetLinearVelocity(velocity);
-		LOG_INFO("SpaceShip position: (" + std::to_string(transform->GetPosition().x) + ", " + std::to_string(transform->GetPosition().y) + ")");
 	}
 
 	void OnCollisionEnter(Collider2D* other) override {
@@ -56,12 +61,44 @@ protected:
 		LOG_INFO("SpaceShip collision enter");
 	}
 
+	void OnCollisionExit(Collider2D* other) override {
+		if (other && other->GetGameObject()) {
+			LOG_INFO("SpaceShip collision exit with " + other->GetGameObject()->GetName());
+			return;
+		}
+		LOG_INFO("SpaceShip collision exit");
+	}
+
+	void OnCollisionStay(Collider2D* other) override {
+		if (other && other->GetGameObject()) {
+			LOG_INFO("SpaceShip collision stay with " + other->GetGameObject()->GetName());
+			return;
+		}
+		LOG_INFO("SpaceShip collision stay");
+	}
+
+	void OnTriggerStay(Collider2D* other) override {
+		if (other && other->GetGameObject()) {
+			LOG_INFO("SpaceShip trigger stay with " + other->GetGameObject()->GetName());
+			return;
+		}
+		LOG_INFO("SpaceShip trigger stay");
+	}
+
 	void OnTriggerEnter(Collider2D* other) override {
 		if (other && other->GetGameObject()) {
 			LOG_INFO("SpaceShip trigger enter with " + other->GetGameObject()->GetName());
 			return;
 		}
 		LOG_INFO("SpaceShip trigger enter");
+	}
+
+	void OnTriggerExit(Collider2D* other) override {
+		if (other && other->GetGameObject()) {
+			LOG_INFO("SpaceShip trigger exit with " + other->GetGameObject()->GetName());
+			return;
+		}
+		LOG_INFO("SpaceShip trigger exit");
 	}
 
 };

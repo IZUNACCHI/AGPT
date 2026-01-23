@@ -5,6 +5,10 @@
 #include "Transform.h"
 #include <algorithm>
 
+namespace {
+	SpriteRenderer::SortOptions g_sortOptions{};
+}
+
 SpriteRenderer::SpriteRenderer()
 	: Component("SpriteRenderer") {
 }
@@ -29,6 +33,14 @@ void SpriteRenderer::SetFrameSize(const Vector2i& size) {
 
 void SpriteRenderer::SetFrameIndex(int index) {
 	m_frameIndex = index;
+}
+
+void SpriteRenderer::SetSortOptions(const SortOptions& options) {
+	g_sortOptions = options;
+}
+
+SpriteRenderer::SortOptions SpriteRenderer::GetSortOptions() {
+	return g_sortOptions;
 }
 
 Vector2i SpriteRenderer::GetResolvedFrameSize() const {
@@ -72,6 +84,29 @@ void SpriteRenderer::RenderAll(Renderer& renderer) {
 		}
 		if (a->m_layerOrder != b->m_layerOrder) {
 			return a->m_layerOrder < b->m_layerOrder;
+		}
+		auto resolveAxisValue = [](const SpriteRenderer* sprite, SortAxis axis) {
+			if (axis == SortAxis::None) {
+				return 0.0f;
+			}
+			auto* transform = sprite->GetTransform();
+			if (!transform) {
+				return 0.0f;
+			}
+			const Vector2f position = transform->GetWorldPosition();
+			return axis == SortAxis::X ? position.x : position.y;
+			};
+
+		const float primaryA = resolveAxisValue(a, g_sortOptions.primaryAxis);
+		const float primaryB = resolveAxisValue(b, g_sortOptions.primaryAxis);
+		if (primaryA != primaryB) {
+			return g_sortOptions.primaryAscending ? primaryA < primaryB : primaryA > primaryB;
+		}
+
+		const float secondaryA = resolveAxisValue(a, g_sortOptions.secondaryAxis);
+		const float secondaryB = resolveAxisValue(b, g_sortOptions.secondaryAxis);
+		if (secondaryA != secondaryB) {
+			return g_sortOptions.secondaryAscending ? secondaryA < secondaryB : secondaryA > secondaryB;
 		}
 		const size_t indexA = a->GetComponentIndex();
 		const size_t indexB = b->GetComponentIndex();
@@ -117,7 +152,10 @@ void SpriteRenderer::Render(Renderer& renderer) const {
 	const float dstW = srcW * scale.x;
 	const float dstH = srcH * scale.y;
 
-	renderer.DrawTexture(*m_texture, Vector2f(srcX, srcY), Vector2f(srcW, srcH), position, Vector2f(dstW, dstH));
+	// Treat Transform position as the sprite's center (matches Physics2D + colliders).
+	const Vector2f topLeft = position - Vector2f(dstW * 0.5f, dstH * 0.5f);
+
+	renderer.DrawTexture(*m_texture, Vector2f(srcX, srcY), Vector2f(srcW, srcH), topLeft, Vector2f(dstW, dstH));
 }
 
 std::shared_ptr<Component> SpriteRenderer::Clone() const {

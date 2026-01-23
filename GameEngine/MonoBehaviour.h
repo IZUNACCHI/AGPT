@@ -63,9 +63,10 @@ public:
 	void CancelInvoke(const std::string& methodName = "");
 	/// Returns true if a method is currently scheduled.
 	bool IsInvoking(const std::string& methodName) const;
-
+	/*
 	/// Receives a SendMessage call.
 	virtual void ReceiveMessage(const std::string& methodName);
+	*/
 
 protected:
 	/// Returns whether OnEnable has been called.

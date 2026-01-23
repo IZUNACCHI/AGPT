@@ -52,8 +52,10 @@ bool MonoBehaviour::IsInvoking(const std::string& methodName) const {
 	return false;
 }
 
+/*
 void MonoBehaviour::ReceiveMessage(const std::string&) {
 }
+*/
 
 bool MonoBehaviour::HasOnEnableBeenCalled() const {
 	return m_onEnableCalled;
@@ -129,7 +131,7 @@ void MonoBehaviour::TickInvokes(float now) {
 
 	for (auto& request : m_invokes) {
 		if (request.nextTime <= now) {
-			ReceiveMessage(request.methodName);
+			//ReceiveMessage(request.methodName);
 			if (request.repeating) {
 				request.nextTime = now + request.rate;
 			}

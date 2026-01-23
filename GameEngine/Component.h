@@ -54,13 +54,14 @@ public:
 
 	/// Returns the index of this component on its GameObject.
 	size_t GetComponentIndex() const;
-
+	/*
 	/// Sends a message to all MonoBehaviours on the GameObject.
 	void SendMessage(const std::string& methodName);
 	/// Sends a message up the Transform hierarchy.
 	void SendMessageUp(const std::string& methodName);
 	/// Sends a message down the Transform hierarchy.
 	void SendMessageDown(const std::string& methodName);
+	*/
 
 	/// Clones the component for instantiation.
 	virtual std::shared_ptr<Component> Clone() const { return nullptr; }
