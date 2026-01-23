@@ -83,7 +83,7 @@
 		}
 
 		const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
-		Vector2f screenPosition = destinationPosition;
+		const SDL_FRect dst{ destinationPosition.x, destinationPosition.y, destinationSize.x, destinationSize.y };
 		int outputWidth = 0;
 		int outputHeight = 0;
 		if (SDL_GetRenderOutputSize(m_renderer, &outputWidth, &outputHeight)) {
