@@ -27,9 +27,12 @@ protected:
 		}
 		if (rigidbody) {
 			rigidbody->SetBodyType(Rigidbody2D::BodyType::Dynamic);
+			rigidbody->SetFixedRotation(true);
+			rigidbody->SetIsBullet(true);
 		}
 		if (boxCollider) {
 			boxCollider->SetSize(sprite->GetFrameSize());
+			//boxCollider->SetTrigger(true);
 		}
 	}
 
@@ -53,6 +56,14 @@ protected:
 		}
 
 		rigidbody->SetLinearVelocity(velocity);
+		/*
+		LOG_INFO("SpaceShip local position: (" +
+			std::to_string(transform->GetPosition().x) + ", " +
+			std::to_string(transform->GetPosition().y) + ")");
+		LOG_INFO("SpaceShip world position: (" +
+			std::to_string(transform->GetWorldPosition().x) + ", " +
+			std::to_string(transform->GetWorldPosition().y) + ")");
+		*/
 	}
 
 	void OnCollisionEnter(Collider2D* other) override {

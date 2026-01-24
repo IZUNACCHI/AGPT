@@ -75,6 +75,14 @@ public:
 	/// Locks or unlocks rotation around the Z axis.
 	void SetFixedRotation(bool fixedRotation);
 
+	/// Sets whether the body can use continuous collision detection.
+	void SetIsBullet(bool isBullet);
+	
+	/// Returns whether the body can use continuous collision detection.
+	bool IsBullet() const { return m_isBullet; }
+
+
+
 	/// Syncs the Transform from the current Box2D body state.
 	void SyncTransformFromBody();
 	/// Clones the rigidbody settings.

@@ -147,9 +147,6 @@
     <ClInclude Include="Bumper.hpp" />
     <ClInclude Include="Level1.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\Dist\graphics\Ship2.bmp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -119,7 +119,7 @@ void Physics2DWorld::Step(float timeStep, int subStepCount) {
 		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::OnTriggerExit);
 		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::OnTriggerExit);
 	}
-
+	
 	for (auto* body : m_registeredBodies) {
 		if (body) {
 			body->SyncTransformFromBody();
@@ -191,7 +191,7 @@ void Physics2DWorld::DebugDraw(Renderer& renderer) const {
 
 		if (auto* box = dynamic_cast<BoxCollider2D*>(collider)) {
 			const Vector2f size = box->GetSize();
-			const Vector2f topLeft = worldPosition;
+			const Vector2f topLeft = worldPosition - (size * 0.5f);
 			renderer.DrawRectOutline(topLeft, size, color);
 		}
 		else if (auto* circle = dynamic_cast<CircleCollider2D*>(collider)) {

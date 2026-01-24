@@ -108,8 +108,8 @@
 		int outputWidth = 0;
 		int outputHeight = 0;
 		if (SDL_GetRenderOutputSize(m_renderer, &outputWidth, &outputHeight)) {
-			screenPosition.x = position.x + (static_cast<float>(outputWidth) * 0.5f);
-			screenPosition.y = (static_cast<float>(outputHeight) * 0.5f) - position.y;
+			screenPosition.x = position.x;
+			screenPosition.y =  position.y;
 		}
 
 		const SDL_FRect rect{ screenPosition.x, screenPosition.y, size.x, size.y };

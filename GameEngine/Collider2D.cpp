@@ -126,7 +126,7 @@ b2ShapeDef Collider2D::BuildShapeDef() const {
 	shapeDef.material.restitution = m_restitution;
 
 	shapeDef.isSensor = m_isTrigger;
-	shapeDef.enableSensorEvents = m_isTrigger;
+	shapeDef.enableSensorEvents = m_shouldSensorEvent;
 	shapeDef.enableContactEvents = !m_isTrigger;
 	shapeDef.updateBodyMass = true;
 

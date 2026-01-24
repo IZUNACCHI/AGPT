@@ -132,7 +132,7 @@ void SleeplessEngine::FixedUpdate() {
 	}
 
 	if (m_physicsWorld) {
-		m_physicsWorld->Step(Time::FixedDeltaTime(), 1);
+		m_physicsWorld->Step(Time::FixedDeltaTime(), 20);
 	}
 }
 
