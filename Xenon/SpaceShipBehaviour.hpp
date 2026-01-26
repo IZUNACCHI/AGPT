@@ -34,6 +34,7 @@ protected:
 			boxCollider->SetSize(sprite->GetFrameSize());
 			//boxCollider->SetTrigger(true);
 		}
+		transform->SetRotation(90.0f);
 	}
 
 	void Update() override {
@@ -56,14 +57,6 @@ protected:
 		}
 
 		rigidbody->SetLinearVelocity(velocity);
-		/*
-		LOG_INFO("SpaceShip local position: (" +
-			std::to_string(transform->GetPosition().x) + ", " +
-			std::to_string(transform->GetPosition().y) + ")");
-		LOG_INFO("SpaceShip world position: (" +
-			std::to_string(transform->GetWorldPosition().x) + ", " +
-			std::to_string(transform->GetWorldPosition().y) + ")");
-		*/
 	}
 
 	void OnCollisionEnter(Collider2D* other) override {

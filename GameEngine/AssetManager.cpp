@@ -26,6 +26,13 @@ Texture* AssetManager::LoadTexture(const std::string& relativePath, const Vector
 	return LoadTextureInternal(relativePath, &colorKey);
 }
 
+std::string AssetManager::BuildDefaultSpriteSheetKey(const std::string& textureRelativePath, const Vector2i& frameSize) const {
+	// Unique per texture + frame size.
+	std::stringstream ss;
+	ss << textureRelativePath << "|" << frameSize.x << "x" << frameSize.y;
+	return ss.str();
+}
+
 Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, const Vector3i* colorKey) {
 	// Build full path
 	std::string fullPath = m_basePath + relativePath;
@@ -90,6 +97,65 @@ Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, cons
 	}
 }
 
+// ---------------- Sprite sheets ----------------
+
+SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize) {
+	const std::string key = BuildDefaultSpriteSheetKey(textureRelativePath, frameSize);
+	return LoadSpriteSheet(key, textureRelativePath, frameSize);
+}
+
+SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize) {
+	// Return cached
+	auto it = m_spriteSheets.find(sheetKey);
+	if (it != m_spriteSheets.end()) {
+		return &it->second;
+	}
+
+	Texture* texture = LoadTexture(textureRelativePath);
+	if (!texture || !texture->IsValid()) {
+		LOG_ERROR("Failed to create SpriteSheet '" + sheetKey + "' because texture could not be loaded: " + textureRelativePath);
+		return nullptr;
+	}
+
+	SpriteSheet sheet;
+	sheet.name = sheetKey;
+	sheet.texture = texture;
+	sheet.frameSize = frameSize;
+
+	// Insert without C++17 structured bindings
+	auto result = m_spriteSheets.emplace(sheetKey, sheet);
+	if (!result.second) {
+		// Extremely unlikely because we checked above, but keep it safe.
+		return &result.first->second;
+	}
+	return &result.first->second;
+}
+
+SpriteSheet* AssetManager::GetSpriteSheet(const std::string& sheetKey) {
+	auto it = m_spriteSheets.find(sheetKey);
+	return (it != m_spriteSheets.end()) ? &it->second : nullptr;
+}
+
+bool AssetManager::IsSpriteSheetLoaded(const std::string& sheetKey) const {
+	return m_spriteSheets.find(sheetKey) != m_spriteSheets.end();
+}
+
+void AssetManager::UnloadSpriteSheet(const std::string& sheetKey) {
+	auto it = m_spriteSheets.find(sheetKey);
+	if (it != m_spriteSheets.end()) {
+		m_spriteSheets.erase(it);
+	} else {
+		LOG_WARN("SpriteSheet not found for unloading: " + sheetKey);
+	}
+}
+
+void AssetManager::UnloadAllSpriteSheets() {
+	std::stringstream logMsg;
+	logMsg << "Unloading all sprite sheets (count: " << m_spriteSheets.size() << ")";
+	LOG_INFO(logMsg.str());
+	m_spriteSheets.clear();
+}
+
 Texture* AssetManager::GetTexture(const std::string& relativePath) const {
 	auto it = m_textures.find(relativePath);
 	if (it != m_textures.end()) {
@@ -105,8 +171,18 @@ bool AssetManager::IsTextureLoaded(const std::string& relativePath) const {
 void AssetManager::UnloadTexture(const std::string& relativePath) {
 	auto it = m_textures.find(relativePath);
 	if (it != m_textures.end()) {
+		Texture* doomed = it->second.get();
 		LOG_INFO("Unloading texture: " + relativePath);
 		m_textures.erase(it);
+
+		// Remove any sprite sheets that referenced this texture.
+		for (auto sheetIt = m_spriteSheets.begin(); sheetIt != m_spriteSheets.end(); ) {
+			if (sheetIt->second.texture == doomed) {
+				sheetIt = m_spriteSheets.erase(sheetIt);
+			} else {
+				++sheetIt;
+			}
+		}
 	}
 	else {
 		LOG_WARN("Texture not found for unloading: " + relativePath);
@@ -118,4 +194,7 @@ void AssetManager::UnloadAllTextures() {
 	logMsg << "Unloading all textures (count: " << m_textures.size() << ")";
 	LOG_INFO(logMsg.str());
 	m_textures.clear();
+
+	// All cached sprite sheets become invalid when textures are gone.
+	UnloadAllSpriteSheets();
 }

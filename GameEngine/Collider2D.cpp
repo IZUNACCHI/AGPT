@@ -87,6 +87,12 @@ void Collider2D::DetachFromRigidbody(Rigidbody2D* body) {
 
 	m_attachedBody = nullptr;
 
+	// The shape is about to be destroyed, which can invalidate contacts without Box2D
+	// sending End events. Clear cached pairs to prevent phantom Stay callbacks.
+	if (auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld()) {
+		physicsWorld->ClearContactCacheFor(this);
+	}
+
 	// Without a rigidbody, this collider can't exist in Box2D.
 	if (b2Shape_IsValid(m_shapeId)) {
 		b2DestroyShape(m_shapeId, true);
@@ -100,6 +106,12 @@ void Collider2D::DestroyImmediateInternal() {
 }
 
 void Collider2D::RecreateShape() {
+	// If we're about to replace/destroy the current shape, it can invalidate contacts
+	// without Box2D emitting End events. Clear cached pairs so Stay doesn't get stuck.
+	if (auto* physicsWorld = SleeplessEngine::GetInstance().GetPhysicsWorld()) {
+		physicsWorld->ClearContactCacheFor(this);
+	}
+
 	b2BodyId bodyId = ResolveBody();
 	if (!b2Body_IsValid(bodyId)) {
 		if (b2Shape_IsValid(m_shapeId)) {

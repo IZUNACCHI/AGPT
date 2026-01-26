@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationClip.h" />
+    <ClInclude Include="Animator.h" />
+    <ClInclude Include="AnimatorController.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Behaviour.h" />
     <ClInclude Include="Collider2D.h" />
@@ -39,6 +42,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SleeplessEngine.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Time.hpp" />
@@ -47,6 +51,7 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animator.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Behaviour.cpp" />
     <ClCompile Include="Collider2D.cpp" />
