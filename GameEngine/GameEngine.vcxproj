@@ -24,6 +24,7 @@
     <ClInclude Include="AnimatorController.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Behaviour.h" />
+    <ClInclude Include="BitmapFont.h" />
     <ClInclude Include="Collider2D.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="EngineException.hpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Surface.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Time.hpp" />
     <ClInclude Include="Transform.h" />
@@ -54,6 +56,7 @@
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Behaviour.cpp" />
+    <ClCompile Include="BitmapFont.cpp" />
     <ClCompile Include="Collider2D.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -68,6 +71,7 @@
     <ClCompile Include="SleeplessEngine.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="Surface.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Window.cpp" />

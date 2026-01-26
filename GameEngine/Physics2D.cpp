@@ -229,24 +229,20 @@ void Physics2DWorld::ClearContactCacheFor(Collider2D* collider) {
 
 void Physics2DWorld::DebugDraw(Renderer& renderer) const {
 	for (auto* collider : m_registeredColliders) {
-		if (!collider) {
-			continue;
-		}
+		if (!collider) continue;
+
 		auto* gameObject = collider->GetGameObject();
-		if (!gameObject) {
-			continue;
-		}
+		if (!gameObject) continue;
+
 		auto* transform = gameObject->GetTransform();
-		if (!transform) {
-			continue;
-		}
+		if (!transform) continue;
 
 		const Vector2f worldPosition = transform->GetWorldPosition() + collider->GetOffset();
 		const Vector3 color = collider->IsTrigger() ? Vector3(200, 0, 0) : Vector3(0, 200, 0);
 
 		if (auto* box = dynamic_cast<BoxCollider2D*>(collider)) {
 			const Vector2f size = box->GetSize();
-			const Vector2f topLeft = worldPosition - (size * 0.5f);
+			const Vector2f topLeft = worldPosition + Vector2f(-size.x * 0.5f, +size.y * 0.5f);
 			renderer.DrawRectOutline(topLeft, size, color);
 		}
 		else if (auto* circle = dynamic_cast<CircleCollider2D*>(collider)) {

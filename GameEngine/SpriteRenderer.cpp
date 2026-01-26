@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "Transform.h"
 #include <algorithm>
+#include <cmath>
 
 namespace {
 	SpriteRenderer::SortOptions g_sortOptions{};
@@ -148,14 +149,45 @@ void SpriteRenderer::Render(Renderer& renderer) const {
 	const float srcH = static_cast<float>(frameSize.y);
 
 	const Vector2f position = transform->GetWorldPosition();
-	const Vector2f scale = transform->GetWorldScale();
+
+	// Handle negative scale as sprite flip
+	Vector2f scale = transform->GetWorldScale();
+	int flipMask = 0;
+	if (scale.x < 0.0f) { scale.x = -scale.x; flipMask |= SDL_FLIP_HORIZONTAL; }
+	if (scale.y < 0.0f) { scale.y = -scale.y; flipMask |= SDL_FLIP_VERTICAL; }
+	const SDL_FlipMode flip = static_cast<SDL_FlipMode>(flipMask);
+
 	const float dstW = srcW * scale.x;
 	const float dstH = srcH * scale.y;
 
-	// Treat Transform position as the sprite's center (matches Physics2D + colliders).
-	const Vector2f topLeft = position - Vector2f(dstW * 0.5f, dstH * 0.5f);
+	// WORLD (Box2D) coordinate system:
+	// position is sprite CENTER, +Y up
+	// Top-left in world is (x - w/2, y + h/2)
+	const Vector2f topLeft = position + Vector2f(-dstW * 0.5f, +dstH * 0.5f);
 
-	renderer.DrawTexture(*m_texture, Vector2f(srcX, srcY), Vector2f(srcW, srcH), topLeft, Vector2f(dstW, dstH));
+	const float angleDeg = transform->GetWorldRotation();
+
+	if (!Math::Approximately(angleDeg, 0.0f) || flip != SDL_FLIP_NONE) {
+		renderer.DrawTextureRotated(
+			*m_texture,
+			Vector2f(srcX, srcY),
+			Vector2f(srcW, srcH),
+			topLeft,
+			Vector2f(dstW, dstH),
+			angleDeg,
+			Vector2f(dstW * 0.5f, dstH * 0.5f),
+			flip
+		);
+	}
+	else {
+		renderer.DrawTexture(
+			*m_texture,
+			Vector2f(srcX, srcY),
+			Vector2f(srcW, srcH),
+			topLeft,
+			Vector2f(dstW, dstH)
+		);
+	}
 }
 
 std::shared_ptr<Component> SpriteRenderer::Clone() const {

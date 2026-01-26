@@ -34,17 +34,16 @@ protected:
 			boxCollider->SetSize(sprite->GetFrameSize());
 			//boxCollider->SetTrigger(true);
 		}
-		transform->SetRotation(90.0f);
 	}
 
 	void Update() override {
 		// Move the spaceship based on user input
 		Vector2f velocity = Vector2f::Zero();
 		if (IsKeyDown(Key::W)) {
-			velocity.y -= 1.0f;
+			velocity.y += 1.0f;
 		}
 		if (IsKeyDown(Key::S)) {
-			velocity.y += 1.0f;
+			velocity.y -= 1.0f;
 		}
 		if (IsKeyDown(Key::A)) {
 			velocity.x -= 1.0f;
