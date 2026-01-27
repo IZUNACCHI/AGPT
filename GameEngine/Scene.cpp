@@ -59,8 +59,8 @@ void Scene::Update() {
 		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
 			if (behaviour->IsActiveAndEnabled()) {
 				// Update invoke timers before Update().
-				behaviour->TickInvokes(now);
-				behaviour->Update();
+				behaviour->InternalTickInvokes(now);
+				behaviour->InternalUpdate();
 			}
 		}
 	}
@@ -82,7 +82,7 @@ void Scene::FixedUpdate() {
 		}
 		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
 			if (behaviour->IsActiveAndEnabled()) {
-				behaviour->FixedUpdate();
+				behaviour->InternalFixedUpdate();
 			}
 		}
 	}
@@ -101,7 +101,7 @@ void Scene::LateUpdate() {
 		}
 		for (const auto& behaviour : obj->GetComponents<MonoBehaviour>()) {
 			if (behaviour->IsActiveAndEnabled()) {
-				behaviour->LateUpdate();
+				behaviour->InternalLateUpdate();
 			}
 		}
 	}

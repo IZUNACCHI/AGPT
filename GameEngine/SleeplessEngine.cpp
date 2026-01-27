@@ -3,6 +3,7 @@
 #include "Logger.h"
 #include "Time.hpp"
 #include "Input.h"
+#include "TextRenderer.h"
 #include <SDL3/SDL.h>
 
 SleeplessEngine& SleeplessEngine::GetInstance() {
@@ -132,7 +133,7 @@ void SleeplessEngine::FixedUpdate() {
 	}
 
 	if (m_physicsWorld) {
-		m_physicsWorld->Step(Time::FixedDeltaTime(), 1);
+		m_physicsWorld->Step(Time::FixedDeltaTime(), 20);
 	}
 }
 
@@ -147,6 +148,7 @@ void SleeplessEngine::Render() {
 
 	if (m_currentScene && m_currentScene->IsActive()) {
 		SpriteRenderer::RenderAll(*m_renderer);
+		TextRenderer::RenderAll(*m_renderer);
 		m_currentScene->Render();
 	}
 

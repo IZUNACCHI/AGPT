@@ -27,6 +27,9 @@ public:
 	/// Sets whether the collider behaves as a trigger.
 	void SetTrigger(bool isTrigger);
 
+	bool ShouldSensorEvent() const { return m_shouldSensorEvent; }
+	void SetShouldSensorEvent(bool shouldEvent) { m_shouldSensorEvent = shouldEvent; }
+
 	/// Sets the local offset of the collider shape.
 	void SetOffset(const Vector2f& offset);
 	/// Returns the local offset of the collider shape.
@@ -68,6 +71,7 @@ protected:
 	float m_friction = 0.3f;
 	float m_restitution = 0.0f;
 	bool m_isTrigger = false;
+	bool m_shouldSensorEvent = true;
 };
 
 /// Box-shaped collider component.

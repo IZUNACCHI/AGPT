@@ -46,6 +46,8 @@ void Physics2DWorld::Shutdown() {
 		return;
 	}
 
+	m_activeCollisions.clear();
+	m_activeTriggers.clear();
 	m_registeredBodies.clear();
 	m_registeredColliders.clear();
 	b2DestroyWorld(m_worldId);
@@ -91,16 +93,24 @@ void Physics2DWorld::Step(float timeStep, int subStepCount) {
 		const auto& event = contactEvents.beginEvents[i];
 		Collider2D* colliderA = ResolveColliderFromShape(event.shapeIdA);
 		Collider2D* colliderB = ResolveColliderFromShape(event.shapeIdB);
-		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::OnCollisionEnter);
-		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::OnCollisionEnter);
+		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::InternalOnCollisionEnter);
+		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::InternalOnCollisionEnter);
+
+		if (colliderA && colliderB) {
+			m_activeCollisions.insert(MakePair(colliderA, colliderB));
+		}
 	}
 
 	for (int i = 0; i < contactEvents.endCount; ++i) {
 		const auto& event = contactEvents.endEvents[i];
 		Collider2D* colliderA = ResolveColliderFromShape(event.shapeIdA);
 		Collider2D* colliderB = ResolveColliderFromShape(event.shapeIdB);
-		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::OnCollisionExit);
-		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::OnCollisionExit);
+		DispatchCollisionEvent(colliderA, colliderB, &MonoBehaviour::InternalOnCollisionExit);
+		DispatchCollisionEvent(colliderB, colliderA, &MonoBehaviour::InternalOnCollisionExit);
+
+		if (colliderA && colliderB) {
+			m_activeCollisions.erase(MakePair(colliderA, colliderB));
+		}
 	}
 
 	const b2SensorEvents sensorEvents = b2World_GetSensorEvents(m_worldId);
@@ -108,16 +118,36 @@ void Physics2DWorld::Step(float timeStep, int subStepCount) {
 		const auto& event = sensorEvents.beginEvents[i];
 		Collider2D* sensor = ResolveColliderFromShape(event.sensorShapeId);
 		Collider2D* visitor = ResolveColliderFromShape(event.visitorShapeId);
-		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::OnTriggerEnter);
-		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::OnTriggerEnter);
+		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::InternalOnTriggerEnter);
+		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::InternalOnTriggerEnter);
+
+		if (sensor && visitor) {
+			m_activeTriggers.insert(MakePair(sensor, visitor));
+		}
 	}
 
 	for (int i = 0; i < sensorEvents.endCount; ++i) {
 		const auto& event = sensorEvents.endEvents[i];
 		Collider2D* sensor = ResolveColliderFromShape(event.sensorShapeId);
 		Collider2D* visitor = ResolveColliderFromShape(event.visitorShapeId);
-		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::OnTriggerExit);
-		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::OnTriggerExit);
+		DispatchCollisionEvent(sensor, visitor, &MonoBehaviour::InternalOnTriggerExit);
+		DispatchCollisionEvent(visitor, sensor, &MonoBehaviour::InternalOnTriggerExit);
+
+		if (sensor && visitor) {
+			m_activeTriggers.erase(MakePair(sensor, visitor));
+		}
+	}
+
+	// "Stay" is not provided by Box2D 3's event API, so we synthesize it.
+	// Anything still present in our active sets after processing Begin/End is considered "staying".
+	for (const auto& p : m_activeCollisions) {
+		DispatchCollisionEvent(p.a, p.b, &MonoBehaviour::InternalOnCollisionStay);
+		DispatchCollisionEvent(p.b, p.a, &MonoBehaviour::InternalOnCollisionStay);
+	}
+
+	for (const auto& p : m_activeTriggers) {
+		DispatchCollisionEvent(p.a, p.b, &MonoBehaviour::InternalOnTriggerStay);
+		DispatchCollisionEvent(p.b, p.a, &MonoBehaviour::InternalOnTriggerStay);
 	}
 
 	for (auto* body : m_registeredBodies) {
@@ -169,33 +199,54 @@ void Physics2DWorld::UnregisterCollider(Collider2D* collider) {
 	if (!collider) {
 		return;
 	}
+	ClearContactCacheFor(collider);
 	m_registeredColliders.erase(collider);
+}
+
+void Physics2DWorld::ClearContactCacheFor(Collider2D* collider) {
+	if (!collider) {
+		return;
+	}
+
+	for (auto it = m_activeCollisions.begin(); it != m_activeCollisions.end(); ) {
+		if (it->a == collider || it->b == collider) {
+			it = m_activeCollisions.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
+	for (auto it = m_activeTriggers.begin(); it != m_activeTriggers.end(); ) {
+		if (it->a == collider || it->b == collider) {
+			it = m_activeTriggers.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
 }
 
 void Physics2DWorld::DebugDraw(Renderer& renderer) const {
 	for (auto* collider : m_registeredColliders) {
-		if (!collider) {
-			continue;
-		}
+		if (!collider) continue;
+
 		auto* gameObject = collider->GetGameObject();
-		if (!gameObject) {
-			continue;
-		}
+		if (!gameObject) continue;
+
 		auto* transform = gameObject->GetTransform();
-		if (!transform) {
-			continue;
-		}
+		if (!transform) continue;
 
 		const Vector2f worldPosition = transform->GetWorldPosition() + collider->GetOffset();
 		const Vector3 color = collider->IsTrigger() ? Vector3(200, 0, 0) : Vector3(0, 200, 0);
 
 		if (auto* box = dynamic_cast<BoxCollider2D*>(collider)) {
 			const Vector2f size = box->GetSize();
-			const Vector2f topLeft = worldPosition - (size * 0.5f);
+			const Vector2f topLeft = worldPosition + Vector2f(-size.x * 0.5f, +size.y * 0.5f);
 			renderer.DrawRectOutline(topLeft, size, color);
 		}
 		else if (auto* circle = dynamic_cast<CircleCollider2D*>(collider)) {
-			renderer.DrawCircleOutline(worldPosition, circle->GetRadius(), color);
+			renderer.DrawCircleOutline(worldPosition, circle->GetRadius(), color, 32);
 		}
 	}
 }

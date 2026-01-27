@@ -145,6 +145,11 @@ void Rigidbody2D::SetFixedRotation(bool fixedRotation) {
 	}
 }
 
+void Rigidbody2D::SetIsBullet(bool isBullet)
+{
+	m_isBullet = isBullet;
+}
+
 void Rigidbody2D::SyncTransformFromBody() {
 	if (!b2Body_IsValid(m_bodyId)) {
 		return;
@@ -228,5 +233,5 @@ void Rigidbody2D::DetachExistingColliders() {
 
 void Rigidbody2D::DestroyImmediateInternal() {
 	Shutdown();
-    Component::DestroyImmediateInternal();
+	Component::DestroyImmediateInternal();
 }

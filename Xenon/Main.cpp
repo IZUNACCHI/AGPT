@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 
 	startConfig.assetBasePath = "..\\Dist\\graphics";
 	startConfig.windowConfig.title = "Xenon 2000";
-	startConfig.windowConfig.windowSize = Vector2i(800, 640);
+	startConfig.windowConfig.windowSize = Vector2i(640, 480);
 	startConfig.windowConfig.fullscreen = false;
 	startConfig.windowConfig.borderless = false;
 	startConfig.windowConfig.resizable = false;

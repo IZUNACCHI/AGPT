@@ -918,7 +918,7 @@ Vector4<V> operator*(U scalar, const Vector4<V>& vector) {
 	};
 	*/
 
-// Rect definition
+	// Rect definition
 template<typename T>
 class Rect {
 public:
@@ -1025,7 +1025,7 @@ public:
 // Common typedefs for Rect
 using Recti = Rect<int>;
 using Rectf = Rect<float>;
-using Rectu = Rect<unsigned int>;	
+using Rectu = Rect<unsigned int>;
 using Rectd = Rect<double>;
 
 // Matrix3x3f definition

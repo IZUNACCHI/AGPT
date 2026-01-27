@@ -31,38 +31,35 @@ public:
 	// Returns true if Start has been called.
 	bool DidStart() const { return m_didStart; }
 
-	// Called once when the component is initialized.
-	virtual void Awake() {}
-	// Called once before the first Update (if enabled).
-	virtual void Start() {}
-	// Called every frame while enabled.
-	virtual void Update() {}
-	// Called at fixed time steps while enabled.
-	virtual void FixedUpdate() {}
-	// Called after Update while enabled.
-	virtual void LateUpdate() {}
-	// Called when the behaviour becomes enabled.
-	virtual void OnEnable() {}
-	// Called when the behaviour becomes disabled.
-	virtual void OnDisable() {}
-	// Called when the object is being destroyed.
-	virtual void OnDestroy() {}
+	// ---------------------------------------------------------------------
+	// Engine dispatch entry points
+	//
+	// These are public so engine systems (Scene, Physics, etc.) can invoke
+	// user callbacks without requiring the callbacks themselves to be public.
+	//
+	// User code should NOT call these directly. Override the protected
+	// callback methods instead (Awake/Start/Update/OnTriggerEnter/etc.).
+	// ---------------------------------------------------------------------
 
-	// Called when a collision begins.
-	virtual void OnCollisionEnter(Collider2D* other) {}
-	// Called while a collision continues.
-	virtual void OnCollisionStay(Collider2D* other) {}
-	// Called when a collision ends.
-	virtual void OnCollisionExit(Collider2D* other) {}
-	// Called when a trigger begins.
-	virtual void OnTriggerEnter(Collider2D* other) {}
-	// Called while a trigger continues.
-	virtual void OnTriggerStay(Collider2D* other) {}
-	// Called when a trigger ends.
-	virtual void OnTriggerExit(Collider2D* other) {}
+	/// Engine-only: dispatches Update().
+	void InternalUpdate() { Update(); }
+	/// Engine-only: advances Invoke/InvokeRepeating timers.
+	void InternalTickInvokes(float now) { TickInvokes(now); }
+	/// Engine-only: dispatches FixedUpdate().
+	void InternalFixedUpdate() { FixedUpdate(); }
+	/// Engine-only: dispatches LateUpdate().
+	void InternalLateUpdate() { LateUpdate(); }
 
-	// Restores default values for the component.
-	virtual void Reset() {}
+	void InternalOnCollisionEnter(Collider2D* other) { OnCollisionEnter(other); }
+	void InternalOnCollisionStay(Collider2D* other) { OnCollisionStay(other); }
+	void InternalOnCollisionExit(Collider2D* other) { OnCollisionExit(other); }
+	void InternalOnTriggerEnter(Collider2D* other) { OnTriggerEnter(other); }
+	void InternalOnTriggerStay(Collider2D* other) { OnTriggerStay(other); }
+	void InternalOnTriggerExit(Collider2D* other) { OnTriggerExit(other); }
+
+
+	/// Engine-only: dispatches Reset().
+	void InternalReset() { Reset(); }
 
 	// Schedules a function to run after a delay.
 	InvokeHandle Invoke(std::function<void()> fn, float delaySeconds,
@@ -111,10 +108,49 @@ public:
 	// Removes a handler for a method name.
 	void UnregisterInvokeHandler(const std::string& methodName);
 
+	// Registers / unregisters invoke handlers by name.
+
+protected:
+	// ---------------------------------------------------------------------
+	// User-overridable callbacks (keep these protected)
+	// ---------------------------------------------------------------------
+
+	// Restores default values for the component.
+	virtual void Reset() {}
+	
+	// Called once when the component is initialized.
+	virtual void Awake() {}
+	// Called once before the first Update (if enabled).
+	virtual void Start() {}
+	// Called every frame while enabled.
+	virtual void Update() {}
+	// Called at fixed time steps while enabled.
+	virtual void FixedUpdate() {}
+	// Called after Update while enabled.
+	virtual void LateUpdate() {}
+	// Called when the behaviour becomes enabled.
+	virtual void OnEnable() {}
+	// Called when the behaviour becomes disabled.
+	virtual void OnDisable() {}
+	// Called when the object is being destroyed.
+	virtual void OnDestroy() {}
+
+	// Called when a collision begins.
+	virtual void OnCollisionEnter(Collider2D* other) {}
+	// Called while a collision continues.
+	virtual void OnCollisionStay(Collider2D* other) {}
+	// Called when a collision ends.
+	virtual void OnCollisionExit(Collider2D* other) {}
+	// Called when a trigger begins.
+	virtual void OnTriggerEnter(Collider2D* other) {}
+	// Called while a trigger continues.
+	virtual void OnTriggerStay(Collider2D* other) {}
+	// Called when a trigger ends.
+	virtual void OnTriggerExit(Collider2D* other) {}
+
 	// Receives a string invoke call.
 	virtual void ReceiveMessage(const std::string& methodName);
 
-protected:
 	// Returns whether OnEnable has been called.
 	bool HasOnEnableBeenCalled() const override;
 
