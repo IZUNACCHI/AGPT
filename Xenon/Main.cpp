@@ -10,10 +10,13 @@ int main(int argc, char** argv) {
 
 	startConfig.assetBasePath = "..\\Dist\\graphics";
 	startConfig.windowConfig.title = "Xenon 2000";
-	startConfig.windowConfig.windowSize = Vector2i(640, 480);
+	startConfig.windowConfig.windowSize = Vector2i(1920, 1080);
 	startConfig.windowConfig.fullscreen = false;
 	startConfig.windowConfig.borderless = false;
 	startConfig.windowConfig.resizable = false;
+	startConfig.virtualResolution = Vector2(640, 480);
+	startConfig.letterbox = true;
+	startConfig.integerScale = true;
 	auto& engine = SleeplessEngine::GetInstance();
 	engine.Initialize(startConfig);
 	Level1 level1;

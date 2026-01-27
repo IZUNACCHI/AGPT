@@ -36,9 +36,16 @@ void SleeplessEngine::Initialize(Config config) {
 		m_window = std::make_unique<Window>(config.windowConfig);
 		m_window->SetVisible(true);
 		m_renderer = std::make_unique<Renderer>(*m_window);
+		// Virtual resolution / letterboxing 
+		m_renderer->SetVirtualResolution(m_config.virtualResolution);
+		m_renderer->SetLetterbox(m_config.letterbox);
+		m_renderer->SetIntegerScaling(m_config.integerScale);
+		m_renderer->SetClearColor(m_config.clearColor);
+		m_renderer->SetLetterboxColor(m_config.letterboxColor);
 		SpriteRenderer::SetSortOptions(m_config.spriteSortOptions);
 		m_assetManager = std::make_unique<AssetManager>(*m_renderer);
 		m_assetManager->SetBasePath(m_config.assetBasePath);
+		m_assetManager->SetDefaultTextureScaleMode(m_config.textureScaleMode);
 		Input::Initialize();
 
 		m_physicsWorld = std::make_unique<Physics2DWorld>();

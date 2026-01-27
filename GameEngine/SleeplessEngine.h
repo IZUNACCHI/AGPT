@@ -22,6 +22,26 @@ struct Config {
 	std::string assetBasePath = "Dist/graphics/";
 	WindowConfig windowConfig{};
 
+	//
+	// Virtual Resolution / Letterboxed Viewport
+	//
+	// If virtualResolution is set to something other than (0,0), the engine
+	// will render in that fixed resolution and scale the result to the
+	// actual window size while preserving aspect ratio. Unused space is
+	// filled with black bars.
+	//
+	// If left at (0,0), the renderer behaves as before
+	Vector2i virtualResolution = Vector2i(0, 0);
+	bool letterbox = true;
+	bool integerScale = false;
+
+	// Colors (RGBA 0-255)
+	Vector4i clearColor = Vector4i(0, 0, 0, 255);
+	Vector4i letterboxColor = Vector4i(0, 0, 0, 255);
+
+	// Default texture filtering when scaling
+	TextureScaleMode textureScaleMode = TextureScaleMode::Linear;
+
 	// Sprite sorting options
 	SpriteRenderer::SortOptions spriteSortOptions{
 		SpriteRenderer::SortAxis::Y,
@@ -41,7 +61,7 @@ public:
 	void Run();
 	void Shutdown();
 
-	// Changed to raw pointer since user manages scene lifecycle
+	
 	void SetScene(Scene* scene);
 	void ResetPhysicsWorld(const Vector2f& gravity = Vector2f(0.0f, -9.81f));
 	Physics2DWorld* GetPhysicsWorld() const { return m_physicsWorld.get(); }
@@ -69,7 +89,7 @@ private:
 
 	Config m_config{};
 
-	// --- Engine systems ---
+	// Engine systems
 	std::unique_ptr<Window> m_window;
 	std::unique_ptr<Renderer> m_renderer;
 	std::unique_ptr<AssetManager> m_assetManager;

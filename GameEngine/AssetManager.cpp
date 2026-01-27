@@ -18,12 +18,32 @@ void AssetManager::SetBasePath(const std::string& basePath) {
 	LOG_INFO("Base path set to: " + m_basePath);
 }
 
+void AssetManager::SetDefaultTextureScaleMode(TextureScaleMode mode) {
+	m_defaultTextureScaleMode = mode;
+
+	// Apply to already-loaded textures as well.
+	for (auto& kv : m_textures) {
+		if (kv.second) {
+			kv.second->SetScaleMode(mode);
+		}
+	}
+}
+
+
 Texture* AssetManager::LoadTexture(const std::string& relativePath) {
-	return LoadTextureInternal(relativePath, nullptr);
+	return LoadTextureInternal(relativePath, nullptr, nullptr);
 }
 
 Texture* AssetManager::LoadTexture(const std::string& relativePath, const Vector3i& colorKey) {
-	return LoadTextureInternal(relativePath, &colorKey);
+	return LoadTextureInternal(relativePath, &colorKey, nullptr);
+}
+
+Texture* AssetManager::LoadTexture(const std::string& relativePath, TextureScaleMode scaleModeOverride) {
+	return LoadTextureInternal(relativePath, nullptr, &scaleModeOverride);
+}
+
+Texture* AssetManager::LoadTexture(const std::string& relativePath, const Vector3i& colorKey, TextureScaleMode scaleModeOverride) {
+	return LoadTextureInternal(relativePath, &colorKey, &scaleModeOverride);
 }
 
 std::string AssetManager::BuildDefaultSpriteSheetKey(const std::string& textureRelativePath, const Vector2i& frameSize) const {
@@ -33,7 +53,7 @@ std::string AssetManager::BuildDefaultSpriteSheetKey(const std::string& textureR
 	return ss.str();
 }
 
-Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, const Vector3i* colorKey) {
+Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, const Vector3i* colorKey, const TextureScaleMode* scaleModeOverride) {
 	// Build full path
 	std::string fullPath = m_basePath + relativePath;
 
@@ -41,6 +61,10 @@ Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, cons
 	auto it = m_textures.find(relativePath);
 	if (it != m_textures.end()) {
 		LOG_DEBUG("Texture already loaded: " + relativePath);
+		// Optional override: apply to cached texture.
+		if (scaleModeOverride && it->second) {
+			it->second->SetScaleMode(*scaleModeOverride);
+		}
 		return it->second.get();
 	}
 
@@ -67,6 +91,9 @@ Texture* AssetManager::LoadTextureInternal(const std::string& relativePath, cons
 		else {
 			texture = std::make_unique<Texture>(m_renderer, fullPath);
 		}
+
+		// Apply filtering (no SDL exposed to game code)
+		texture->SetScaleMode(scaleModeOverride ? *scaleModeOverride : m_defaultTextureScaleMode);
 
 		auto result = m_textures.emplace(relativePath, std::move(texture));
 
@@ -104,6 +131,11 @@ SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& textureRelativePat
 	return LoadSpriteSheet(key, textureRelativePath, frameSize);
 }
 
+SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize, TextureScaleMode textureScaleModeOverride) {
+	const std::string key = BuildDefaultSpriteSheetKey(textureRelativePath, frameSize);
+	return LoadSpriteSheet(key, textureRelativePath, frameSize, textureScaleModeOverride);
+}
+
 SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize) {
 	// Return cached
 	auto it = m_spriteSheets.find(sheetKey);
@@ -126,6 +158,36 @@ SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& sheetKey, const st
 	auto result = m_spriteSheets.emplace(sheetKey, sheet);
 	if (!result.second) {
 		// Extremely unlikely because we checked above, but keep it safe.
+		return &result.first->second;
+	}
+	return &result.first->second;
+}
+
+SpriteSheet* AssetManager::LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize, TextureScaleMode textureScaleModeOverride) {
+	// Return cached
+	auto it = m_spriteSheets.find(sheetKey);
+	if (it != m_spriteSheets.end()) {
+		// If the user explicitly requested an override, apply it to the cached texture.
+		if (it->second.texture) {
+			it->second.texture->SetScaleMode(textureScaleModeOverride);
+		}
+		return &it->second;
+	}
+
+	Texture* texture = LoadTexture(textureRelativePath, textureScaleModeOverride);
+	if (!texture || !texture->IsValid()) {
+		LOG_ERROR("Failed to create SpriteSheet '" + sheetKey + "' because texture could not be loaded: " + textureRelativePath);
+		return nullptr;
+	}
+
+	SpriteSheet sheet;
+	sheet.name = sheetKey;
+	sheet.texture = texture;
+	sheet.frameSize = frameSize;
+
+	// Insert without C++17 structured bindings
+	auto result = m_spriteSheets.emplace(sheetKey, sheet);
+	if (!result.second) {
 		return &result.first->second;
 	}
 	return &result.first->second;

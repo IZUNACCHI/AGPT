@@ -4,11 +4,17 @@
 #include "EngineException.hpp"
 #include "Logger.h"
 #include "Surface.h"
-#include <SDL3/SDL.h>
 #include <memory>
-
+#include <string>
 
 class Renderer;
+
+/// How a texture should be filtered when scaled.
+/// Exposed as an engine enum so game code never touches native.
+enum class TextureScaleMode {
+	Nearest,
+	Linear
+};
 
 class Texture {
 public:
@@ -18,7 +24,7 @@ public:
 	// Constructor without color key (loads as-is)
 	Texture(Renderer& renderer, const std::string& filePath);
 
-	// Constructor with optional Vector3i color key
+	// Constructor Vector3i color key
 	Texture(Renderer& renderer, const std::string& filePath, bool useColorKey, const Vector3i& colorKey);
 
 	// Destructor
@@ -34,8 +40,12 @@ public:
 
 	// Getters
 	Vector2i GetSize() const;
-	SDL_Texture* GetNative() const;
+	void* GetNative() const;
 	bool IsValid() const;
+
+	// Filtering
+	void SetScaleMode(TextureScaleMode mode);
+	TextureScaleMode GetScaleMode() const;
 
 private:
 	std::unique_ptr<Impl> impl;

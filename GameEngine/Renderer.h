@@ -4,9 +4,18 @@
 #include "EngineException.hpp"
 #include "Logger.h"
 #include "Window.h"
-#include <SDL3/SDL.h>
+#include <cstdint>
 
 class Texture;
+
+
+/// Flip options for rotated draws (engine-facing, native-free).
+enum class FlipMode {
+	None,
+	Horizontal,
+	Vertical,
+	Both
+};
 
 class Renderer {
 public:
@@ -20,8 +29,48 @@ public:
 
 	~Renderer();
 
+	/// Clear the frame.
+	/// - Clears the full window to the letterbox color
+	/// - Then clears the active viewport (game area) to the clear color
 	void Clear();
 	void Present();
+
+	// ---------------------------------------------------------------------
+	// Virtual Resolution / Letterboxed Viewport
+	// ---------------------------------------------------------------------
+	// If a virtual resolution is set (> 0), all WORLD coordinates and sizes
+	// are interpreted in that fixed coordinate space. When the real window
+	// size changes, we scale the virtual space to fit while preserving aspect
+	// ratio, adding letterbox bars where needed.
+	//
+	// If virtual resolution is (0,0), the renderer behaves as before:
+	// WORLD units == window pixels.
+	void SetVirtualResolution(int width, int height);
+	void SetVirtualResolution(const Vector2i& size);
+	Vector2i GetVirtualResolution() const;
+
+	// Letterboxing is ON by default when virtual resolution is set.
+	// If disabled, the virtual resolution will stretch to the window.
+	void SetLetterbox(bool enabled);
+	bool IsLetterboxEnabled() const { return m_letterbox; }
+
+	// If enabled, and the scale is >= 1, we will floor the scale to an integer.
+	// Useful for pixel art. If the window is smaller than the virtual size,
+	// we fall back to fractional scaling to avoid scale=0.
+	void SetIntegerScaling(bool enabled);
+	bool IsIntegerScaling() const { return m_integerScale; }
+
+	// Colors
+	// - ClearColor: the game area background color (inside the viewport)
+	// - LetterboxColor: the bars/background outside the viewport
+	void SetClearColor(const Vector4i& rgba);
+	void SetLetterboxColor(const Vector4i& rgba);
+	Vector4i GetClearColor() const { return m_clearColor; }
+	Vector4i GetLetterboxColor() const { return m_letterboxColor; }
+
+	// The destination rectangle (in real window pixels) where the game is
+	// rendered when using a virtual resolution.
+	Rectf GetViewportRect() const;
 
 	// WORLD coords (Box2D style):
 	// - (0,0) is screen center
@@ -45,7 +94,7 @@ public:
 		const Vector2f& destinationSize,
 		float angleDegrees,
 		const Vector2f& pivot = Vector2f(-1.0f, -1.0f),
-		SDL_FlipMode flip = SDL_FLIP_NONE
+		FlipMode flip = FlipMode::None
 	);
 
 	// WORLD top-left rect
@@ -54,14 +103,38 @@ public:
 	// WORLD center
 	bool DrawCircleOutline(const Vector2f& worldCenter, float radius, const Vector3i& color, int segments);
 
-	SDL_Renderer* GetNative() const { return m_renderer; }
+	// Native handle access (native* as void*)
+	void* GetNative() const;
+
 	bool IsValid() const { return m_renderer != nullptr; }
 
 private:
 	bool GetOutputSize(int& outW, int& outH) const;
 	Vector2f WorldToScreenPoint(const Vector2f& world) const;
-	SDL_FRect WorldToScreenRect(const Vector2f& worldTopLeft, const Vector2f& size) const;
+	Rectf WorldToScreenRect(const Vector2f& worldTopLeft, const Vector2f& size) const;
+
+	void UpdateViewportCache() const;
+	void ApplyViewportAndClip() const;
 
 private:
-	SDL_Renderer* m_renderer = nullptr;
+	void* m_renderer = nullptr; // native* internally
+
+	// --- Virtual resolution settings (0 means disabled) ---
+	int m_virtualW = 0;
+	int m_virtualH = 0;
+	bool m_letterbox = true;
+	bool m_integerScale = false;
+
+	// Colors
+	Vector4i m_clearColor = Vector4i(0, 0, 0, 255);
+	Vector4i m_letterboxColor = Vector4i(0, 0, 0, 255);
+
+	// --- Cached viewport data (mutable so const draw methods can use it) ---
+	mutable bool m_cacheValid = false;
+	mutable int m_cachedOutputW = -1;
+	mutable int m_cachedOutputH = -1;
+	mutable int m_cachedGameW = 0;
+	mutable int m_cachedGameH = 0;
+	mutable float m_cachedScale = 1.0f;
+	mutable Rectf m_cachedViewport{}; // real window pixel rect
 };

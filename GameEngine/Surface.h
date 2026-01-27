@@ -3,8 +3,7 @@
 #include "Types.hpp"
 #include "EngineException.hpp"
 #include "Logger.h"
-#include <SDL3/SDL.h>
-
+#include <string>
 
 class Surface {
 public:
@@ -25,12 +24,12 @@ public:
 	void ClearColorKey();
 
 	// Getters
-	SDL_Surface* GetNative() const { return m_surface; }
+	void* GetNative() const { return m_surface; }
 	Vector2i GetSize() const;
 
 	// Check if valid
 	bool IsValid() const { return m_surface != nullptr; }
 
 private:
-	SDL_Surface* m_surface = nullptr;
+	void* m_surface = nullptr; // native* internally
 };
