@@ -24,9 +24,9 @@ public:
 	void Present();
 
 	// WORLD coords (Box2D style):
-	// - origin is screen center
+	// - (0,0) is screen center
 	// - +Y is up
-	// destinationPosition is WORLD top-left of destination rect.
+	// destinationPosition is WORLD TOP-LEFT
 	bool DrawTexture(
 		const Texture& texture,
 		const Vector2f& sourcePosition,
@@ -35,9 +35,8 @@ public:
 		const Vector2f& destinationSize
 	);
 
-	// Rotated draw in WORLD coords:
-	// - angleDegrees is CCW in WORLD.
-	// - pivot is in DEST rect local pixels (default: center if pivot.x/y < 0)
+	// angleDegrees: CCW positive in WORLD
+	// pivot: local pixels inside destination rect (default center if pivot < 0)
 	bool DrawTextureRotated(
 		const Texture& texture,
 		const Vector2f& sourcePosition,
@@ -49,15 +48,17 @@ public:
 		SDL_FlipMode flip = SDL_FLIP_NONE
 	);
 
-	bool DrawRectOutline(const Vector2f& position, const Vector2f& size, const Vector3i& color);
-	bool DrawCircleOutline(const Vector2f& center, float radius, const Vector3i& color, int segments);
+	// WORLD top-left rect
+	bool DrawRectOutline(const Vector2f& worldTopLeft, const Vector2f& size, const Vector3i& color);
+
+	// WORLD center
+	bool DrawCircleOutline(const Vector2f& worldCenter, float radius, const Vector3i& color, int segments);
 
 	SDL_Renderer* GetNative() const { return m_renderer; }
 	bool IsValid() const { return m_renderer != nullptr; }
 
 private:
 	bool GetOutputSize(int& outW, int& outH) const;
-
 	Vector2f WorldToScreenPoint(const Vector2f& world) const;
 	SDL_FRect WorldToScreenRect(const Vector2f& worldTopLeft, const Vector2f& size) const;
 
