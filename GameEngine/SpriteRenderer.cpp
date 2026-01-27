@@ -152,10 +152,24 @@ void SpriteRenderer::Render(Renderer& renderer) const {
 
 	// Handle negative scale as sprite flip
 	Vector2f scale = transform->GetWorldScale();
-	int flipMask = 0;
-	if (scale.x < 0.0f) { scale.x = -scale.x; flipMask |= SDL_FLIP_HORIZONTAL; }
-	if (scale.y < 0.0f) { scale.y = -scale.y; flipMask |= SDL_FLIP_VERTICAL; }
-	const SDL_FlipMode flip = static_cast<SDL_FlipMode>(flipMask);
+	const bool flipX = scale.x < 0.0f;
+	const bool flipY = scale.y < 0.0f;
+	if (flipX) {
+		scale.x = -scale.x;
+	}
+	if (flipY) {
+		scale.y = -scale.y;
+	}
+	FlipMode flip = FlipMode::None;
+	if (flipX && flipY) {
+		flip = FlipMode::Both;
+	}
+	else if (flipX) {
+		flip = FlipMode::Horizontal;
+	}
+	else if (flipY) {
+		flip = FlipMode::Vertical;
+	}
 
 	const float dstW = srcW * scale.x;
 	const float dstH = srcH * scale.y;
@@ -167,7 +181,7 @@ void SpriteRenderer::Render(Renderer& renderer) const {
 
 	const float angleDeg = transform->GetWorldRotation();
 
-	if (!Math::Approximately(angleDeg, 0.0f) || flip != SDL_FLIP_NONE) {
+	if (!Math::Approximately(angleDeg, 0.0f) || flip != FlipMode::None) {
 		renderer.DrawTextureRotated(
 			*m_texture,
 			Vector2f(srcX, srcY),

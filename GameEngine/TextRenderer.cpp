@@ -83,9 +83,18 @@ void TextRenderer::Render(Renderer& renderer) const {
 		return;
 	}
 
-	SDL_FlipMode flip = SDL_FLIP_NONE;
-	if (signX < 0.0f) flip = (SDL_FlipMode)(flip | SDL_FLIP_HORIZONTAL);
-	if (signY < 0.0f) flip = (SDL_FlipMode)(flip | SDL_FLIP_VERTICAL);
+	FlipMode flip = FlipMode::None;
+	const bool flipX = signX < 0.0f;
+	const bool flipY = signY < 0.0f;
+	if (flipX && flipY) {
+		flip = FlipMode::Both;
+	}
+	else if (flipX) {
+		flip = FlipMode::Horizontal;
+	}
+	else if (flipY) {
+		flip = FlipMode::Vertical;
+	}
 
 	const Vector2f blockSize = m_font->MeasureText(m_text, absScale);
 
