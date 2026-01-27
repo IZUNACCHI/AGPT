@@ -141,11 +141,16 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="SpaceShip.hpp" />
-    <ClCompile Include="SpaceShipBehaviour.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Bumper.hpp" />
+    <ClInclude Include="AllyEntity.hpp" />
+    <ClInclude Include="EnemyEntity.hpp" />
+    <ClInclude Include="Entity.hpp" />
+    <ClInclude Include="Faction.hpp" />
+    <ClInclude Include="IDamageable.hpp" />
     <ClInclude Include="Level1.hpp" />
+    <ClInclude Include="Loner.hpp" />
+    <ClInclude Include="Projectile.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

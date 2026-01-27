@@ -1,6 +1,6 @@
 #include <memory>
 #include "SpaceShip.hpp"
-#include "Bumper.hpp"
+#include "Loner.hpp"
 
 class Level1 : public Scene {
 public:
@@ -13,12 +13,8 @@ public:
 		auto spaceShip = CreateGameObject<SpaceShip>("SpaceShip");
 		spaceShip->GetTransform()->SetPosition(Vector2f::Zero());
 
-		auto bumper = CreateGameObject<Bumper>("Bumper");
-		bumper->GetTransform()->SetPosition(Vector2(-100, -100));
-
-
-		auto overlapZone = CreateGameObject<OverlapZone>("OverlapZone");
-		overlapZone->GetTransform()->SetPosition(Vector2(200, 200));
+		auto loner1 = CreateGameObject<Loner>("Loner1");
+		loner1->GetTransform()->SetPosition(Vector2f(-200.0f, 0.0f));
 	}
 
 };

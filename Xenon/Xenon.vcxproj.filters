@@ -9,24 +9,60 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="GameObjectsAndBehaviour">
+      <UniqueIdentifier>{1523160f-4029-48ae-8990-2cce3194de4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{f96c2371-7980-4546-98ce-35b89c6da546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{ffc1ce59-e21b-4f21-a1df-d572a00ce29a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Enums">
+      <UniqueIdentifier>{ff434e9e-26d1-40a4-a025-1c098d2c0241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectsAndBehaviour\Enemy">
+      <UniqueIdentifier>{7d2bf4b4-28a6-4838-94a3-6dd2e5910bca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectsAndBehaviour\Ally">
+      <UniqueIdentifier>{b210f88b-f20d-43c5-9485-8b666204a947}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjectsAndBehaviour\PickUps">
+      <UniqueIdentifier>{fbf621a4-58ec-4a69-a280-f4016dbc4b7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpaceShipBehaviour.hpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpaceShip.hpp">
-      <Filter>Source Files</Filter>
+      <Filter>GameObjectsAndBehaviour\Ally</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Level1.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Bumper.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="IDamageable.hpp">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="Faction.hpp">
+      <Filter>Enums</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>GameObjectsAndBehaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.hpp">
+      <Filter>GameObjectsAndBehaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyEntity.hpp">
+      <Filter>GameObjectsAndBehaviour\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Loner.hpp">
+      <Filter>GameObjectsAndBehaviour\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="AllyEntity.hpp">
+      <Filter>GameObjectsAndBehaviour\Ally</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
