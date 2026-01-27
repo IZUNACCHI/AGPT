@@ -221,7 +221,6 @@ void Renderer::UpdateViewportCache() const {
 	const int vpY = std::max(0, (outH - vpH) / 2);
 
 	// Recompute scale based on the final integer viewport size.
-	// (This keeps mapping consistent with the viewport we actually set.)
 	if (m_virtualW > 0 && m_virtualH > 0) {
 		scale = std::min((float)vpW / (float)m_virtualW, (float)vpH / (float)m_virtualH);
 	}
@@ -245,8 +244,17 @@ void Renderer::ApplyViewportAndClip() const {
 	vp.w = (int)std::floor(m_cachedViewport.width);
 	vp.h = (int)std::floor(m_cachedViewport.height);
 
+	// IMPORTANT:
+	// SDL's viewport changes the renderer coordinate origin to the viewport's
+	// top-left. That means all subsequent draw coordinates should be expressed
+	// in *viewport space* (0..vp.w, 0..vp.h), NOT window space.
+	//
+	// Therefore:
+	// - We set the viewport in window space (vp.x/y are window pixels)
+	// - We set the clip rect in viewport space (0,0..vp.w/vp.h)
 	SDL_SetRenderViewport(R(m_renderer), &vp);
-	SDL_SetRenderClipRect(R(m_renderer), &vp);
+	SDL_Rect clip{ 0, 0, vp.w, vp.h };
+	SDL_SetRenderClipRect(R(m_renderer), &clip);
 }
 
 Vector2f Renderer::WorldToScreenPoint(const Vector2f& world) const {
@@ -255,13 +263,14 @@ Vector2f Renderer::WorldToScreenPoint(const Vector2f& world) const {
 
 	// WORLD: origin center, +Y up, in VIRTUAL pixels.
 	// VIRTUAL SCREEN: origin top-left, +Y down, size = (m_cachedGameW, m_cachedGameH)
-	// REAL SCREEN: apply letterbox viewport offset + scale.
+	// VIEWPORT SPACE: apply uniform scale. The viewport offset is applied
+	// by SDL_SetRenderViewport in ApplyViewportAndClip().
 	const float vx = world.x + (float)m_cachedGameW * 0.5f;
 	const float vy = (float)m_cachedGameH * 0.5f - world.y;
 
 	return Vector2f(
-		m_cachedViewport.x + vx * m_cachedScale,
-		m_cachedViewport.y + vy * m_cachedScale
+		vx * m_cachedScale,
+		vy * m_cachedScale
 	);
 }
 

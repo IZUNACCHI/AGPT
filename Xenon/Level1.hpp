@@ -15,6 +15,11 @@ public:
 
 		auto loner1 = CreateGameObject<Loner>("Loner1");
 		loner1->GetTransform()->SetPosition(Vector2f(-200.0f, 0.0f));
+
+		auto galaxy = CreateGameObject<GameObject>("GalaxyBackdrop");
+		auto galaxySprite = galaxy->AddComponent<SpriteRenderer>();
+		galaxySprite->SetTexture(LoadTexture("galaxy2.bmp"));
+		galaxySprite->SetLayerOrder(-10);
 	}
 
 };
