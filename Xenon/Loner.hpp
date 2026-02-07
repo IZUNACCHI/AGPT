@@ -1,25 +1,60 @@
 #pragma once
+
 #include "../GameEngine/GameEngine.h"
+#include "../GameEngine/Animator.h"
+
 #include "EnemyEntity.hpp"
+#include "Projectile.hpp"
+#include "LoopingSheet.hpp"
 
 class LonerBehaviour : public EnemyEntity {
-	Texture* lonerTexture = nullptr;
 	BoxCollider2D* boxCol = nullptr;
+	EnemyProjectileLauncher* launcher = nullptr;
+	Animator* animator = nullptr;
 
+	SpriteSheet* m_sheet = nullptr;
+	AnimationClip m_clip{};
+	AnimatorController m_ctrl{};
+
+	float m_speed = 120.0f;
+	float m_dir = 1.0f;
 
 protected:
 	void Awake() override {
 		EnemyEntity::Awake();
 
 		if (rigidbody) {
-			rigidbody->SetBodyType(Rigidbody2D::BodyType::Dynamic);
+			rigidbody->SetBodyType(Rigidbody2D::BodyType::Kinematic);
+			rigidbody->SetGravityScale(0.0f);
+			rigidbody->SetFixedRotation(true);
 		}
 
-		lonerTexture = LoadTexture("LonerA.bmp", Vector3i(255, 0, 255));
-		sprite->SetTexture(lonerTexture);
-		sprite->SetFrameSize(Vector2i(64, 64));
+		launcher = GetComponent<EnemyProjectileLauncher>().get();
+		if (launcher) {
+			launcher->SetCooldown(2.0f);
+			launcher->SetProjectileSpeed(500.0f);
+			launcher->SetDamage(1);
+			launcher->SetMuzzleOffset(Vector2f(0.0f, -34.0f));
+		}
+
+		animator = GetComponent<Animator>().get();
+		if (!animator) {
+			THROW_ENGINE_EXCEPTION("Loner is missing Animator component");
+		}
+
+		m_sheet = LoadSpriteSheet("sheet.enemy.loner", "LonerA.bmp", Vector2i(64, 64), Vector3i(255, 0, 255));
+		if (!m_sheet || !m_sheet->IsValid()) {
+			THROW_ENGINE_EXCEPTION("Failed to load Loner spritesheet (LonerA.bmp)");
+		}
+
+		sprite->SetTexture(m_sheet->texture);
+		sprite->SetFrameSize(m_sheet->frameSize);
 		sprite->SetFrameIndex(0);
 		sprite->SetLayerOrder(-2);
+
+		BuildLoopAllFrames(m_sheet, 12.0f, m_clip, m_ctrl);
+		animator->SetController(&m_ctrl);
+		animator->Play("Loop", true);
 
 		boxCol = dynamic_cast<BoxCollider2D*>(collider);
 		if (boxCol) {
@@ -28,9 +63,52 @@ protected:
 			boxCol->SetShouldSensorEvent(true);
 		}
 		else {
-			THROW_ENGINE_EXCEPTION("Entity " + GetGameObject()->GetName() + " (" + std::to_string(GetGameObject()->GetInstanceID()) + ")" + " is missing BoxCollider2D component");
+			THROW_ENGINE_EXCEPTION("Loner is missing BoxCollider2D component");
+		}
+
+		if (transform) {
+			transform->SetRotation(-90.0f);
 		}
 	}
+
+	void Start() override {
+		InvokeRepeating([this]() {
+			if (!launcher) return;
+			auto ship = Scene::FindGameObject("SpaceShip");
+			if (ship && ship->IsActiveInHierarchy()) {
+				launcher->TryFireToward(ship->GetTransform()->GetWorldPosition());
+			}
+			}, 1.0f, 2.0f, MonoBehaviour::InvokeTickPolicy::WhileBehaviourEnabled);
+	}
+
+	void Update() override {
+		EnemyEntity::Update();
+
+		if (!transform) return;
+
+		const float halfW = (boxCol ? boxCol->GetSize().x * 0.5f : 32.0f);
+		const float halfH = (boxCol ? boxCol->GetSize().y * 0.5f : 32.0f);
+
+		Vector2f p = transform->GetWorldPosition();
+
+		const float minX = -400.0f + halfW;
+		const float maxX = 400.0f - halfW;
+		const float minY = -320.0f + halfH;
+		const float maxY = 320.0f - halfH;
+
+		if (p.x <= minX) { p.x = minX; m_dir = 1.0f; }
+		if (p.x >= maxX) { p.x = maxX; m_dir = -1.0f; }
+		if (p.y <= minY) { p.y = minY; m_dir = -m_dir; }
+		if (p.y >= maxY) { p.y = maxY; m_dir = -m_dir; }
+
+		transform->SetPosition(p);
+
+		if (rigidbody) {
+			const Vector2f dir = transform->GetRight() * m_dir;
+			rigidbody->SetLinearVelocity(dir * m_speed);
+		}
+	}
+
 };
 
 class Loner : public GameObject {
@@ -40,6 +118,8 @@ public:
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
 		AddComponent<BoxCollider2D>();
+		AddComponent<EnemyProjectileLauncher>();
+		AddComponent<Animator>();
 		AddComponent<LonerBehaviour>();
 	}
 };

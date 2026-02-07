@@ -10,7 +10,6 @@
 class Renderer;
 
 /// How a texture should be filtered when scaled.
-/// Exposed as an engine enum so game code never touches native.
 enum class TextureScaleMode {
 	Nearest,
 	Linear

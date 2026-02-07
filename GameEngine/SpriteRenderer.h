@@ -1,14 +1,17 @@
 #pragma once
 
-#include "Component.h"
+#include "RenderableComponent.h"
 #include "Texture.h"
 #include "Types.hpp"
 
 class Renderer;
+class RenderQueue;
 
-/// Component that renders a sprite frame from a BMP-backed texture.
-class SpriteRenderer : public Component {
+// Component that renders a sprite frame from a BMP-backed texture.
+class SpriteRenderer : public RenderableComponent {
 public:
+	friend class RenderQueue;
+	// Sorting options for SpriteRenderers
 	enum class SortAxis {
 		None,
 		X,
@@ -43,11 +46,12 @@ public:
 
 	static void RenderAll(Renderer& renderer);
 
+	Vector2i GetResolvedFrameSize() const;
+
 	std::shared_ptr<Component> Clone() const override;
 
 private:
 	void Render(Renderer& renderer) const;
-	Vector2i GetResolvedFrameSize() const;
 	int GetMaxFrames(const Vector2i& frameSize) const;
 
 	Texture* m_texture = nullptr;

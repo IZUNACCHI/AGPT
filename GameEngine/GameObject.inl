@@ -6,7 +6,7 @@
 #include "EngineException.hpp"
 #include "Rigidbody2D.h"
 
-/// Adds a component of type T to this GameObject.
+// Adds a component of type T to this GameObject.
 template<typename T, typename... Args>
 std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -30,7 +30,7 @@ std::shared_ptr<T> GameObject::AddComponent(Args&&... args) {
 	return std::dynamic_pointer_cast<T>(component);
 }
 
-/// Returns the first component of type T with the given component name.
+// Returns the first component of type T with the given component name.
 template<typename T>
 std::shared_ptr<T> GameObject::GetComponentByName(const std::string& componentName) const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -49,7 +49,7 @@ std::shared_ptr<T> GameObject::GetComponentByName(const std::string& componentNa
 	return nullptr;
 }
 
-/// Returns the first component of type T.
+// Returns the first component of type T.
 template<typename T>
 std::shared_ptr<T> GameObject::GetComponent() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -62,7 +62,7 @@ std::shared_ptr<T> GameObject::GetComponent() const {
 	return nullptr;
 }
 
-/// Returns all components of type T.
+// Returns all components of type T.
 template<typename T>
 std::vector<std::shared_ptr<T> > GameObject::GetComponents() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -76,7 +76,7 @@ std::vector<std::shared_ptr<T> > GameObject::GetComponents() const {
 	return result;
 }
 
-/// Returns the first component of type T in children.
+// Returns the first component of type T in children.
 template<typename T>
 std::shared_ptr<T> GameObject::GetComponentInChildren() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -95,7 +95,7 @@ std::shared_ptr<T> GameObject::GetComponentInChildren() const {
 	return nullptr;
 }
 
-/// Returns all components of type T in children.
+// Returns all components of type T in children.
 template<typename T>
 std::vector<std::shared_ptr<T> > GameObject::GetComponentsInChildren() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -111,7 +111,7 @@ std::vector<std::shared_ptr<T> > GameObject::GetComponentsInChildren() const {
 	return result;
 }
 
-/// Returns the first component of type T in parents.
+// Returns the first component of type T in parents.
 template<typename T>
 std::shared_ptr<T> GameObject::GetComponentInParent() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
@@ -126,7 +126,7 @@ std::shared_ptr<T> GameObject::GetComponentInParent() const {
 	return nullptr;
 }
 
-/// Returns all components of type T in parents.
+// Returns all components of type T in parents.
 template<typename T>
 std::vector<std::shared_ptr<T> > GameObject::GetComponentsInParent() const {
 	static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");

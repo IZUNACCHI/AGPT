@@ -12,7 +12,7 @@ public:
 	// Constructor
 	EngineException(std::string message, const char* file, int line) noexcept
 		: m_message(std::move(message)), m_file(file), m_line(line) {
-		LOG_ERROR(message);
+		LOG_ERROR(m_message);
 	}
 
 	// Copy constructor

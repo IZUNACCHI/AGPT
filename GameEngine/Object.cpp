@@ -52,6 +52,18 @@ void Object::Destroy(Object* obj, float t) {
 	}
 }
 
+
+std::shared_ptr<Object> Object::GetShared(Object* obj) {
+	if (!obj) {
+		return nullptr;
+	}
+	auto it = g_registry.find(obj->GetInstanceID());
+	if (it == g_registry.end()) {
+		return nullptr;
+	}
+	return it->second.lock();
+}
+
 std::shared_ptr<Object> Object::Instantiate(const std::shared_ptr<Object>& obj) {
 	if (!obj) {
 		return nullptr;

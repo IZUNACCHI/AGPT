@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "MonoBehaviour.h"
+#include "GameMode.h"
 #include "Time.hpp"
 #include <algorithm>
 
@@ -8,6 +9,7 @@ std::vector<Scene*> Scene::s_scenes;
 
 Scene::Scene(const std::string& name)
 	: m_name(name) {
+	EnsureGameMode();
 	// Register the Scene globally so static lookups can search all active scenes.
 	s_scenes.push_back(this);
 }
@@ -19,14 +21,37 @@ Scene::~Scene() {
 	s_scenes.erase(std::remove(s_scenes.begin(), s_scenes.end(), this), s_scenes.end());
 }
 
+
+void Scene::EnsureGameMode() {
+	if (!m_gameMode) {
+		m_gameMode = std::make_unique<EmptyGameMode>();
+	}
+	// Let the mode know who it belongs to.
+	m_gameMode->OnAttach(*this);
+}
+
+void Scene::SetGameMode(std::unique_ptr<GameMode> mode) {
+	if (!mode) {
+		mode = std::make_unique<EmptyGameMode>();
+	}
+	m_gameMode = std::move(mode);
+	m_gameMode->OnAttach(*this);
+}
+
 void Scene::Start() {
 	// Only start once; subsequent calls are ignored.
 	if (m_isActive) {
 		return;
 	}
 	m_isActive = true;
+	EnsureGameMode();
 	// Give derived scenes a hook to initialize runtime state.
 	OnStart();
+	// Allow the GameMode to initialize after the Scene has created its initial objects.
+	m_gameMode->OnStart();
+
+	// Adopt any objects queued during OnStart() before we attempt to iterate them.
+	ProcessPendingAdopts();
 	// Ensure each object recalculates its active state before lifecycle runs.
 	for (const auto& obj : m_allGameObjects) {
 		obj->UpdateActiveInHierarchy();
@@ -45,8 +70,14 @@ void Scene::Update() {
 		return;
 	}
 
-	// Run lifecycle before update so newly queued behaviours are ready.
+	// Run adoption + lifecycle before Update so newly created objects become part of the scene
+	// at a safe insertion point.
 	ProcessLifecycleQueue();
+	// GameMode update runs before scene-specific and behaviour updates.
+	if (m_gameMode) {
+		m_gameMode->OnUpdate();
+	}
+
 	// Call derived scene update logic.
 	OnUpdate();
 
@@ -65,7 +96,8 @@ void Scene::Update() {
 		}
 	}
 
-	// Run lifecycle again in case Update() queued new behaviours or state transitions.
+	// Flush adoption + lifecycle again so objects created during Update can run LateUpdate
+	// on the same frame.
 	ProcessLifecycleQueue();
 }
 
@@ -74,6 +106,14 @@ void Scene::FixedUpdate() {
 	if (!m_isActive) {
 		return;
 	}
+	// Allow objects created since the last insertion point to become active before FixedUpdate.
+	ProcessLifecycleQueue();
+
+	// GameMode fixed update runs before scene-specific and behaviour fixed update.
+	if (m_gameMode) {
+		m_gameMode->OnFixedUpdate();
+	}
+
 	// Call derived scene fixed-step logic.
 	OnFixedUpdate();
 	for (const auto& obj : m_allGameObjects) {
@@ -93,6 +133,14 @@ void Scene::LateUpdate() {
 	if (!m_isActive) {
 		return;
 	}
+	// Allow objects created during Update to become active before LateUpdate.
+	ProcessLifecycleQueue();
+
+	// GameMode late update runs before scene-specific and behaviour late update.
+	if (m_gameMode) {
+		m_gameMode->OnLateUpdate();
+	}
+
 	// Call derived scene late update logic.
 	OnLateUpdate();
 	for (const auto& obj : m_allGameObjects) {
@@ -112,6 +160,10 @@ void Scene::Render() {
 	if (!m_isActive) {
 		return;
 	}
+	// GameMode render runs before scene-specific render.
+	if (m_gameMode) {
+		m_gameMode->OnRender();
+	}
 	OnRender();
 }
 
@@ -124,9 +176,20 @@ void Scene::Unload() {
 	m_isActive = false;
 	// Allow derived scenes to clean up resources.
 	OnDestroy();
+	// Allow the GameMode to clean up as well.
+	if (m_gameMode) {
+		m_gameMode->OnDestroy();
+	}
+	// Clear pooled references so Scene unload can destroy everything cleanly.
+	m_objectPool.Clear();
+
 
 	// Destroy all objects registered with this scene.
 	for (const auto& obj : m_allGameObjects) {
+		Object::Destroy(obj);
+	}
+	// Also destroy any objects that were created but not yet adopted.
+	for (const auto& obj : m_pendingAdopt) {
 		Object::Destroy(obj);
 	}
 }
@@ -204,52 +267,100 @@ void Scene::QueueLifecycle(MonoBehaviour* behaviour) {
 }
 
 void Scene::ProcessLifecycleQueue() {
-	// Nothing to do if no behaviours were queued.
-	if (m_pendingLifecycle.empty()) {
-		return;
-	}
-
-	// Drain the queue so new lifecycle work can be queued during processing.
-	std::vector<MonoBehaviour*> pending;
-	pending.swap(m_pendingLifecycle);
-
-	// First pass handles Awake and Enable, and collects Start candidates.
-	std::vector<MonoBehaviour*> startCandidates;
-	for (auto* behaviour : pending) {
-		if (!behaviour || behaviour->IsDestroyed()) {
-			continue;
-		}
-		auto* owner = behaviour->GetGameObject();
-		if (!owner || !owner->IsActiveInHierarchy()) {
+	// Process until stable:
+	// - Adoption can queue lifecycle
+	// - Lifecycle callbacks can create more objects or queue more lifecycle work
+	for (int safety = 0; safety < 32; ++safety) {
+		const bool adoptedAny = ProcessPendingAdopts();
+		if (m_pendingLifecycle.empty()) {
+			if (!adoptedAny) {
+				break;
+			}
 			continue;
 		}
 
-		if (!behaviour->DidAwake()) {
-			behaviour->TriggerAwake();
-		}
+		// Drain the queue so new lifecycle work can be queued during processing.
+		std::vector<MonoBehaviour*> pending;
+		pending.swap(m_pendingLifecycle);
 
-		if (behaviour->IsEnabled()) {
-			behaviour->TriggerEnable();
-			if (!behaviour->DidStart()) {
-				startCandidates.push_back(behaviour);
+		// First pass handles Awake and Enable, and collects Start candidates.
+		std::vector<MonoBehaviour*> startCandidates;
+		for (auto* behaviour : pending) {
+			if (!behaviour || behaviour->IsDestroyed()) {
+				continue;
+			}
+			auto* owner = behaviour->GetGameObject();
+			if (!owner || !owner->IsActiveInHierarchy()) {
+				continue;
+			}
+
+			if (!behaviour->DidAwake()) {
+				behaviour->TriggerAwake();
+			}
+
+			if (behaviour->IsEnabled()) {
+				behaviour->TriggerEnable();
+				if (!behaviour->DidStart()) {
+					startCandidates.push_back(behaviour);
+				}
 			}
 		}
-	}
 
-	// Second pass runs Start after Awake/Enable so ordering is consistent.
-	for (auto* behaviour : startCandidates) {
-		if (!behaviour || behaviour->IsDestroyed()) {
-			continue;
+		// Second pass runs Start after Awake/Enable so ordering is consistent.
+		for (auto* behaviour : startCandidates) {
+			if (!behaviour || behaviour->IsDestroyed()) {
+				continue;
+			}
+			auto* owner = behaviour->GetGameObject();
+			if (!owner || !owner->IsActiveInHierarchy() || !behaviour->IsEnabled()) {
+				continue;
+			}
+			behaviour->TriggerStart();
 		}
-		auto* owner = behaviour->GetGameObject();
-		if (!owner || !owner->IsActiveInHierarchy() || !behaviour->IsEnabled()) {
-			continue;
-		}
-		behaviour->TriggerStart();
 	}
 }
 
+void Scene::QueueAdoptGameObject(const std::shared_ptr<GameObject>& obj) {
+	if (!obj) {
+		return;
+	}
+	// Avoid duplicates.
+	if (std::find(m_pendingAdopt.begin(), m_pendingAdopt.end(), obj) != m_pendingAdopt.end()) {
+		return;
+	}
+	m_pendingAdopt.push_back(obj);
+}
+
+bool Scene::ProcessPendingAdopts() {
+	if (m_pendingAdopt.empty()) {
+		return false;
+	}
+
+	std::vector<std::shared_ptr<GameObject>> pending;
+	pending.swap(m_pendingAdopt);
+
+	for (const auto& obj : pending) {
+		if (!obj || obj->IsDestroyed()) {
+			continue;
+		}
+		AdoptGameObjectImmediate(obj);
+
+		// Newly adopted objects must compute hierarchy activity and queue their behaviours.
+		obj->UpdateActiveInHierarchy();
+		for (const auto& component : obj->GetComponents<MonoBehaviour>()) {
+			QueueLifecycle(component.get());
+		}
+	}
+	return true;
+}
+
 void Scene::AdoptGameObject(const std::shared_ptr<GameObject>& obj) {
+	// Adoption is intentionally deferred; the object will enter the scene on the next
+	// lifecycle processing insertion point.
+	QueueAdoptGameObject(obj);
+}
+
+void Scene::AdoptGameObjectImmediate(const std::shared_ptr<GameObject>& obj) {
 	// Store the GameObject in scene-owned collections for lifecycle and lookup.
 	if (!obj) {
 		return;
@@ -279,6 +390,11 @@ void Scene::RemoveGameObject(GameObject* obj) {
 	m_rootGameObjects.erase(rootIt, m_rootGameObjects.end());
 
 	m_gameObjectById.erase(obj->GetInstanceID());
+
+	// Also remove from pending adoption if it was never adopted.
+	auto pendingIt = std::remove_if(m_pendingAdopt.begin(), m_pendingAdopt.end(),
+		[obj](const std::shared_ptr<GameObject>& entry) { return entry.get() == obj; });
+	m_pendingAdopt.erase(pendingIt, m_pendingAdopt.end());
 }
 
 void Scene::UpdateRootGameObject(GameObject* obj) {
@@ -304,4 +420,15 @@ void Scene::UpdateRootGameObject(GameObject* obj) {
 		// Remove the object if it is no longer a root.
 		m_rootGameObjects.erase(hasRoot);
 	}
+}
+
+void Scene::ReleaseGameObjectToPool(const std::string& poolKey, GameObject* obj) {
+	if (!obj) {
+		return;
+	}
+	auto shared = Object::GetSharedAs<GameObject>(obj);
+	if (!shared) {
+		return;
+	}
+	m_objectPool.Release(poolKey, shared);
 }

@@ -1,21 +1,43 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
+// Engine headers
 #include "AssetManager.h"
+#include "Audio.h"
+#include "AudioClip.h"
+#include "AudioSource.h"
+#include "BitmapFont.h"
 #include "Collider2D.h"
 #include "Component.h"
 #include "GameObject.h"
 #include "Input.h"
+#include "MonoBehaviour.h"
+#include "ObjectPool.h"
 #include "Renderer.h"
 #include "Rigidbody2D.h"
 #include "Scene.h"
 #include "SleeplessEngine.h"
 #include "SpriteRenderer.h"
+#include "SpriteSheet.h"
+#include "TextRenderer.h"
 #include "Texture.h"
 #include "Time.hpp"
 #include "Transform.h"
 #include "Types.hpp"
+#include "ViewportUtils.h"
 #include "Window.h"
-#include "MonoBehaviour.h"
+
+// UI module
+#include "UISystem.h"
+#include "UICanvas.h"
+#include "UIElement.h"
+#include "UISelectable.h"
+#include "UIButton.h"
+#include "UIProgressBar.h"
+#include "UIStyles.h"
+#include "UIPanel.h"
 
 //asset loading shortcuts
 inline Texture* LoadTexture(const std::string& relativePath) {
@@ -27,6 +49,89 @@ inline Texture* LoadTexture(const std::string& relativePath, const Vector3i& col
 	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
 	return assetManager ? assetManager->LoadTexture(relativePath, colorKey) : nullptr;
 }
+
+// SpriteSheet loading shortcuts
+inline SpriteSheet* LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(textureRelativePath, frameSize) : nullptr;
+}
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize, const Vector3i& colorKey) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(textureRelativePath, frameSize, colorKey) : nullptr;
+}
+
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize, TextureScaleMode textureScaleModeOverride) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(textureRelativePath, frameSize, textureScaleModeOverride) : nullptr;
+}
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& textureRelativePath, const Vector2i& frameSize, const Vector3i& colorKey, TextureScaleMode textureScaleModeOverride) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(textureRelativePath, frameSize, colorKey, textureScaleModeOverride) : nullptr;
+}
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(sheetKey, textureRelativePath, frameSize) : nullptr;
+}
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize, const Vector3i& colorKey) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(sheetKey, textureRelativePath, frameSize, colorKey) : nullptr;
+}
+
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize, TextureScaleMode textureScaleModeOverride) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(sheetKey, textureRelativePath, frameSize, textureScaleModeOverride) : nullptr;
+}
+
+inline SpriteSheet* LoadSpriteSheet(const std::string& sheetKey, const std::string& textureRelativePath, const Vector2i& frameSize, const Vector3i& colorKey, TextureScaleMode textureScaleModeOverride) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadSpriteSheet(sheetKey, textureRelativePath, frameSize, colorKey, textureScaleModeOverride) : nullptr;
+}
+
+// Bitmap font shortcuts 
+inline BitmapFont* LoadBitmapFont(const std::string& textureRelativePath, const Vector2i& glyphSize, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(textureRelativePath, glyphSize, firstChar) : nullptr;
+}
+
+// Keyed bitmap font shortcuts
+inline BitmapFont* LoadBitmapFont(const std::string& fontKey, const std::string& textureRelativePath, const Vector2i& glyphSize, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(fontKey, textureRelativePath, glyphSize, firstChar) : nullptr;
+}
+
+inline BitmapFont* LoadBitmapFont(const std::string& textureRelativePath, const Vector2i& glyphSize, const Vector3i& colorKey, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(textureRelativePath, glyphSize, colorKey, firstChar) : nullptr;
+}
+
+inline BitmapFont* LoadBitmapFont(const std::string& fontKey, const std::string& textureRelativePath, const Vector2i& glyphSize, const Vector3i& colorKey, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(fontKey, textureRelativePath, glyphSize, colorKey, firstChar) : nullptr;
+}
+
+inline BitmapFont* LoadBitmapFont(const std::string& textureRelativePath, const Vector2i& glyphSize, const Vector3i& colorKey, TextureScaleMode textureScaleModeOverride, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(textureRelativePath, glyphSize, firstChar, colorKey, textureScaleModeOverride) : nullptr;
+}
+
+inline BitmapFont* LoadBitmapFont(const std::string& fontKey, const std::string& textureRelativePath, const Vector2i& glyphSize, const Vector3i& colorKey, TextureScaleMode textureScaleModeOverride, unsigned char firstChar = 32) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadFont(fontKey, textureRelativePath, glyphSize, firstChar, colorKey, textureScaleModeOverride) : nullptr;
+}
+
+// Audio clip shortcut
+inline AudioClip* LoadAudioClip(const std::string& relativePath) {
+	auto* assetManager = SleeplessEngine::GetInstance().GetAssetManager();
+	return assetManager ? assetManager->LoadAudioClip(relativePath) : nullptr;
+}
+
+
 
 // Input shortcuts
 inline KeyState GetKey(Key key) { return Input::GetKey(key); }

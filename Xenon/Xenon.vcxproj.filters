@@ -1,68 +1,115 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="GameObjectsAndBehaviour">
-      <UniqueIdentifier>{1523160f-4029-48ae-8990-2cce3194de4d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Scenes">
-      <UniqueIdentifier>{f96c2371-7980-4546-98ce-35b89c6da546}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Interfaces">
-      <UniqueIdentifier>{ffc1ce59-e21b-4f21-a1df-d572a00ce29a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Enums">
-      <UniqueIdentifier>{ff434e9e-26d1-40a4-a025-1c098d2c0241}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObjectsAndBehaviour\Enemy">
-      <UniqueIdentifier>{7d2bf4b4-28a6-4838-94a3-6dd2e5910bca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObjectsAndBehaviour\Ally">
-      <UniqueIdentifier>{b210f88b-f20d-43c5-9485-8b666204a947}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameObjectsAndBehaviour\PickUps">
-      <UniqueIdentifier>{fbf621a4-58ec-4a69-a280-f4016dbc4b7d}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="SpaceShip.hpp">
-      <Filter>GameObjectsAndBehaviour\Ally</Filter>
+      <Filter>GameObjects\Ally</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Faction.hpp" />
+    <ClInclude Include="IDamageable.hpp" />
+    <ClInclude Include="LoopingSheet.hpp" />
+    <ClInclude Include="OptionsMenuController.hpp" />
+    <ClInclude Include="PauseMenuController.hpp" />
+    <ClInclude Include="XenonAssetKeys.h" />
+    <ClInclude Include="XenonGameInstance.hpp" />
+    <ClInclude Include="XenonGameMode.hpp" />
+    <ClInclude Include="XenonHUDController.hpp" />
+    <ClInclude Include="AllyEntity.hpp">
+      <Filter>GameObjects\Ally</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimatedPickup.hpp">
+      <Filter>GameObjects\Pickup</Filter>
+    </ClInclude>
+    <ClInclude Include="Companion.hpp">
+      <Filter>GameObjects\Ally</Filter>
+    </ClInclude>
+    <ClInclude Include="CompanionPickup.hpp">
+      <Filter>GameObjects\Pickup</Filter>
+    </ClInclude>
+    <ClInclude Include="Drone.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyEntity.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemySpawners.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="HealPickup.hpp">
+      <Filter>GameObjects\Pickup</Filter>
+    </ClInclude>
+    <ClInclude Include="Loner.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
     <ClInclude Include="Level1.hpp">
       <Filter>Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="IDamageable.hpp">
-      <Filter>Interfaces</Filter>
+    <ClInclude Include="MainMenuScene.hpp">
+      <Filter>Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="Faction.hpp">
-      <Filter>Enums</Filter>
+    <ClInclude Include="MetalAsteroids.hpp">
+      <Filter>GameObjects\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Entity.hpp">
-      <Filter>GameObjectsAndBehaviour</Filter>
+    <ClInclude Include="Missiles.hpp">
+      <Filter>GameObjects\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickup.hpp">
+      <Filter>GameObjects\Pickup</Filter>
+    </ClInclude>
+    <ClInclude Include="Pickups.hpp">
+      <Filter>GameObjects\Pickup</Filter>
     </ClInclude>
     <ClInclude Include="Projectile.hpp">
-      <Filter>GameObjectsAndBehaviour</Filter>
+      <Filter>GameObjects\Projectile</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyEntity.hpp">
-      <Filter>GameObjectsAndBehaviour\Enemy</Filter>
+    <ClInclude Include="ProjectileCommon.hpp">
+      <Filter>GameObjects\Projectile</Filter>
     </ClInclude>
-    <ClInclude Include="Loner.hpp">
-      <Filter>GameObjectsAndBehaviour\Enemy</Filter>
+    <ClInclude Include="ProjectileLaunchers.hpp">
+      <Filter>GameObjects\Projectile</Filter>
     </ClInclude>
-    <ClInclude Include="AllyEntity.hpp">
-      <Filter>GameObjectsAndBehaviour\Ally</Filter>
+    <ClInclude Include="ProjectileObjects.hpp">
+      <Filter>GameObjects\Projectile</Filter>
     </ClInclude>
+    <ClInclude Include="Rusher.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="StoneAsteroids.hpp">
+      <Filter>GameObjects\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="VFX.hpp">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.hpp">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="ScorePopup.hpp">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponPickup.hpp">
+      <Filter>GameObjects\Pickup</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="GameObjects">
+      <UniqueIdentifier>{b2467250-57fa-4a90-ae9c-485cc294aa52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjects\Enemy">
+      <UniqueIdentifier>{4edaa7dc-3774-4002-b555-d16572f95af4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjects\Ally">
+      <UniqueIdentifier>{6f5bead6-f3af-4196-bb59-fa46b3bbd6e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjects\Pickup">
+      <UniqueIdentifier>{b01f035d-e951-4169-8cd5-81374515f78e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObjects\Projectile">
+      <UniqueIdentifier>{4ab28f06-9780-47d0-a6e6-326a81c61f14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{fd2551a2-b494-4bc5-899a-698dad8d9dd4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

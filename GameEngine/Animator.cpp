@@ -6,7 +6,6 @@
 
 Animator::Animator()
 	: MonoBehaviour() {
-	// Give the component a distinctive name (MonoBehaviour constructor sets "MonoBehaviour").
 	SetComponentName("Animator");
 }
 
@@ -52,6 +51,7 @@ bool Animator::GetTrigger(const std::string& name) const {
 	return it != m_triggers.end() ? it->second : false;
 }
 
+// ensure all params from controller exist in our maps
 void Animator::EnsureDefaultsFromController() {
 	if (!m_controller) return;
 
@@ -75,6 +75,7 @@ void Animator::EnsureDefaultsFromController() {
 
 // ---------------- State control ----------------
 
+// Force a state by name (ignores transition rules).
 void Animator::Play(const std::string& stateName, bool restart) {
 	if (!m_controller) return;
 	int id = m_controller->FindStateIdByName(stateName);
@@ -83,16 +84,19 @@ void Animator::Play(const std::string& stateName, bool restart) {
 	}
 }
 
+// Get current state's name
 std::string Animator::GetCurrentStateName() const {
 	const AnimState* s = CurrentState();
 	return s ? s->name : std::string();
 }
 
+// Get current state
 const AnimState* Animator::CurrentState() const {
 	if (!m_controller) return nullptr;
 	return m_controller->FindStateById(m_stateId);
 }
 
+// Switch to a new state by ID
 void Animator::SwitchState(int newStateId, bool restartTime) {
 	if (newStateId == -1) return;
 	if (m_stateId == newStateId && !restartTime) return;
@@ -104,11 +108,13 @@ void Animator::SwitchState(int newStateId, bool restartTime) {
 	}
 }
 
-// ---------------- Optional Seek ----------------
 
+// seek the current state's clip toward a normalized target [0..1] at the given speed
 void Animator::SeekNormalized(float targetN, float speedNormalizedPerSec) {
 	const AnimState* s = CurrentState();
 	if (!s || !s->clip) return;
+
+	m_timeOverriddenThisFrame = true; 
 
 	AnimationClip* clip = s->clip;
 	const float len = clip->GetLengthSeconds();
@@ -127,37 +133,39 @@ void Animator::SeekNormalized(float targetN, float speedNormalizedPerSec) {
 	m_stateTime = newN * len;
 }
 
+
 // ---------------- Update loop ----------------
 
 void Animator::Update() {
 	if (!m_controller) {
 		ClearAllTriggers();
+		m_timeOverriddenThisFrame = false;
 		return;
 	}
 
-	// SpriteRenderer might be added after Awake
 	if (!m_sprite) {
 		auto sprite = GetComponent<SpriteRenderer>();
 		m_sprite = sprite ? sprite.get() : nullptr;
 	}
 
-	// Advance time
-	m_stateTime += Time::DeltaTime();
+	// Advance time if not overridden this frame
+	if (!m_timeOverriddenThisFrame) {
+		m_stateTime += Time::DeltaTime();
+	}
 
-	// Apply transitions
 	EvaluateAndApplyTransitions();
-
-	// Apply current clip to SpriteRenderer
 	ApplyCurrentClipFrame();
-
-	// Triggers are one-frame pulses
 	ClearAllTriggers();
+
+	// Reset for next frame
+	m_timeOverriddenThisFrame = false;
 }
+
 
 void Animator::EvaluateAndApplyTransitions() {
 	if (!m_controller) return;
 
-	// Any State transitions first (in list order)
+	// First check Any State transitions
 	for (const auto& tr : m_controller->transitions) {
 		if (tr.fromState != -1) continue;
 		if (CanTakeTransition(tr)) {
@@ -178,6 +186,7 @@ void Animator::EvaluateAndApplyTransitions() {
 	}
 }
 
+// Check if a transition can be taken
 bool Animator::CanTakeTransition(const AnimTransition& tr) const {
 	if (tr.toState == -1) return false;
 	if (tr.hasExitTime && !ExitTimeMet(tr)) return false;
@@ -185,6 +194,7 @@ bool Animator::CanTakeTransition(const AnimTransition& tr) const {
 	return true;
 }
 
+// Check if exit time condition is met
 bool Animator::ExitTimeMet(const AnimTransition& tr) const {
 	const AnimState* s = CurrentState();
 	if (!s || !s->clip) return true;
@@ -193,6 +203,7 @@ bool Animator::ExitTimeMet(const AnimTransition& tr) const {
 	return n >= tr.exitTimeNormalized;
 }
 
+// Check if all conditions are met
 bool Animator::ConditionsMet(const AnimTransition& tr) const {
 	for (const auto& c : tr.conditions) {
 		switch (c.op) {
@@ -228,6 +239,7 @@ bool Animator::ConditionsMet(const AnimTransition& tr) const {
 	return true;
 }
 
+// Consume triggers used by a transition
 void Animator::ConsumeTriggersUsedBy(const AnimTransition& tr) {
 	for (const auto& c : tr.conditions) {
 		if (c.op == AnimCondOp::TriggerSet) {
@@ -237,14 +249,16 @@ void Animator::ConsumeTriggersUsedBy(const AnimTransition& tr) {
 	}
 }
 
+
+// Clear all triggers
 void Animator::ClearAllTriggers() {
 	for (auto& kv : m_triggers) {
 		kv.second = false;
 	}
 }
 
-// ---------------- Apply ----------------
 
+// Apply the current clip frame to the SpriteRenderer
 void Animator::ApplyCurrentClipFrame() {
 	if (!m_sprite) return;
 
@@ -254,7 +268,7 @@ void Animator::ApplyCurrentClipFrame() {
 	AnimationClip* clip = s->clip;
 	if (!clip->IsValid()) return;
 
-	// Ensure SpriteRenderer is using the clip's spritesheet.
+	// Ensure SpriteRenderer is using the clip's spritesheet
 	Texture* desiredTexture = clip->sheet->texture;
 	Vector2i desiredFrameSize = clip->sheet->frameSize;
 
@@ -273,7 +287,7 @@ void Animator::ApplyCurrentClipFrame() {
 		m_sprite->SetFrameIndex(frameIndex);
 	}
 
-	// Optional: fire frame events when entering a new local frame.
+	// fire frame events when entering a new local frame.
 	const int localFrame = clip->SampleLocalFrame(m_stateTime);
 	if (localFrame != -1 && localFrame != m_prevLocalFrame) {
 		m_prevLocalFrame = localFrame;

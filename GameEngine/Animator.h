@@ -12,16 +12,7 @@
 
 class SpriteRenderer;
 
-/// Runtime animator that plays an AnimatorController on a SpriteRenderer.
-///
-/// Features:
-/// - states with sprite clips
-/// - transitions with conditions (bool/int/float/trigger)
-/// - Any-State transitions
-/// - optional exit-time transitions
-/// - triggers are one-frame pulses
-///
-/// No blending, no layers.
+// Animator component: plays back AnimationClips based on an AnimatorController graph.
 class Animator final : public MonoBehaviour {
 public:
 	Animator();
@@ -53,18 +44,25 @@ public:
 	float GetStateTime() const { return m_stateTime; }
 
 	/// Scrub the current state's clip toward a normalized target [0..1] at the given speed
-	/// (normalized units per second). Great for "turn left/right then return to center".
+	/// (normalized units per second). For condition based frames like turning the ship
 	void SeekNormalized(float targetN, float speedNormalizedPerSec);
 
 	std::shared_ptr<Component> Clone() const override;
 
 private:
+
+	// Ensure all parameters have values, using controller defaults if needed.
 	void EnsureDefaultsFromController();
+	// Evaluate transitions from the current state, and apply the first valid one.
 	void EvaluateAndApplyTransitions();
+	// Check if a transition can be taken.
 	bool CanTakeTransition(const AnimTransition& tr) const;
+	// Check if the conditions for a transition are met.
 	bool ConditionsMet(const AnimTransition& tr) const;
+	// Check if the exit time condition for a transition is met.
 	bool ExitTimeMet(const AnimTransition& tr) const;
 
+	// Switch to a new state by ID.
 	void SwitchState(int newStateId, bool restartTime);
 	const AnimState* CurrentState() const;
 
@@ -81,12 +79,14 @@ private:
 	std::unordered_map<std::string, bool> m_bools;
 	std::unordered_map<std::string, bool> m_triggers;
 
-	int m_stateId = -1;
-	float m_stateTime = 0.0f;
+	int m_stateId = -1; // Current state ID
+	float m_stateTime = 0.0f; // Time spent in current state
 
-	SpriteRenderer* m_sprite = nullptr;
-	Texture* m_lastTexture = nullptr;
-	Vector2i m_lastFrameSize = Vector2i::Zero();
+	SpriteRenderer* m_sprite = nullptr; // Cached SpriteRenderer
+	Texture* m_lastTexture = nullptr; // To detect texture changes
+	Vector2i m_lastFrameSize = Vector2i::Zero(); // To detect frame size changes
 
-	int m_prevLocalFrame = -1;
+	bool m_timeOverriddenThisFrame = false; // True if SeekNormalized was called this frame
+
+	int m_prevLocalFrame = -1; // To avoid redundant frame sets
 };

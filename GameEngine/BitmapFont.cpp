@@ -106,6 +106,34 @@ void BitmapFont::Draw(Renderer& renderer, const std::string& text, const Vector2
 	}
 }
 
+void BitmapFont::DrawColored(Renderer& renderer, const std::string& text, const Vector2f& worldTopLeft, const Vector2f& scale, const Vector4i& color) const {
+	if (!m_texture || !m_texture->IsValid()) return;
+
+	const float sx = std::abs(scale.x);
+	const float sy = std::abs(scale.y);
+
+	const float advX = (float)(m_glyphSize.x + m_spacing.x) * sx;
+	const float advY = (float)(m_glyphSize.y + m_spacing.y) * sy;
+
+	Vector2f pen = worldTopLeft;
+
+	for (char ch : text) {
+		if (ch == '\n') {
+			pen.x = worldTopLeft.x;
+			pen.y -= advY;
+			continue;
+		}
+
+		Vector2f srcPos, srcSize;
+		if (!GetSourceForChar((unsigned char)ch, srcPos, srcSize)) return;
+
+		const Vector2f dstSize(srcSize.x * sx, srcSize.y * sy);
+		renderer.DrawTextureTinted(*m_texture, srcPos, srcSize, pen, dstSize, color);
+
+		pen.x += advX;
+	}
+}
+
 Vector2f BitmapFont::MeasureText(const std::string& text, const Vector2f& scale) const {
 	if (!m_texture || !m_texture->IsValid()) return Vector2f::Zero();
 

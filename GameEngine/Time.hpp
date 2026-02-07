@@ -6,13 +6,17 @@
 #include <thread>
 #include "Logger.h"
 
-
+// Time
+// - Unscaled time: real wall-clock time since engine start (always increases)
+// - Scaled time: game time affected by timeScale (can pause/slow/reverse)
+// - DeltaTime(): scaled delta (affected by timeScale)
+// - UnscaledDeltaTime(): real delta (ignores timeScale)
+// - Fixed steps only advance when scaled delta > 0
 class Time {
 public:
 	using Clock = std::chrono::steady_clock;
 	using TimePoint = Clock::time_point;
 
-	// Singleton
 	static Time& Instance() {
 		static Time instance;
 		return instance;
@@ -25,7 +29,10 @@ public:
 		instance.m_now = instance.m_startTime;
 		instance.m_frameStartTime = instance.m_startTime;
 
+		instance.m_unscaledDeltaTime = 0.0f;
 		instance.m_deltaTime = 0.0f;
+
+		instance.m_unscaledElapsedTime = 0.0f;
 		instance.m_elapsedTime = 0.0f;
 		instance.m_elapsedFixedTime = 0.0f;
 		instance.m_accumulator = 0.0f;
@@ -34,6 +41,8 @@ public:
 		instance.m_fps = 0.0f;
 		instance.m_fpsTimer = 0.0f;
 		instance.m_showFPS = false;
+
+		instance.m_timeScale = 1.0f;
 	}
 
 	static void Tick() {
@@ -44,18 +53,27 @@ public:
 		std::chrono::duration<float> frameDelta = instance.m_frameStartTime - instance.m_lastTime;
 		instance.m_lastTime = instance.m_frameStartTime;
 
-		instance.m_deltaTime = frameDelta.count();
+		instance.m_unscaledDeltaTime = frameDelta.count();
 
-		// Clamp delta
-		if (instance.m_deltaTime > instance.m_maxDeltaTime)
-			instance.m_deltaTime = instance.m_maxDeltaTime;
+		// Clamp unscaled delta to avoid huge jumps
+		if (instance.m_unscaledDeltaTime > instance.m_maxDeltaTime)
+			instance.m_unscaledDeltaTime = instance.m_maxDeltaTime;
 
-		instance.m_elapsedTime += instance.m_deltaTime;
-		instance.m_accumulator += instance.m_deltaTime;
+		// Apply time scale
+		instance.m_deltaTime = instance.m_unscaledDeltaTime * instance.m_timeScale;
 
-		// FPS calculation
+		// Accumulate times
+		instance.m_unscaledElapsedTime += instance.m_unscaledDeltaTime;
+		instance.m_elapsedTime += instance.m_deltaTime; // scaled time (can go backwards)
+
+		// Fixed step accumulator only moves forward when scaled delta is positive.
+		if (instance.m_deltaTime > 0.0f) {
+			instance.m_accumulator += instance.m_deltaTime;
+		}
+
+		// FPS calculation uses unscaled time.
 		instance.m_frameCount++;
-		instance.m_fpsTimer += instance.m_deltaTime;
+		instance.m_fpsTimer += instance.m_unscaledDeltaTime;
 
 		if (instance.m_fpsTimer >= 1.0f) {
 			if (instance.m_showFPS) {
@@ -71,7 +89,6 @@ public:
 		}
 	}
 
-
 	// --- Fixed timestep ---
 	static int CalculateFixedSteps() {
 		const Time& instance = Instance();
@@ -84,20 +101,29 @@ public:
 		instance.m_elapsedFixedTime += instance.m_fixedDeltaTime;
 	}
 
-	// --- Getters ---
-	static float Now() {
-		const Time& instance = Instance();
-		return std::chrono::duration<float>(instance.m_now - instance.m_startTime).count();
-	}
+	// --- Time getters ---
+	// Scaled game time (affected by timeScale; can go backwards)
+	static float Now() { return Instance().m_elapsedTime; }
+	// Unscaled real time (always increases)
+	static float UnscaledNow() { return Instance().m_unscaledElapsedTime; }
 
 	static float DeltaTime() { return Instance().m_deltaTime; }
+	static float UnscaledDeltaTime() { return Instance().m_unscaledDeltaTime; }
+
 	static float FixedDeltaTime() { return Instance().m_fixedDeltaTime; }
 	static float ElapsedTime() { return Instance().m_elapsedTime; }
+	static float UnscaledElapsedTime() { return Instance().m_unscaledElapsedTime; }
 	static float ElapsedFixedTime() { return Instance().m_elapsedFixedTime; }
 	static float Accumulator() { return Instance().m_accumulator; }
 
 	static float FPS() { return Instance().m_fps; }
 	static float TargetFPS() { return Instance().m_targetFPS; }
+	static float TargetFrameTime() { return Instance().m_targetFrameTime; }
+
+	// --- Time control ---
+	static void SetTimeScale(float scale) { Instance().m_timeScale = scale; }
+	static float GetTimeScale() { return Instance().m_timeScale; }
+	static bool IsPaused() { return Instance().m_timeScale == 0.0f; }
 
 	// --- Setters ---
 	static void SetFixedDeltaTime(float dt) { Instance().m_fixedDeltaTime = dt; }
@@ -110,28 +136,22 @@ public:
 		return;
 	}
 
-	//--- Frame rate control ---
+	// --- Frame rate control ---
 	static void WaitForTargetFPS() {
 		Time& instance = Instance();
-		// No target FPS set
 		if (instance.m_targetFrameTime <= 0.0f) return;
 
-		// Calculate target end time
 		const auto targetEnd =
 			instance.m_frameStartTime + std::chrono::duration_cast<Clock::duration>(
 				std::chrono::duration<float>(instance.m_targetFrameTime)
 			);
 
 		auto now = Clock::now();
-		// Already past target time
 		if (now >= targetEnd) {
 			return;
 		}
 
-		// Sleep guard duration, to avoid oversleeping by OS scheduler
 		constexpr auto sleepGuard = std::chrono::milliseconds(5);
-
-		// Time remaining
 		auto remaining = targetEnd - now;
 
 		if (remaining > sleepGuard) {
@@ -143,9 +163,6 @@ public:
 		}
 	}
 
-
-	static float TargetFrameTime() { return Instance().m_targetFrameTime; }
-
 	static void ToggleShowFPS() {
 		Time& instance = Instance();
 		instance.m_showFPS = !instance.m_showFPS;
@@ -154,22 +171,24 @@ public:
 private:
 	Time() = default;
 
-	// Time points
 	TimePoint m_startTime{};
 	TimePoint m_lastTime{};
 	TimePoint m_now{};
 	TimePoint m_frameStartTime{};
 
-	// Times (seconds)
+	float m_unscaledDeltaTime = 0.0f;
 	float m_deltaTime = 0.0f;
+
 	float m_fixedDeltaTime = 1.0f / 60.0f;
 	float m_maxDeltaTime = 0.25f;
 
+	float m_unscaledElapsedTime = 0.0f;
 	float m_elapsedTime = 0.0f;
 	float m_elapsedFixedTime = 0.0f;
 	float m_accumulator = 0.0f;
 
-	// FPS
+	float m_timeScale = 1.0f;
+
 	float m_targetFPS = 60.0f;
 	float m_targetFrameTime = 1.0f / 60.0f;
 

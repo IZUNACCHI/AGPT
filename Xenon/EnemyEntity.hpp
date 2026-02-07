@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AllyEntity.hpp"
+#include "ScorePopup.hpp"
+#include "XenonGameMode.hpp"
 
 class EnemyEntity : public Entity {
 public:
@@ -13,13 +15,31 @@ public:
 protected:
 
 	int m_points = 1000;
-	int m_damageOnContact = 1;
+	int m_damageOnContact = 25;
 	void Awake() override {
 		// call base Awake
 		Entity::Awake();
 		// set faction to Enemy
 		m_faction = Faction::Enemy;
 
+	}
+
+	void OnDeath(GameObject* instigator) override {
+		// Award points.
+		if (auto* scene = GetGameObject() ? GetGameObject()->GetScene() : nullptr) {
+			if (auto* mode = dynamic_cast<XenonGameMode*>(scene->GetGameMode())) {
+				mode->AddScore(m_points);
+			}
+		}
+
+		// Spawn a tiny floating score text at the enemy position.
+		if (auto* scene = GetGameObject() ? GetGameObject()->GetScene() : nullptr) {
+			auto popup = scene->CreateGameObject<ScorePopup>("ScorePopup", m_points);
+			popup->GetTransform()->SetPosition(GetTransform()->GetPosition());
+		}
+
+		// Then destroy the enemy.
+		Object::Destroy(GetGameObject());
 	}
 
 	void OnCollisionEnter(Collider2D* other) override

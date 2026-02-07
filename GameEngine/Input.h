@@ -4,6 +4,7 @@
 
 #include "Types.hpp" 
 
+// key enum for keyboard keys
 enum class Key {
 	Unknown = 0,
 	A, B, C, D, E, F, G,
@@ -29,6 +30,7 @@ enum class Key {
 	Max
 };
 
+// mouse button enum
 enum class MouseButton {
 	Invalid = -1,
 	Left = 0,

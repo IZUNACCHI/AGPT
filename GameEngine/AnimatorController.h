@@ -9,13 +9,14 @@ class AnimationClip;
 enum class AnimParamType { Float, Int, Bool, Trigger };
 
 struct AnimParamDef {
-	std::string name;
-	AnimParamType type = AnimParamType::Float;
-	float defaultFloat = 0.0f;
-	int defaultInt = 0;
-	bool defaultBool = false;
+	std::string name; // Unique name.
+	AnimParamType type = AnimParamType::Float; // Default type.
+	float defaultFloat = 0.0f; // Used if type == Float
+	int defaultInt = 0; // Used if type == Int
+	bool defaultBool = false; // Used if type == Bool
 };
 
+/// Condition operators for transitions.
 enum class AnimCondOp {
 	BoolTrue,
 	BoolFalse,
@@ -28,6 +29,7 @@ enum class AnimCondOp {
 	TriggerSet
 };
 
+// Condition for an animation transition.
 struct AnimCondition {
 	std::string param;
 	AnimCondOp op = AnimCondOp::BoolTrue;
@@ -35,12 +37,13 @@ struct AnimCondition {
 	int i = 0;
 };
 
+// Transition between two animation states.
 struct AnimTransition {
-	/// If fromState == -1 => Any State transition.
+	// If fromState == -1 => Any State transition.
 	int fromState = -1;
 	int toState = -1;
 
-	/// Optional: require current clip to reach this normalized time.
+	// If true, transition can only occur after the fromState's clip has played for exitTimeNormalized portion.
 	bool hasExitTime = false;
 	float exitTimeNormalized = 1.0f; // 0..1
 
@@ -48,20 +51,24 @@ struct AnimTransition {
 	std::vector<AnimCondition> conditions;
 };
 
+// Animation state: id + name + clip.
 struct AnimState {
 	int id = -1;
 	std::string name;
 	AnimationClip* clip = nullptr;
 };
 
-/// Immutable graph asset: states + transitions + parameter defaults.
+// Immutable graph asset: states + transitions + parameter defaults.
 class AnimatorController {
 public:
+	// Parameter definitions.
 	std::vector<AnimParamDef> parameters;
+	// Animation states and transitions.
 	std::vector<AnimState> states;
 	std::vector<AnimTransition> transitions;
 	int entryState = -1;
 
+	// Find state by its unique id. Returns nullptr if not found.
 	const AnimState* FindStateById(int id) const {
 		for (const auto& s : states) {
 			if (s.id == id) return &s;
@@ -69,6 +76,7 @@ public:
 		return nullptr;
 	}
 
+	// Find state id by its unique name. Returns -1 if not found.
 	int FindStateIdByName(const std::string& n) const {
 		for (const auto& s : states) {
 			if (s.name == n) return s.id;

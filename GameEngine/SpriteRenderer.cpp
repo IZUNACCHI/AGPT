@@ -11,11 +11,11 @@ namespace {
 }
 
 SpriteRenderer::SpriteRenderer()
-	: Component("SpriteRenderer") {
+	: RenderableComponent("SpriteRenderer") {
 }
 
 SpriteRenderer::SpriteRenderer(Texture* texture)
-	: Component("SpriteRenderer"), m_texture(texture) {
+	: RenderableComponent("SpriteRenderer"), m_texture(texture) {
 	if (m_texture) {
 		m_frameSize = m_texture->GetSize();
 	}
@@ -72,7 +72,7 @@ void SpriteRenderer::RenderAll(Renderer& renderer) {
 	std::vector<SpriteRenderer*> renderables;
 	renderables.reserve(sprites.size());
 	for (const auto& sprite : sprites) {
-		if (sprite && sprite->GetGameObject()) {
+		if (sprite && sprite->GetGameObject() && sprite->IsVisible()) {
 			renderables.push_back(sprite.get());
 		}
 	}

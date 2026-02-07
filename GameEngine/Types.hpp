@@ -1075,15 +1075,21 @@ public:
 
 	Matrix3x3f operator*(const Matrix3x3f& other) const {
 		Matrix3x3f result;
+		// NOTE: Matrix3x3f stores values in **column-major** order and assumes
+		// column vectors (see operator*(Vector2f)).
+		//
+		// Previous code multiplied as if the array was row-major, which produced
+		// incorrect world matrices (translations would scale/rotate incorrectly).
+		// This correct implementation keeps everything consistent.
+		auto idx = [](int row, int col) { return col * 3 + row; };
 
-		// 3x3 matrix multiplication
-		for (int row = 0; row < 3; ++row) {
-			for (int col = 0; col < 3; ++col) {
-				result.m[row * 3 + col] = 0.0f;
+		for (int col = 0; col < 3; ++col) {
+			for (int row = 0; row < 3; ++row) {
+				float sum = 0.0f;
 				for (int k = 0; k < 3; ++k) {
-					result.m[row * 3 + col] +=
-						m[row * 3 + k] * other.m[k * 3 + col];
+					sum += m[idx(row, k)] * other.m[idx(k, col)];
 				}
+				result.m[idx(row, col)] = sum;
 			}
 		}
 

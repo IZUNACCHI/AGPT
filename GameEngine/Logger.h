@@ -147,7 +147,6 @@ public:
 
 		writeToFile(oss.str());
 
-		// For FATAL errors, you might want to add additional handling
 		if (level == LogLevel::FATAL) {
 			std::cerr << "FATAL ERROR OCCURRED! Application may terminate." << std::endl;
 		}
@@ -198,5 +197,5 @@ public:
 #define LOG_ERROR(msg) Logger::getInstance().error(msg, __FILE__, __LINE__)
 #define LOG_FATAL(msg) Logger::getInstance().fatal(msg, __FILE__, __LINE__)
 
-// General log macro (uses INFO level by default)
+// General log macro (INFO LEVEL)
 #define LOG(level, msg) Logger::getInstance().log(level, msg, __FILE__, __LINE__)

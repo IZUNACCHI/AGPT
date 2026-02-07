@@ -144,13 +144,39 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AllyEntity.hpp" />
+    <ClInclude Include="Companion.hpp" />
+    <ClInclude Include="CompanionPickup.hpp" />
+    <ClInclude Include="AnimatedPickup.hpp" />
     <ClInclude Include="EnemyEntity.hpp" />
     <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Faction.hpp" />
+    <ClInclude Include="HealPickup.hpp" />
     <ClInclude Include="IDamageable.hpp" />
     <ClInclude Include="Level1.hpp" />
     <ClInclude Include="Loner.hpp" />
+        <ClInclude Include="Rusher.hpp" />
+    <ClInclude Include="Drone.hpp" />
+    <ClInclude Include="EnemySpawners.hpp" />
+    <ClInclude Include="StoneAsteroids.hpp" />
+    <ClInclude Include="MetalAsteroids.hpp" />
+    <ClInclude Include="LoopingSheet.hpp" />
+<ClInclude Include="MainMenuScene.hpp" />
+    <ClInclude Include="Missiles.hpp" />
+    <ClInclude Include="OptionsMenuController.hpp" />
+    <ClInclude Include="PauseMenuController.hpp" />
+    <ClInclude Include="Pickup.hpp" />
+    <ClInclude Include="Pickups.hpp" />
     <ClInclude Include="Projectile.hpp" />
+    <ClInclude Include="ProjectileCommon.hpp" />
+    <ClInclude Include="ProjectileLaunchers.hpp" />
+    <ClInclude Include="ProjectileObjects.hpp" />
+    <ClInclude Include="ScorePopup.hpp" />
+    <ClInclude Include="VFX.hpp" />
+    <ClInclude Include="WeaponPickup.hpp" />
+    <ClInclude Include="XenonAssetKeys.h" />
+    <ClInclude Include="XenonGameInstance.hpp" />
+    <ClInclude Include="XenonGameMode.hpp" />
+    <ClInclude Include="XenonHUDController.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

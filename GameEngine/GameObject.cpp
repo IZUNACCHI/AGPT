@@ -10,6 +10,8 @@
 
 // Physics components used for rules/enforcement
 #include "Rigidbody2D.h"
+#include "RenderableComponent.h"
+#include "RenderSystem.h"
 #include "Collider2D.h"
 
 GameObject::GameObject(const std::string& name)
@@ -199,6 +201,12 @@ void GameObject::RegisterComponent(const std::shared_ptr<Component>& component) 
 
 	m_components.push_back(component);
 	Object::RegisterObject(component);
+
+	// If this is a renderable component, register it in the RenderSystem so
+	// we don't need to scan the entire object registry every frame.
+	if (auto renderable = std::dynamic_pointer_cast<RenderableComponent>(component)) {
+		RenderSystem::Get().Register(renderable.get());
+	}
 
 	// If we add a behaviour while active in hierarchy, queue its lifecycle.
 	if (auto behaviour = std::dynamic_pointer_cast<MonoBehaviour>(component)) {

@@ -9,6 +9,7 @@
 
 class Collider2D;
 
+// Component that supports user script callbacks and timed invokes.
 class MonoBehaviour : public Behaviour {
 public:
 	using InvokeHandle = std::uint64_t;
@@ -19,37 +20,30 @@ public:
 		WhileBehaviourEnabled    // Advances only while the behaviour is enabled
 	};
 
-	// Creates a MonoBehaviour.
+	// Creates a MonoBehaviour
 	MonoBehaviour();
-	// Destroys the MonoBehaviour.
+	// Destroys the MonoBehaviour
 	~MonoBehaviour() override = default;
 
-	// Returns true if the object is queued for destruction.
+	// Returns true if the object is queued for destruction
 	bool IsMarkedForDestruction() const { return Object::IsMarkedForDestruction(); }
-	// Returns true if Awake has been called.
+	// Returns true if Awake has been called
 	bool DidAwake() const { return m_didAwake; }
-	// Returns true if Start has been called.
+	// Returns true if Start has been called
 	bool DidStart() const { return m_didStart; }
 
-	// ---------------------------------------------------------------------
-	// Engine dispatch entry points
-	//
-	// These are public so engine systems (Scene, Physics, etc.) can invoke
-	// user callbacks without requiring the callbacks themselves to be public.
-	//
-	// User code should NOT call these directly. Override the protected
-	// callback methods instead (Awake/Start/Update/OnTriggerEnter/etc.).
-	// ---------------------------------------------------------------------
+	
 
-	/// Engine-only: dispatches Update().
+	/// Engine-only: dispatches Update()
 	void InternalUpdate() { Update(); }
-	/// Engine-only: advances Invoke/InvokeRepeating timers.
+	/// Engine-only: advances Invoke/InvokeRepeating timers
 	void InternalTickInvokes(float now) { TickInvokes(now); }
-	/// Engine-only: dispatches FixedUpdate().
+	/// Engine-only: dispatches FixedUpdate()
 	void InternalFixedUpdate() { FixedUpdate(); }
-	/// Engine-only: dispatches LateUpdate().
+	/// Engine-only: dispatches LateUpdate()
 	void InternalLateUpdate() { LateUpdate(); }
 
+	/// Engine-only: dispatches OnCollisionEnter/Stay/Exit and OnTriggerEnter/Stay/Exit
 	void InternalOnCollisionEnter(Collider2D* other) { OnCollisionEnter(other); }
 	void InternalOnCollisionStay(Collider2D* other) { OnCollisionStay(other); }
 	void InternalOnCollisionExit(Collider2D* other) { OnCollisionExit(other); }
@@ -58,103 +52,100 @@ public:
 	void InternalOnTriggerExit(Collider2D* other) { OnTriggerExit(other); }
 
 
-	/// Engine-only: dispatches Reset().
+	/// Engine-only: dispatches Reset()
 	void InternalReset() { Reset(); }
 
-	// Schedules a function to run after a delay.
+	// Schedules a function to run after a delay
 	InvokeHandle Invoke(std::function<void()> fn, float delaySeconds,
 		InvokeTickPolicy policy = InvokeTickPolicy::WhileGameObjectActive);
 
-	// Schedules a function to run repeatedly.
+	// Schedules a function to run repeatedly
 	InvokeHandle InvokeRepeating(std::function<void()> fn, float delaySeconds, float rateSeconds,
 		InvokeTickPolicy policy = InvokeTickPolicy::WhileGameObjectActive);
 
-	// Cancels a scheduled invoke.
+	// Cancels a scheduled invoke
 	void CancelInvoke(InvokeHandle handle);
 
-	// Returns true if the handle is still scheduled.
+	// Returns true if the handle is still scheduled
 	bool IsInvoking(InvokeHandle handle) const;
 
-	// Pauses a scheduled invoke without removing it.
+	// Pauses a scheduled invoke without removing it
 	bool PauseInvoke(InvokeHandle handle);
 
-	// Resumes a paused invoke.
+	// Resumes a paused invoke
 	bool ResumeInvoke(InvokeHandle handle);
 
-	// Restarts the invoke countdown.
+	// Restarts the invoke countdown
 	bool RestartInvoke(InvokeHandle handle);
 
-	// Pauses all scheduled invokes on this behaviour.
+	// Pauses all scheduled invokes on this behaviour
 	void PauseAllInvokes();
 
-	// Resumes all paused invokes on this behaviour.
+	// Resumes all paused invokes on this behaviour
 	void ResumeAllInvokes();
 
-	// Schedules a method by name after a delay.
+	// Schedules a method by name after a delay
 	void Invoke(const std::string& methodName, float time);
 
-	// Schedules a method by name repeatedly.
+	// Schedules a method by name repeatedly
 	void InvokeRepeating(const std::string& methodName, float delay, float rate);
 
-	// Cancels scheduled invokes by name (or all if empty).
+	// Cancels scheduled invokes by name (or all if empty)
 	void CancelInvoke(const std::string& methodName = "");
 
-	// Returns true if a method name is scheduled.
+	// Returns true if a method name is scheduled
 	bool IsInvoking(const std::string& methodName) const;
 
-	// Registers a handler for a method name.
+	// Registers a handler for a method name
 	void RegisterInvokeHandler(const std::string& methodName, std::function<void()> handler);
 
-	// Removes a handler for a method name.
+	// Removes a handler for a method name
 	void UnregisterInvokeHandler(const std::string& methodName);
 
-	// Registers / unregisters invoke handlers by name.
+	// Registers / unregisters invoke handlers by name
 
 protected:
-	// ---------------------------------------------------------------------
-	// User-overridable callbacks (keep these protected)
-	// ---------------------------------------------------------------------
 
-	// Restores default values for the component.
+	// Restores default values for the component
 	virtual void Reset() {}
 	
-	// Called once when the component is initialized.
+	// Called once when the component is initialized
 	virtual void Awake() {}
-	// Called once before the first Update (if enabled).
+	// Called once before the first Update (if enabled)
 	virtual void Start() {}
-	// Called every frame while enabled.
+	// Called every frame while enabled
 	virtual void Update() {}
-	// Called at fixed time steps while enabled.
+	// Called at fixed time steps while enabled
 	virtual void FixedUpdate() {}
-	// Called after Update while enabled.
+	// Called after Update while enabled
 	virtual void LateUpdate() {}
-	// Called when the behaviour becomes enabled.
+	// Called when the behaviour becomes enabled
 	virtual void OnEnable() {}
-	// Called when the behaviour becomes disabled.
+	// Called when the behaviour becomes disabled
 	virtual void OnDisable() {}
-	// Called when the object is being destroyed.
+	// Called when the object is being destroyed
 	virtual void OnDestroy() {}
 
-	// Called when a collision begins.
+	// Called when a collision begins
 	virtual void OnCollisionEnter(Collider2D* other) {}
-	// Called while a collision continues.
+	// Called while a collision continues
 	virtual void OnCollisionStay(Collider2D* other) {}
-	// Called when a collision ends.
+	// Called when a collision ends
 	virtual void OnCollisionExit(Collider2D* other) {}
-	// Called when a trigger begins.
+	// Called when a trigger begins
 	virtual void OnTriggerEnter(Collider2D* other) {}
-	// Called while a trigger continues.
+	// Called while a trigger continues
 	virtual void OnTriggerStay(Collider2D* other) {}
-	// Called when a trigger ends.
+	// Called when a trigger ends
 	virtual void OnTriggerExit(Collider2D* other) {}
 
-	// Receives a string invoke call.
+	// Receives a string invoke call
 	virtual void ReceiveMessage(const std::string& methodName);
 
-	// Returns whether OnEnable has been called.
+	// Returns whether OnEnable has been called
 	bool HasOnEnableBeenCalled() const override;
 
-	// Called when the enabled flag changes.
+	// Called when the enabled flag changes
 	void OnEnabledStateChanged(bool enabled) override;
 
 private:
@@ -163,75 +154,75 @@ private:
 	friend class Object;
 	friend class Component;
 
-	// Internal invoke request structure.
+	// Internal invoke request structure
 	struct InvokeRequest {
-		// Unique invoke handle.
+		// Unique invoke handle
 		InvokeHandle id = 0;
 
-		// Optional method name to invoke.
+		//method name to invoke
 		std::string methodName;
-		// Optional function to invoke.
+		//function to invoke
 		std::function<void()> fn;
 
-		// When to tick the invoke.
+		// When to tick the invoke
 		InvokeTickPolicy policy = InvokeTickPolicy::WhileGameObjectActive;
 
-		// Next scheduled time.
+		// Next scheduled time
 		float nextTime = 0.0f;
-		// Repeating rate (0 = one-shot).
+		// Repeating rate (0 = one-shot)
 		float rate = 0.0f;
-		// Whether the invoke is repeating.
+		// Whether the invoke is repeating
 		bool repeating = false;
 
-		// Whether the invoke has been cancelled.
+		// Whether the invoke has been cancelled
 		bool cancelled = false;
-		// Whether the invoke is currently paused.
+		// Whether the invoke is currently paused
 		bool paused = false;
-		// Remaining time when paused.
+		// Remaining time when paused
 		float pausedRemaining = 0.0f;
 	};
 
-	// Runs Awake if needed.
+	// Runs Awake if needed
 	void TriggerAwake();
 
-	// Runs OnEnable if needed.
+	// Runs OnEnable if needed
 	void TriggerEnable();
 
-	// Runs OnDisable if needed.
+	// Runs OnDisable if needed
 	void TriggerDisable();
 
-	// Runs Start if needed.
+	// Runs Start if needed
 	void TriggerStart();
 
-	// Runs OnDestroy if needed.
+	// Runs OnDestroy if needed
 	void TriggerDestroy();
 
-	// Executes due invokes.
+	// Executes due invokes
 	void TickInvokes(float now);
 
-	// Generates a new invoke handle.
+	// Generates a new invoke handle
 	InvokeHandle MakeInvokeId();
 
-	// Applies invoke pausing rules when enabled state changes.
+	// Applies invoke pausing rules when enabled state changes
 	void OnBehaviourEnabledChangedForInvokes(bool enabled);
 
-	// Advances repeating invokes without accumulating drift.
+	// Advances repeating invokes without accumulating drift
 	void AdvanceRepeating(InvokeRequest& req, float now);
 
 	// Lifecycle tracking
-	// Whether Awake has been called.
+	// Whether Awake has been called
 	bool m_didAwake = false;
-	// Whether Start has been called.
+	// Whether Start has been called
 	bool m_didStart = false;
-	// Whether OnEnable has been called.
+	// Whether OnEnable has been called
 	bool m_onEnableCalled = false;
-	// Whether the behaviour has ever been active.
+	// Whether the behaviour has ever been active
 	bool m_hasEverBeenActive = false;
-	// Whether destroy callbacks have been sent.
+	// Whether destroy callbacks have been sent
 	bool m_destroyCallbacksSent = false;
 
-	std::vector<InvokeRequest> m_invokes;
-	std::unordered_map<std::string, std::function<void()>> m_invokeHandlers;
+	std::vector<InvokeRequest> m_invokes; // Scheduled invokes
+	std::unordered_map<std::string, std::function<void()>> m_invokeHandlers; // Named invoke handlers
 
-	InvokeHandle m_nextInvokeId = 1;
+	InvokeHandle m_nextInvokeId = 1; // Next invoke handle to issue
 };

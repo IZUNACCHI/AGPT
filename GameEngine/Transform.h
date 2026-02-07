@@ -32,6 +32,13 @@ public:
 	/// Returns the world rotation in degrees.
 	float GetWorldRotation() const;
 
+	/// Returns the world-space unit vector pointing to the Transform's local +X (right).
+	Vector2f GetRight() const;
+	/// Returns the world-space unit vector pointing to the Transform's local +Y (up).
+	Vector2f GetUp() const;
+	/// Converts a local-space direction to world-space using the Transform's world rotation.
+	Vector2f TransformDirection(const Vector2f& localDir) const;
+
 	/// Sets the local scale.
 	void SetScale(const Vector2f& scale);
 	/// Sets the local scale.

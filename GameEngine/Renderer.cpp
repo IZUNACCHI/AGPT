@@ -6,6 +6,7 @@
 #include <algorithm>
 
 static SDL_Renderer* R(void* p) { return static_cast<SDL_Renderer*>(p); }
+static SDL_Window* W(void* p) { return static_cast<SDL_Window*>(p); }
 
 Renderer::Renderer(Window& window)
 	: m_renderer(nullptr) {
@@ -17,6 +18,10 @@ Renderer::Renderer(Window& window)
 		THROW_ENGINE_EXCEPTION("Cannot create renderer - window is not valid");
 	}
 
+	// Store native window handle so we can query pixel size reliably
+	// across resizes / fullscreen changes / DPI scaling.
+	m_window = (void*)sdlWindow;
+
 	m_renderer = (void*)SDL_CreateRenderer(sdlWindow, nullptr);
 	if (!m_renderer) {
 		THROW_ENGINE_EXCEPTION("Failed to create renderer: ") << SDL_GetError();
@@ -27,15 +32,17 @@ Renderer::Renderer(Window& window)
 
 Renderer::Renderer(Renderer&& other) noexcept
 	: m_renderer(other.m_renderer),
+	  m_window(other.m_window),
 	  m_virtualW(other.m_virtualW),
 	  m_virtualH(other.m_virtualH),
-	  m_letterbox(other.m_letterbox),
+	  m_scaleMode(other.m_scaleMode),
 	  m_integerScale(other.m_integerScale),
 	  m_clearColor(other.m_clearColor),
 	  m_letterboxColor(other.m_letterboxColor),
 	  m_cacheValid(false) {
 
 	other.m_renderer = nullptr;
+	other.m_window = nullptr;
 }
 
 Renderer& Renderer::operator=(Renderer&& other) noexcept {
@@ -44,11 +51,13 @@ Renderer& Renderer::operator=(Renderer&& other) noexcept {
 			SDL_DestroyRenderer(static_cast<SDL_Renderer*>(m_renderer));
 		}
 		m_renderer = other.m_renderer;
+		m_window = other.m_window;
 		other.m_renderer = nullptr;
+		other.m_window = nullptr;
 
 		m_virtualW = other.m_virtualW;
 		m_virtualH = other.m_virtualH;
-		m_letterbox = other.m_letterbox;
+		m_scaleMode = other.m_scaleMode;
 		m_integerScale = other.m_integerScale;
 		m_clearColor = other.m_clearColor;
 		m_letterboxColor = other.m_letterboxColor;
@@ -76,6 +85,9 @@ void Renderer::SetLetterboxColor(const Vector4i& rgba) {
 void Renderer::Clear() {
 	if (!m_renderer) return;
 
+	// New frame: viewport/clip not applied yet.
+	m_viewportAppliedThisFrame = false;
+
 	// 1) Clear the entire window (including letterbox bars) to letterbox color.
 	// We intentionally clear with no viewport/clip so the bars are clean.
 	SDL_SetRenderViewport(R(m_renderer), nullptr);
@@ -92,6 +104,7 @@ void Renderer::Clear() {
 	// 2) Apply the virtual-resolution viewport for subsequent draws,
 	// then clear the game area to the clear color.
 	ApplyViewportAndClip();
+	m_viewportAppliedThisFrame = true;
 	SDL_SetRenderDrawColor(
 		R(m_renderer),
 		(Uint8)m_clearColor.x,
@@ -102,9 +115,19 @@ void Renderer::Clear() {
 	SDL_RenderClear(R(m_renderer));
 }
 
+void Renderer::BeginFrame() {
+	Clear();
+}
+
 void Renderer::Present() {
 	if (!m_renderer) return;
 	SDL_RenderPresent(R(m_renderer));
+	// After presenting, consider the frame closed.
+	m_viewportAppliedThisFrame = false;
+}
+
+void Renderer::EndFrame() {
+	Present();
 }
 
 void* Renderer::GetNative() const {
@@ -114,6 +137,15 @@ void* Renderer::GetNative() const {
 bool Renderer::GetOutputSize(int& outW, int& outH) const {
 	outW = 0; outH = 0;
 	if (!m_renderer) return false;
+
+	// Prefer the window pixel size. This updates correctly when switching
+	// fullscreen / borderless / resizing at runtime and accounts for DPI.
+	if (m_window) {
+		SDL_GetWindowSizeInPixels(W(m_window), &outW, &outH);
+		return (outW > 0 && outH > 0);
+	}
+
+	// Fallback: renderer output size.
 	return SDL_GetRenderOutputSize(R(m_renderer), &outW, &outH);
 }
 
@@ -132,7 +164,11 @@ Vector2i Renderer::GetVirtualResolution() const {
 }
 
 void Renderer::SetLetterbox(bool enabled) {
-	m_letterbox = enabled;
+	SetViewportScaleMode(enabled ? ViewportScaleMode::Letterbox : ViewportScaleMode::Crop);
+}
+
+void Renderer::SetViewportScaleMode(ViewportScaleMode mode) {
+	m_scaleMode = mode;
 	m_cacheValid = false;
 }
 
@@ -169,7 +205,9 @@ void Renderer::UpdateViewportCache() const {
 	if (m_virtualW <= 0 || m_virtualH <= 0) {
 		m_cachedGameW = outW;
 		m_cachedGameH = outH;
-		m_cachedScale = 1.0f;
+		m_cachedScaleX = 1.0f;
+		m_cachedScaleY = 1.0f;
+		m_cachedOffset = Vector2f(0.0f, 0.0f);
 		m_cachedViewport = Rectf(0.0f, 0.0f, (float)outW, (float)outH);
 		m_cacheValid = true;
 		return;
@@ -178,58 +216,67 @@ void Renderer::UpdateViewportCache() const {
 	m_cachedGameW = m_virtualW;
 	m_cachedGameH = m_virtualH;
 
-	const float scaleX = (float)outW / (float)m_virtualW;
-	const float scaleY = (float)outH / (float)m_virtualH;
+	const float rawScaleX = (float)outW / (float)m_virtualW;
+	const float rawScaleY = (float)outH / (float)m_virtualH;
 
-	// NOTE:
-	// - Letterbox: pick the smaller scale so the virtual area fits fully.
-	// - Stretch: pick the larger scale so it fills (cropping may happen).
-	float desiredScale = m_letterbox ? std::min(scaleX, scaleY) : std::max(scaleX, scaleY);
+	// Default: full-window viewport, no offset
+	m_cachedViewport = Rectf(0.0f, 0.0f, (float)outW, (float)outH);
+	m_cachedOffset = Vector2f(0.0f, 0.0f);
 
-	// Optional pixel-art friendly integer scaling.
-	if (m_integerScale && desiredScale >= 1.0f) {
-		desiredScale = std::floor(desiredScale);
-		if (desiredScale < 1.0f) desiredScale = 1.0f;
-	}
-
-	// Compute viewport size safely.
-	// Using round here can sometimes overshoot by 1px depending on floating error,
-	// which can create negative offsets and "cut" the top/side bars.
-	// So we:
-	// 1) compute a candidate size
-	// 2) clamp to output
-	// 3) recompute an exact uniform scale that fits
-	int vpW = (int)std::round((float)m_virtualW * desiredScale);
-	int vpH = (int)std::round((float)m_virtualH * desiredScale);
-
-	vpW = std::min(vpW, outW);
-	vpH = std::min(vpH, outH);
-
-	float fitScaleX = (float)vpW / (float)m_virtualW;
-	float fitScaleY = (float)vpH / (float)m_virtualH;
-	float scale = m_letterbox ? std::min(fitScaleX, fitScaleY) : std::max(fitScaleX, fitScaleY);
-
-	// Final integer viewport based on the final scale (floor to guarantee fit).
-	vpW = (int)std::floor((float)m_virtualW * scale);
-	vpH = (int)std::floor((float)m_virtualH * scale);
-
-	// Clamp again just to be safe.
-	vpW = std::min(vpW, outW);
-	vpH = std::min(vpH, outH);
-
-	const int vpX = std::max(0, (outW - vpW) / 2);
-	const int vpY = std::max(0, (outH - vpH) / 2);
-
-	// Recompute scale based on the final integer viewport size.
-	if (m_virtualW > 0 && m_virtualH > 0) {
-		scale = std::min((float)vpW / (float)m_virtualW, (float)vpH / (float)m_virtualH);
+	if (m_scaleMode == ViewportScaleMode::Stretch) {
+		// Fill the whole window, distort aspect.
+		m_cachedScaleX = rawScaleX;
+		m_cachedScaleY = rawScaleY;
 	}
 	else {
-		scale = 1.0f;
+		// Uniform-scale modes (Letterbox/Crop)
+		float uniform = (m_scaleMode == ViewportScaleMode::Letterbox)
+			? std::min(rawScaleX, rawScaleY)
+			: std::max(rawScaleX, rawScaleY);
+
+		// Optional pixel-art friendly integer scaling (only really makes sense for uniform).
+		if (m_integerScale && uniform >= 1.0f) {
+			uniform = std::floor(uniform);
+			if (uniform < 1.0f) uniform = 1.0f;
+		}
+
+		// Compute scaled virtual size.
+		// Use floor for Letterbox to guarantee it fits.
+		// For Crop, it can exceed the window.
+		int scaledW = (m_scaleMode == ViewportScaleMode::Letterbox)
+			? (int)std::floor((float)m_virtualW * uniform)
+			: (int)std::ceil((float)m_virtualW * uniform);
+		int scaledH = (m_scaleMode == ViewportScaleMode::Letterbox)
+			? (int)std::floor((float)m_virtualH * uniform)
+			: (int)std::ceil((float)m_virtualH * uniform);
+
+		// Avoid 0 sizes.
+		scaledW = std::max(1, scaledW);
+		scaledH = std::max(1, scaledH);
+
+		if (m_scaleMode == ViewportScaleMode::Letterbox) {
+			// Center the game area inside the window, bars around it.
+			scaledW = std::min(scaledW, outW);
+			scaledH = std::min(scaledH, outH);
+			const int vpX = (outW - scaledW) / 2;
+			const int vpY = (outH - scaledH) / 2;
+			m_cachedViewport = Rectf((float)vpX, (float)vpY, (float)scaledW, (float)scaledH);
+
+			// In Letterbox mode we render in viewport-local space, so offset is 0.
+			m_cachedOffset = Vector2f(0.0f, 0.0f);
+		}
+		else {
+			// Crop: viewport is full window, but we offset the content so it's centered.
+			// Offset can be negative (content larger than window).
+			const float offX = ((float)outW - (float)scaledW) * 0.5f;
+			const float offY = ((float)outH - (float)scaledH) * 0.5f;
+			m_cachedOffset = Vector2f(offX, offY);
+		}
+
+		m_cachedScaleX = uniform;
+		m_cachedScaleY = uniform;
 	}
 
-	m_cachedScale = scale;
-	m_cachedViewport = Rectf((float)vpX, (float)vpY, (float)vpW, (float)vpH);
 	m_cacheValid = true;
 }
 
@@ -238,23 +285,31 @@ void Renderer::ApplyViewportAndClip() const {
 	UpdateViewportCache();
 	if (!m_cacheValid) return;
 
-	SDL_Rect vp{};
-	vp.x = (int)std::floor(m_cachedViewport.x);
-	vp.y = (int)std::floor(m_cachedViewport.y);
-	vp.w = (int)std::floor(m_cachedViewport.width);
-	vp.h = (int)std::floor(m_cachedViewport.height);
+	if (m_scaleMode == ViewportScaleMode::Letterbox && m_virtualW > 0 && m_virtualH > 0) {
+		SDL_Rect vp{};
+		vp.x = (int)std::floor(m_cachedViewport.x);
+		vp.y = (int)std::floor(m_cachedViewport.y);
+		vp.w = (int)std::floor(m_cachedViewport.width);
+		vp.h = (int)std::floor(m_cachedViewport.height);
 
-	// IMPORTANT:
-	// SDL's viewport changes the renderer coordinate origin to the viewport's
-	// top-left. That means all subsequent draw coordinates should be expressed
-	// in *viewport space* (0..vp.w, 0..vp.h), NOT window space.
-	//
-	// Therefore:
-	// - We set the viewport in window space (vp.x/y are window pixels)
-	// - We set the clip rect in viewport space (0,0..vp.w/vp.h)
-	SDL_SetRenderViewport(R(m_renderer), &vp);
-	SDL_Rect clip{ 0, 0, vp.w, vp.h };
-	SDL_SetRenderClipRect(R(m_renderer), &clip);
+		// In Letterbox mode, we use an SDL viewport for the bars.
+		SDL_SetRenderViewport(R(m_renderer), &vp);
+		SDL_Rect clip{ 0, 0, vp.w, vp.h };
+		SDL_SetRenderClipRect(R(m_renderer), &clip);
+	}
+	else {
+		// Stretch/Crop (or no virtual resolution): use full window.
+		SDL_SetRenderViewport(R(m_renderer), nullptr);
+		SDL_SetRenderClipRect(R(m_renderer), nullptr);
+	}
+}
+
+void Renderer::EnsureViewportAndClipApplied() const {
+	if (m_viewportAppliedThisFrame) {
+		return;
+	}
+	ApplyViewportAndClip();
+	m_viewportAppliedThisFrame = true;
 }
 
 Vector2f Renderer::WorldToScreenPoint(const Vector2f& world) const {
@@ -263,22 +318,23 @@ Vector2f Renderer::WorldToScreenPoint(const Vector2f& world) const {
 
 	// WORLD: origin center, +Y up, in VIRTUAL pixels.
 	// VIRTUAL SCREEN: origin top-left, +Y down, size = (m_cachedGameW, m_cachedGameH)
-	// VIEWPORT SPACE: apply uniform scale. The viewport offset is applied
-	// by SDL_SetRenderViewport in ApplyViewportAndClip().
+	// VIEWPORT SPACE (Letterbox): apply scale, SDL viewport applies the offset.
+	// WINDOW SPACE (Stretch/Crop): apply scale + cached offset.
 	const float vx = world.x + (float)m_cachedGameW * 0.5f;
 	const float vy = (float)m_cachedGameH * 0.5f - world.y;
 
 	return Vector2f(
-		vx * m_cachedScale,
-		vy * m_cachedScale
+		m_cachedOffset.x + vx * m_cachedScaleX,
+		m_cachedOffset.y + vy * m_cachedScaleY
 	);
 }
 
 Rectf Renderer::WorldToScreenRect(const Vector2f& worldTopLeft, const Vector2f& size) const {
 	const Vector2f screenTL = WorldToScreenPoint(worldTopLeft);
 	UpdateViewportCache();
-	const float s = m_cacheValid ? m_cachedScale : 1.0f;
-	return Rectf(screenTL.x, screenTL.y, size.x * s, size.y * s);
+	const float sx = m_cacheValid ? m_cachedScaleX : 1.0f;
+	const float sy = m_cacheValid ? m_cachedScaleY : 1.0f;
+	return Rectf(screenTL.x, screenTL.y, size.x * sx, size.y * sy);
 }
 
 static SDL_FlipMode ToSDLFlip(FlipMode flip) {
@@ -300,7 +356,7 @@ bool Renderer::DrawTexture(
 
 	if (!m_renderer) return false;
 	if (!texture.IsValid()) return false;
-	ApplyViewportAndClip();
+	EnsureViewportAndClipApplied();
 
 	const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
 	const Rectf dstR = WorldToScreenRect(destinationPosition, destinationSize);
@@ -316,6 +372,45 @@ bool Renderer::DrawTexture(
 	return true;
 }
 
+bool Renderer::DrawTextureTinted(
+	const Texture& texture,
+	const Vector2f& sourcePosition,
+	const Vector2f& sourceSize,
+	const Vector2f& destinationPosition,
+	const Vector2f& destinationSize,
+	const Vector4i& tint) {
+
+	if (!m_renderer) return false;
+	if (!texture.IsValid()) return false;
+	EnsureViewportAndClipApplied();
+
+	SDL_Texture* sdlTex = static_cast<SDL_Texture*>(texture.GetNative());
+	if (!sdlTex) return false;
+
+	// Save current modulation so this is safe for shared textures.
+	Uint8 oldR = 255, oldG = 255, oldB = 255, oldA = 255;
+	SDL_GetTextureColorMod(sdlTex, &oldR, &oldG, &oldB);
+	SDL_GetTextureAlphaMod(sdlTex, &oldA);
+
+	SDL_SetTextureColorMod(sdlTex, (Uint8)tint.x, (Uint8)tint.y, (Uint8)tint.z);
+	SDL_SetTextureAlphaMod(sdlTex, (Uint8)tint.w);
+
+	const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
+	const Rectf dstR = WorldToScreenRect(destinationPosition, destinationSize);
+	const SDL_FRect dst{ dstR.x, dstR.y, dstR.width, dstR.height };
+
+	bool ok = SDL_RenderTexture(R(m_renderer), sdlTex, &src, &dst);
+	if (!ok) {
+		LOG_WARN("Renderer draw tinted texture failed: " + std::string(SDL_GetError()));
+	}
+
+	// Restore
+	SDL_SetTextureColorMod(sdlTex, oldR, oldG, oldB);
+	SDL_SetTextureAlphaMod(sdlTex, oldA);
+
+	return ok;
+}
+
 bool Renderer::DrawTextureRotated(
 	const Texture& texture,
 	const Vector2f& sourcePosition,
@@ -328,7 +423,7 @@ bool Renderer::DrawTextureRotated(
 
 	if (!m_renderer) return false;
 	if (!texture.IsValid()) return false;
-	ApplyViewportAndClip();
+	EnsureViewportAndClipApplied();
 
 	const SDL_FRect src{ sourcePosition.x, sourcePosition.y, sourceSize.x, sourceSize.y };
 	const Rectf dstR = WorldToScreenRect(destinationPosition, destinationSize);
@@ -344,9 +439,10 @@ bool Renderer::DrawTextureRotated(
 	}
 	else {
 		UpdateViewportCache();
-		const float s = m_cacheValid ? m_cachedScale : 1.0f;
-		center.x = pivot.x * s;
-		center.y = pivot.y * s;
+		const float sx = m_cacheValid ? m_cachedScaleX : 1.0f;
+		const float sy = m_cacheValid ? m_cachedScaleY : 1.0f;
+		center.x = pivot.x * sx;
+		center.y = pivot.y * sy;
 	}
 
 	// Preserve WORLD CCW meaning with Y-down screen
@@ -361,7 +457,7 @@ bool Renderer::DrawTextureRotated(
 
 bool Renderer::DrawRectOutline(const Vector2f& worldTopLeft, const Vector2f& size, const Vector3i& color) {
 	if (!m_renderer) return false;
-	ApplyViewportAndClip();
+	EnsureViewportAndClipApplied();
 
 	if (!SDL_SetRenderDrawColor(R(m_renderer), (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, 255)) {
 		LOG_WARN("Renderer draw rect failed to set color: " + std::string(SDL_GetError()));
@@ -379,10 +475,30 @@ bool Renderer::DrawRectOutline(const Vector2f& worldTopLeft, const Vector2f& siz
 	return true;
 }
 
+bool Renderer::DrawFilledRect(const Vector2f& worldTopLeft, const Vector2f& size, const Vector4i& color) {
+	if (!m_renderer) return false;
+	EnsureViewportAndClipApplied();
+
+	SDL_SetRenderDrawBlendMode(R(m_renderer), SDL_BLENDMODE_BLEND);
+	if (!SDL_SetRenderDrawColor(R(m_renderer), (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, (Uint8)color.w)) {
+		LOG_WARN("Renderer fill rect failed to set color: " + std::string(SDL_GetError()));
+		return false;
+	}
+
+	const Rectf r = WorldToScreenRect(worldTopLeft, size);
+	const SDL_FRect dst{ r.x, r.y, r.width, r.height };
+
+	if (!SDL_RenderFillRect(R(m_renderer), &dst)) {
+		LOG_WARN("Renderer fill rect failed: " + std::string(SDL_GetError()));
+		return false;
+	}
+	return true;
+}
+
 bool Renderer::DrawCircleOutline(const Vector2f& worldCenter, float radius, const Vector3i& color, int segments) {
 	if (!m_renderer) return false;
 	if (radius <= 0.0f || segments < 3) return false;
-	ApplyViewportAndClip();
+	EnsureViewportAndClipApplied();
 
 	if (!SDL_SetRenderDrawColor(R(m_renderer), (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, 255)) {
 		LOG_WARN("Renderer draw circle failed to set color: " + std::string(SDL_GetError()));
@@ -391,8 +507,10 @@ bool Renderer::DrawCircleOutline(const Vector2f& worldCenter, float radius, cons
 
 	const Vector2f c = WorldToScreenPoint(worldCenter);
 	UpdateViewportCache();
-	const float s = m_cacheValid ? m_cachedScale : 1.0f;
-	const float rpx = radius * s;
+	// For Stretch, circles become ellipses. We approximate using the average scale.
+	const float sx = m_cacheValid ? m_cachedScaleX : 1.0f;
+	const float sy = m_cacheValid ? m_cachedScaleY : 1.0f;
+	const float rpx = radius * ((sx + sy) * 0.5f);
 
 	const float step = Math::Constants<float>::TwoPi / (float)segments;
 	float a = 0.0f;

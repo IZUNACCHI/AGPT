@@ -1,10 +1,9 @@
 #pragma once
 
-#include "Component.h"
+#include "RenderableComponent.h"
 #include "Types.hpp"
 #include <memory>
 #include <string>
-
 class Renderer;
 class BitmapFont;
 
@@ -17,15 +16,16 @@ enum class TextAnchor {
 // position = anchor in WORLD
 // rotation = rotates entire block
 // scale = scales block (negative scale mirrors)
-class TextRenderer : public Component {
+class TextRenderer : public RenderableComponent {
 public:
 	TextRenderer();
 
-	void SetFont(const std::shared_ptr<BitmapFont>& font) { m_font = font; }
+	void SetFont(BitmapFont* font) { m_font = font; }
 	void SetText(const std::string& text) { m_text = text; }
 	void SetAnchor(TextAnchor a) { m_anchor = a; }
 	void SetExtraScale(float s) { m_extraScale = s; } // multiplier on top of Transform scale
 	void SetLayerOrder(int order) { m_layerOrder = order; }
+	int GetLayerOrder() const { return m_layerOrder; }
 
 	static void RenderAll(Renderer& renderer);
 	void Render(Renderer& renderer) const;
@@ -36,7 +36,7 @@ private:
 	static Vector2f RotateDeg(const Vector2f& v, float deg);
 
 private:
-	std::shared_ptr<BitmapFont> m_font;
+	BitmapFont* m_font = nullptr;
 	std::string m_text = "Text";
 
 	TextAnchor m_anchor = TextAnchor::Center;

@@ -79,6 +79,24 @@ float Transform::GetWorldRotation() const {
 	return m_worldRotation;
 }
 
+
+Vector2f Transform::TransformDirection(const Vector2f& localDir) const {
+	// Rotate a direction vector by the transform's world rotation (degrees).
+	const float deg = GetWorldRotation();
+	const float rad = deg * 3.14159265358979323846f / 180.0f;
+	const float c = std::cos(rad);
+	const float s = std::sin(rad);
+	return Vector2f(localDir.x * c - localDir.y * s, localDir.x * s + localDir.y * c);
+}
+
+Vector2f Transform::GetRight() const {
+	return TransformDirection(Vector2f(1.0f, 0.0f));
+}
+
+Vector2f Transform::GetUp() const {
+	return TransformDirection(Vector2f(0.0f, 1.0f));
+}
+
 void Transform::SetScale(const Vector2f& scale) {
 	m_localScale = scale;
 	SetDirty();
@@ -156,7 +174,8 @@ void Transform::Rotate(float angle) {
 
 Matrix3x3f Transform::GetLocalMatrix() const {
 	Matrix3x3f translation = Matrix3x3f::Translation(m_localPosition);
-	Matrix3x3f rotation = Matrix3x3f::Rotation(m_localRotation * 3.14159265358979323846f / 180.0f);
+	// Matrix3x3f::Rotation expects degrees and handles Deg->Rad internally.
+	Matrix3x3f rotation = Matrix3x3f::Rotation(m_localRotation);
 	Matrix3x3f scale = Matrix3x3f::Scale(m_localScale);
 	return translation * rotation * scale;
 }

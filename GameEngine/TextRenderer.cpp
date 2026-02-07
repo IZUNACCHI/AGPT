@@ -9,7 +9,7 @@
 #include <cmath>
 
 TextRenderer::TextRenderer()
-	: Component("TextRenderer") {
+	: RenderableComponent("TextRenderer") {
 }
 
 Vector2f TextRenderer::RotateDeg(const Vector2f& v, float deg) {
@@ -27,6 +27,7 @@ void TextRenderer::RenderAll(Renderer& renderer) {
 
 	for (const auto& t : texts) {
 		if (!t) continue;
+		if (!t->IsVisible()) continue;
 		auto* go = t->GetGameObject();
 		if (!go || !go->IsActiveInHierarchy()) continue;
 		renderables.push_back(t.get());
