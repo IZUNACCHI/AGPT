@@ -98,7 +98,7 @@ public:
 		: GameObject(name) {
 		AddComponent<SpriteRenderer>();
 		AddComponent<Rigidbody2D>();
-		AddComponent<XenonDespawnOffscreen2D>();
+		AddComponent<DespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 	}
 };

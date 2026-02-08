@@ -378,7 +378,7 @@ public:
 		: GameObject(name) {
 		AddComponent<SpriteRenderer>();
 		AddComponent<Rigidbody2D>();
-		AddComponent<XenonClampToViewport2D>();
+		AddComponent<ClampToViewPort2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<Animator>();
 		AddComponent<AudioSource>();

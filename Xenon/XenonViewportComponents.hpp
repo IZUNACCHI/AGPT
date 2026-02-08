@@ -5,17 +5,12 @@
 #include <algorithm>
 #include <cmath>
 
-// Xenon-local viewport helper components.
-// Kept in Xenon so you can tweak behavior per evaluation branch (horizontal/vertical scroller)
-// without touching the engine.
 
-// -----------------------------------------------------------------------------
-// XenonClampToViewport2D
-// -----------------------------------------------------------------------------
-class XenonClampToViewport2D : public MonoBehaviour {
+// Behaviour that keeps the owning GameObject within the viewport bounds, based on its SpriteRenderer or Collider2D size.
+class ClampToViewPort2D : public MonoBehaviour {
 public:
-	XenonClampToViewport2D() : MonoBehaviour() {
-		SetComponentName("XenonClampToViewport2D");
+	ClampToViewPort2D() : MonoBehaviour() {
+		SetComponentName("ClampToViewport2D");
 	}
 
 	void SetClampX(bool v) { m_clampX = v; }
@@ -98,13 +93,11 @@ private:
 };
 
 
-// -----------------------------------------------------------------------------
-// XenonDespawnOffscreen2D
-// -----------------------------------------------------------------------------
-class XenonDespawnOffscreen2D : public MonoBehaviour {
+// Behaviour that destroys the owning GameObject when it goes offscreen, based on its SpriteRenderer or Collider2D size.
+class DespawnOffscreen2D : public MonoBehaviour {
 public:
-	XenonDespawnOffscreen2D() : MonoBehaviour() {
-		SetComponentName("XenonDespawnOffscreen2D");
+	DespawnOffscreen2D() : MonoBehaviour() {
+		SetComponentName("DespawnOffscreen2D");
 	}
 
 	void SetCheckInterval(float seconds) { m_interval = std::max(0.01f, seconds); }
