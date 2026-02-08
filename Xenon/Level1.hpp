@@ -8,6 +8,8 @@
 
 #include "XenonGameMode.hpp"
 #include "XenonHUDController.hpp"
+#include "ParallaxBackground.hpp"
+#include "XenonAssetKeys.h"
 
 class Level1 : public Scene {
 public:
@@ -25,10 +27,31 @@ public:
 		{
 			auto galaxy = CreateGameObject<GameObject>("GalaxyBackdrop");
 			auto galaxySprite = galaxy->AddComponent<SpriteRenderer>();
-			galaxySprite->SetTexture(LoadTexture("galaxy2.bmp"));
+			galaxySprite->SetTexture(LoadTexture(XenonAssetKeys::Files::GalaxyBmp));
 			galaxySprite->SetLayerOrder(-10);
 			galaxy->GetTransform()->SetPosition(Vector2f(0.0f, 0.0f));
 		}
+
+
+// Parallax blocks (from Blocks.bmp atlas, specified in frames)
+{
+	// Rect 1: row 21, frames 1..9 wide, 2 frames tall
+	auto blocks1 = CreateBlocksRect(this, "BlocksRect1", 21, 1, 9, 2, Vector2f(-200.0f, 180.0f), -9);
+	if (blocks1) {
+		auto p = blocks1->AddComponent<ParallaxMover2D>();
+		p->SetDirection(Vector2f(-1.0f, 0.0f)); // set to (0,-1) for vertical scroller branch
+		p->SetSpeed(18.0f);
+	}
+}
+{
+	// Rect 2: row 44, frames 4..9 wide, 2 frames tall
+	auto blocks2 = CreateBlocksRect(this, "BlocksRect2", 44, 4, 9, 2, Vector2f(140.0f, 40.0f), -8);
+	if (blocks2) {
+		auto p = blocks2->AddComponent<ParallaxMover2D>();
+		p->SetDirection(Vector2f(-1.0f, 0.0f));
+		p->SetSpeed(28.0f);
+	}
+}
 
 		auto spaceShip = CreateGameObject<SpaceShip>("SpaceShip");
 		spaceShip->GetTransform()->SetPosition(Vector2f(0.0f, -160.0f));

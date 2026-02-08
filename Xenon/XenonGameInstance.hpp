@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../GameEngine/GameInstance.h"
-#include "../GameEngine/SleeplessEngine.h"
-#include "../GameEngine/Audio.h"
-#include "../GameEngine/Types.hpp"
+#include <GameEngine/GameInstance.h>
+#include <GameEngine/SleeplessEngine.h>
+#include <GameEngine/Audio.h>
+#include <GameEngine/Types.hpp>
 
 #include <string>
 #include <vector>

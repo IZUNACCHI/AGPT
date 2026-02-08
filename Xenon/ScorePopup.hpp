@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include "XenonAssetKeys.h"
 
 // -----------------------------------------------------------------------------
@@ -92,10 +92,11 @@ protected:
 
 		m_font = LoadBitmapFont(
 			XenonAssetKeys::Fonts::Popup8x8,
-			"Font8x8.bmp",
+			XenonAssetKeys::Files::Font8x8Bmp,
 			Vector2i(8, 8),
 			Vector3i(255, 0, 255)
 		);
+
 
 		m_text->SetFont(m_font);
 		m_text->SetText(m_textToDisplay);

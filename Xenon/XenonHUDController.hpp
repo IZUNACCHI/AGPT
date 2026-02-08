@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/UILabel.h"
-#include "../GameEngine/UIImage.h"
-#include "../GameEngine/UIProgressBar.h"
+#include <GameEngine/GameEngine.h>
+#include <GameEngine/UILabel.h>
+#include <GameEngine/UIImage.h>
+#include <GameEngine/UIProgressBar.h>
 
 #include "XenonGameMode.hpp"
 

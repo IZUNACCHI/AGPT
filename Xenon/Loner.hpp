@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/GameEngine.h>
+#include "XenonViewportComponents.hpp"
+#include <GameEngine/Animator.h>
 
 #include "EnemyEntity.hpp"
 #include "Projectile.hpp"
@@ -117,6 +118,7 @@ public:
 		: GameObject(name) {
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
+		AddComponent<XenonDespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<EnemyProjectileLauncher>();
 		AddComponent<Animator>();

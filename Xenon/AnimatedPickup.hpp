@@ -2,7 +2,7 @@
 
 #include "Pickup.hpp"
 
-#include "../GameEngine/Animator.h"
+#include <GameEngine/Animator.h>
 
 #include <algorithm>
 

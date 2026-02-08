@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include "ProjectileObjects.hpp"
 
 #include <cmath>

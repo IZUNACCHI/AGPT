@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ProjectileCommon.hpp"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/Animator.h>
 #include "XenonAssetKeys.h"
 
 

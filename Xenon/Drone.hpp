@@ -1,7 +1,8 @@
 // Xenon/Drone.hpp
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
+#include "XenonViewportComponents.hpp"
 
 #include "EnemyEntity.hpp"
 #include "LoopingSheet.hpp"
@@ -83,6 +84,14 @@ protected:
 		animator->SetController(&m_ctrl);
 		animator->Play("Loop", true);
 
+// Pack visual variation: each drone starts "frame-ahead" of the previous.
+// This is purely visual; it does not affect movement.
+if (!m_clip.frames.empty()) {
+	const int frameCount = (int)m_clip.frames.size();
+	const float startN = (float)(m_packIndex % frameCount) / (float)frameCount;
+	animator->SeekNormalized(startN, 9999.0f);
+}
+
 		boxCol = dynamic_cast<BoxCollider2D*>(collider);
 		if (boxCol) {
 			boxCol->SetSize(sprite->GetFrameSize());
@@ -126,12 +135,7 @@ protected:
 
 		transform->SetPosition(p);
 
-		// Die ONLY when leaving by the LEFT side.
-		// Keep these bounds aligned with the rest of your game.
-		const Vector2f wp = transform->GetWorldPosition();
-		if (wp.x < -420.0f) {
-			Object::Destroy(GetGameObject());
-		}
+		// Offscreen despawn is handled by DespawnOffscreen2D.
 	}
 
 	void OnDeath(GameObject* instigator) override {
@@ -184,6 +188,7 @@ public:
 		: GameObject(name) {
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
+		AddComponent<XenonDespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<Animator>();
 		AddComponent<DroneBehaviour>();

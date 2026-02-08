@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/GameEngine.h>
+#include <GameEngine/Animator.h>
 
 #include <algorithm>
 

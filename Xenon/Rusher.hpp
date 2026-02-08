@@ -1,9 +1,11 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/GameEngine.h>
+#include "XenonViewportComponents.hpp"
+#include <GameEngine/Animator.h>
 
 #include "EnemyEntity.hpp"
+#include "XenonAssetKeys.h"
 #include "LoopingSheet.hpp"
 
 class RusherBehaviour : public EnemyEntity {
@@ -31,7 +33,13 @@ protected:
 			THROW_ENGINE_EXCEPTION("Rusher is missing Animator component");
 		}
 
-		m_sheet = LoadSpriteSheet("sheet.enemy.rusher", "rusher.bmp", Vector2i(64, 32), Vector3i(255, 0, 255));
+		m_sheet = LoadSpriteSheet(
+			XenonAssetKeys::Sheets::Rusher,
+			XenonAssetKeys::Files::RusherBmp,
+			Vector2i(64, 32),
+			Vector3i(255, 0, 255)
+		);
+
 		if (!m_sheet || !m_sheet->IsValid()) {
 			THROW_ENGINE_EXCEPTION("Failed to load rusher spritesheet (rusher.bmp)");
 		}
@@ -68,12 +76,7 @@ protected:
 			rigidbody->SetLinearVelocity(dir * m_speed);
 		}
 
-		if (transform) {
-			const Vector2f p = transform->GetWorldPosition();
-			if (p.x < -420.0f) {
-				Object::Destroy(GetGameObject());
-			}
-		}
+		// Offscreen despawn is handled by DespawnOffscreen2D.
 	}
 };
 
@@ -83,6 +86,7 @@ public:
 		: GameObject(name) {
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
+		AddComponent<XenonDespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<Animator>();
 		AddComponent<RusherBehaviour>();

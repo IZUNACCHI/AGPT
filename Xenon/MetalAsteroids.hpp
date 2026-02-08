@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/GameEngine.h>
+#include "XenonViewportComponents.hpp"
+#include <GameEngine/Animator.h>
 
 #include "EnemyEntity.hpp"
 #include "LoopingSheet.hpp"
@@ -144,12 +145,7 @@ protected:
 			rigidbody->SetLinearVelocity(dir * m_speed);
 		}
 
-		if (transform) {
-			const Vector2f p = transform->GetWorldPosition();
-			if (p.x < -460.0f || p.y < -380.0f || p.y > 380.0f) {
-				Object::Destroy(GetGameObject());
-			}
-		}
+		// Offscreen despawn is handled by DespawnOffscreen2D.
 	}
 
 private:
@@ -169,6 +165,7 @@ public:
 		: GameObject(name) {
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
+		AddComponent<XenonDespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<Animator>();
 		AddComponent<MetalAsteroidBehaviour>(size);

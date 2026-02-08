@@ -91,6 +91,8 @@
     <ClInclude Include="WeaponPickup.hpp">
       <Filter>GameObjects\Pickup</Filter>
     </ClInclude>
+    <ClInclude Include="XenonViewportComponents.hpp" />
+    <ClInclude Include="ParallaxBackground.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GameObjects">

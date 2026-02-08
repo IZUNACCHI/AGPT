@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include "XenonGameInstance.hpp"
 
 // A reusable options menu that can be spawned in any scene.

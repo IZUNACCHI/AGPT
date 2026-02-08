@@ -1,7 +1,7 @@
 // Xenon/EnemySpawners.hpp
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 
 #include "Loner.hpp"
 #include "Rusher.hpp"

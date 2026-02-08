@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
+#include "XenonViewportComponents.hpp"
 #include "Entity.hpp"
 
 class PickupBehaviour : public MonoBehaviour {
@@ -53,12 +54,7 @@ protected:
 			rigidbody->SetLinearVelocity(dir * m_speed);
 		}
 
-		if (GetTransform()) {
-			const Vector2f p = GetTransform()->GetWorldPosition();
-			if (p.x < -420.0f) {
-				Object::Destroy(GetGameObject());
-			}
-		}
+		// Offscreen despawn is handled by DespawnOffscreen2D.
 	}
 
 	void OnTriggerEnter(Collider2D* other) override {
@@ -102,6 +98,7 @@ public:
 		: GameObject(name) {
 		AddComponent<SpriteRenderer>();
 		AddComponent<Rigidbody2D>();
+		AddComponent<XenonDespawnOffscreen2D>();
 		AddComponent<BoxCollider2D>();
 	}
 };

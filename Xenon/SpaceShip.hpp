@@ -1,11 +1,12 @@
 #pragma once
-#include "../GameEngine/GameEngine.h"
-#include "../GameEngine/ViewportUtils.h"
-#include "../GameEngine/Animator.h"
+#include <GameEngine/GameEngine.h>
+#include <GameEngine/ViewportUtils.h>
+#include <GameEngine/Animator.h>
 #include "AllyEntity.hpp"
 #include "Projectile.hpp"
 #include "Companion.hpp"
 #include "XenonAssetKeys.h"
+#include "XenonViewportComponents.hpp"
 #include <memory>
 #include <algorithm>
 #include <cmath>
@@ -15,7 +16,7 @@
 namespace ShipAnim {
 	inline SpriteSheet* GetSheet() {
 		// Let AssetManager own the cache. This call is cheap after the first time.
-		return LoadSpriteSheet(XenonAssetKeys::Sheets::Ship2, "Ship2.bmp", Vector2i(64, 64), Vector3i(255, 0, 255));
+		return LoadSpriteSheet(XenonAssetKeys::Sheets::Ship2, XenonAssetKeys::Files::Ship2Bmp, Vector2i(64, 64), Vector3i(255, 0, 255));
 	}
 
 	struct Built {
@@ -137,13 +138,14 @@ protected:
 	AudioClip* m_gunClip = nullptr;
 
 	// Invulnerability (Ship2.bmp row 1)
-	float m_invulnTimer = 0.0f;
 	const float m_invulnDuration = 1.5f;
+	bool m_isInvulnerable = false;
+	MonoBehaviour::InvokeHandle m_invulnInvoke = 0;
 
 	// Death animation
 	bool m_isDying = false;
-	float m_deathTimer = 0.0f;
 	float m_deathLength = 0.0f;
+	MonoBehaviour::InvokeHandle m_deathInvoke = 0;
 
 	// Up to two companions.
 	std::weak_ptr<Companion> m_leftCompanion;
@@ -155,41 +157,7 @@ protected:
 	const Vector2f m_leftOffset = Vector2f(-60.0f, 0.0f);
 	const Vector2f m_rightOffset = Vector2f(60.0f, 0.0f);
 
-	// Clamp the ship to the virtual screen so it can't leave even partially.
-	void ClampToScreen() {
-		Renderer* r = GetRenderer();
-		if (!r) return;
-		const Vector2i vr = r->GetVirtualResolution();
-		if (vr.x <= 0 || vr.y <= 0) return;
-
-		Vector2f pos = GetTransform()->GetWorldPosition();
-		Vector2f vel = rigidbody ? rigidbody->GetLinearVelocity() : Vector2f::Zero();
-
-		// Use ViewportUtils to clamp a world rect so the ship stays fully inside.
-		Vector2i fs = sprite ? sprite->GetFrameSize() : Vector2i(0, 0);
-		Vector2f scale = GetTransform()->GetWorldScale();
-		const float w = (fs.x > 0 ? fs.x * std::abs(scale.x) : 0.0f);
-		const float h = (fs.y > 0 ? fs.y * std::abs(scale.y) : 0.0f);
-		if (w <= 0.0f || h <= 0.0f) return;
-
-		Viewport::WorldRect rect;
-		rect.topLeft = Vector2f(pos.x - w * 0.5f, pos.y + h * 0.5f);
-		rect.size = Vector2f(w, h);
-
-		Viewport::WorldRect clampedRect = Viewport::ClampRect(rect, vr, Viewport::Side::All);
-		const Vector2f clampedCenter = Vector2f(
-			clampedRect.topLeft.x + clampedRect.size.x * 0.5f,
-			clampedRect.topLeft.y - clampedRect.size.y * 0.5f
-		);
-
-		if (clampedCenter.x != pos.x) vel.x = 0.0f;
-		if (clampedCenter.y != pos.y) vel.y = 0.0f;
-
-		if (rigidbody && (clampedCenter.x != pos.x || clampedCenter.y != pos.y)) {
-			rigidbody->SetPosition(clampedCenter);
-			rigidbody->SetLinearVelocity(vel);
-		}
-	}
+	// Screen clamping is handled by the engine-generic ClampToViewport2D component.
 
 	// Spawn a companion if there is a free slot. Returns true if one was added.
 	bool AddCompanion() {
@@ -212,7 +180,17 @@ protected:
 		return false;
 	}
 
-	void KillCompanions() {
+	
+
+void EndInvulnerability() {
+	m_isInvulnerable = false;
+	if (m_animator) m_animator->SetBool("Invuln", false);
+}
+
+void FinishDeath() {
+	Object::Destroy(GetGameObject());
+}
+void KillCompanions() {
 		if (auto l = m_leftCompanion.lock()) {
 			Object::Destroy(l);
 		}
@@ -263,7 +241,7 @@ protected:
 		// --- Audio ---
 		// Play gun.wav when the player fires.
 		m_gunAudio = GetComponent<AudioSource>();
-		m_gunClip = LoadAudioClip("gun.wav");
+		m_gunClip = LoadAudioClip(XenonAssetKeys::Audio::GunWav);
 		if (m_gunAudio && m_gunClip) {
 			m_gunAudio->SetClip(m_gunClip);
 			m_gunAudio->SetLoop(false);
@@ -296,34 +274,23 @@ protected:
 		// Ignore damage while invulnerable.
 		if (!m_alive) return;
 		if (m_isDying) return;
-		if (m_invulnTimer > 0.0f) return;
+		if (m_isInvulnerable) return;
 
 		Entity::ApplyDamage(amount, instigator);
 
 		// If we survived the hit, enter invulnerability.
 		if (m_alive) {
-			m_invulnTimer = m_invulnDuration;
+			m_isInvulnerable = true;
 			if (m_animator) m_animator->SetBool("Invuln", true);
+			if (m_invulnInvoke) CancelInvoke(m_invulnInvoke);
+			m_invulnInvoke = Invoke([this]() { EndInvulnerability(); }, m_invulnDuration, MonoBehaviour::InvokeTickPolicy::WhileBehaviourEnabled);
 		}
 	}
 
 	void Update() override {
-		// If dying, just wait for the death animation to finish.
+		// If dying, ignore input/movement.
 		if (m_isDying) {
-			m_deathTimer += Time::DeltaTime();
-			if (m_deathLength > 0.0f && m_deathTimer >= m_deathLength) {
-				Object::Destroy(GetGameObject());
-			}
 			return;
-		}
-
-		// Invulnerability timer
-		if (m_invulnTimer > 0.0f) {
-			m_invulnTimer -= Time::DeltaTime();
-			if (m_invulnTimer <= 0.0f) {
-				m_invulnTimer = 0.0f;
-				if (m_animator) m_animator->SetBool("Invuln", false);
-			}
 		}
 
 		// Move the spaceship based on user input
@@ -351,10 +318,14 @@ protected:
 			const std::string st = m_animator->GetCurrentStateName();
 			if (st != "Death") {
 				float targetN = 0.5f;
-				const bool left = IsKeyDown(Key::A);
-				const bool right = IsKeyDown(Key::D);
-				if (left && !right) targetN = 0.0f;
-				else if (right && !left) targetN = 1.0f;
+
+				// Turning is driven by UP/DOWN instead of LEFT/RIGHT.
+				// (This only affects the visual banking animation; movement still uses WASD / stick X+Y.)
+				const float stickY = Input::GetGamepadLeftStick().y;
+				const bool up = IsKeyDown(Key::W) || stickY > 0.25f;
+				const bool down = IsKeyDown(Key::S) || stickY < -0.25f;
+				if (up && !down) targetN = 0.0f;          // bank left when moving up
+				else if (down && !up) targetN = 1.0f;     // bank right when moving down
 				m_animator->SeekNormalized(targetN, 2.0f);
 			}
 		}
@@ -372,17 +343,14 @@ protected:
 		}
 	}
 
-	void LateUpdate() override {
-		// Keep the ship fully inside the virtual screen.
-		ClampToScreen();
-	}
+	// LateUpdate is no longer needed here (ClampToViewport2D runs in LateUpdate).
 
 	void OnDeath(GameObject* instigator) override {
 		(void)instigator;
 		if (m_isDying) return;
 		m_isDying = true;
-		m_deathTimer = 0.0f;
-		m_invulnTimer = 0.0f;
+		m_isInvulnerable = false;
+		if (m_invulnInvoke) CancelInvoke(m_invulnInvoke); m_invulnInvoke = 0;
 		KillCompanions();
 
 		// Stop movement.
@@ -394,6 +362,8 @@ protected:
 			m_animator->SetBool("Invuln", false);
 			m_animator->SetTrigger("Die");
 		}
+		if (m_deathInvoke) CancelInvoke(m_deathInvoke);
+		m_deathInvoke = Invoke([this]() { FinishDeath(); }, (m_deathLength > 0.0f ? m_deathLength : 0.01f), MonoBehaviour::InvokeTickPolicy::WhileBehaviourEnabled);
 	}
 
 public:
@@ -408,6 +378,7 @@ public:
 		: GameObject(name) {
 		AddComponent<SpriteRenderer>();
 		AddComponent<Rigidbody2D>();
+		AddComponent<XenonClampToViewport2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<Animator>();
 		AddComponent<AudioSource>();

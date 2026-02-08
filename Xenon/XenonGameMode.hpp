@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../GameEngine/GameMode.h"
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameMode.h>
+#include <GameEngine/GameEngine.h>
 
 #include "PauseMenuController.hpp"
 #include "XenonGameInstance.hpp"

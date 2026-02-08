@@ -2,7 +2,7 @@
 
 #include "IDamageable.hpp"
 #include "Faction.hpp"
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include <string>
 
 class Entity : public MonoBehaviour, public IDamageable {

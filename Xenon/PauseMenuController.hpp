@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include "XenonGameInstance.hpp"
 #include "OptionsMenuController.hpp"
 

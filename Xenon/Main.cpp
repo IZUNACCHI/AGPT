@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 #include "Level1.hpp"
 #include "MainMenuScene.hpp"
 #include "XenonGameInstance.hpp"

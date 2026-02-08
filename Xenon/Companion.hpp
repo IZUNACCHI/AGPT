@@ -5,7 +5,7 @@
 
 #include "XenonAssetKeys.h"
 
-#include "../GameEngine/GameEngine.h"
+#include <GameEngine/GameEngine.h>
 
 #include <algorithm>
 #include <cmath>

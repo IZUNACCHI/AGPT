@@ -110,13 +110,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration);$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dist\SleeplessEngine\include;$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include\</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dist\SleeplessEngine\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -129,13 +129,13 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration);$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dist\SleeplessEngine\include;$(SolutionDir)Dist\SDL\include;$(SolutionDir)Dist\Box2D\include\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>GameEngine.lib;SDL3.lib;box2dd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Dist\SleeplessEngine\lib\$(Platform)\$(Configuration)\;$(SolutionDir)Dist\Box2D\;$(SolutionDir)Dist\SDL\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -154,13 +154,14 @@
     <ClInclude Include="IDamageable.hpp" />
     <ClInclude Include="Level1.hpp" />
     <ClInclude Include="Loner.hpp" />
-        <ClInclude Include="Rusher.hpp" />
+    <ClInclude Include="ParallaxBackground.hpp" />
+    <ClInclude Include="Rusher.hpp" />
     <ClInclude Include="Drone.hpp" />
     <ClInclude Include="EnemySpawners.hpp" />
     <ClInclude Include="StoneAsteroids.hpp" />
     <ClInclude Include="MetalAsteroids.hpp" />
     <ClInclude Include="LoopingSheet.hpp" />
-<ClInclude Include="MainMenuScene.hpp" />
+    <ClInclude Include="MainMenuScene.hpp" />
     <ClInclude Include="Missiles.hpp" />
     <ClInclude Include="OptionsMenuController.hpp" />
     <ClInclude Include="PauseMenuController.hpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="XenonGameInstance.hpp" />
     <ClInclude Include="XenonGameMode.hpp" />
     <ClInclude Include="XenonHUDController.hpp" />
+    <ClInclude Include="XenonViewportComponents.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
