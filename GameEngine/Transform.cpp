@@ -35,7 +35,17 @@ static void SyncBodyRotationFromTransform(GameObject* go, float worldRotationDeg
 	// Keep current position, teleport rotation.
 	const b2Vec2 pos = b2Body_GetPosition(bodyId);
 	const float rad = worldRotationDegrees * 3.14159265358979323846f / 180.0f;
+	b2MotionLocks locks = b2Body_GetMotionLocks(bodyId);
+	const bool lockedAngular = locks.angularZ;
+	if (lockedAngular) {
+		locks.angularZ = false;
+		b2Body_SetMotionLocks(bodyId, locks);
+	}
 	b2Body_SetTransform(bodyId, pos, b2MakeRot(rad));
+	if (lockedAngular) {
+		locks.angularZ = true;
+		b2Body_SetMotionLocks(bodyId, locks);
+	}
 }
 
 Transform::Transform(GameObject* gameObject)
@@ -45,11 +55,19 @@ Transform::Transform(GameObject* gameObject)
 
 void Transform::SetPosition(const Vector2f& position) {
 	m_localPosition = position;
+	SetDirty();
 
 	// If this object has a Rigidbody2D, keep physics in sync with Transform changes.
-	SyncBodyPositionFromTransform(m_gameObject, position);
-
-	SetDirty();
+	// IMPORTANT: Transform stores LOCAL values, but Box2D bodies live in WORLD space.
+	Vector2f worldPos = m_localPosition;
+	if (m_parent) {
+		// Forward: world = parentPos + parentRot( parentScale * local )
+		const Vector2f parentScale = m_parent->GetWorldScale();
+		const Vector2f scaled(m_localPosition.x * parentScale.x, m_localPosition.y * parentScale.y);
+		const Vector2f rotated = m_parent->TransformDirection(scaled);
+		worldPos = m_parent->GetWorldPosition() + rotated;
+	}
+	SyncBodyPositionFromTransform(m_gameObject, worldPos);
 }
 
 void Transform::SetPosition(float x, float y) {
@@ -63,11 +81,12 @@ Vector2f Transform::GetWorldPosition() const {
 
 void Transform::SetRotation(float rotation) {
 	m_localRotation = rotation;
+	SetDirty();
 
 	// If this object has a Rigidbody2D, keep physics in sync with Transform changes.
-	SyncBodyRotationFromTransform(m_gameObject, rotation);
-
-	SetDirty();
+	// IMPORTANT: Transform stores LOCAL values, but Box2D bodies live in WORLD space.
+	const float worldRot = m_localRotation + (m_parent ? m_parent->GetWorldRotation() : 0.0f);
+	SyncBodyRotationFromTransform(m_gameObject, worldRot);
 }
 
 void Transform::SetRotationRadians(float rotation) {
@@ -77,6 +96,40 @@ void Transform::SetRotationRadians(float rotation) {
 float Transform::GetWorldRotation() const {
 	UpdateWorldMatrix();
 	return m_worldRotation;
+}
+
+void Transform::SetWorldPositionFromPhysics(const Vector2f& worldPos) {
+	// Convert WORLD -> LOCAL, relative to parent.
+	if (m_parent) {
+		const Vector2f parentWorldPos = m_parent->GetWorldPosition();
+		Vector2f delta = worldPos - parentWorldPos;
+
+		// Undo parent rotation.
+		const float parentDeg = m_parent->GetWorldRotation();
+		const float parentRad = -parentDeg * 3.14159265358979323846f / 180.0f;
+		const float c = std::cos(parentRad);
+		const float s = std::sin(parentRad);
+		Vector2f unrot(delta.x * c - delta.y * s, delta.x * s + delta.y * c);
+
+		// Undo parent scale.
+		const Vector2f parentScale = m_parent->GetWorldScale();
+		if (parentScale.x != 0.0f) unrot.x /= parentScale.x;
+		if (parentScale.y != 0.0f) unrot.y /= parentScale.y;
+
+		m_localPosition = unrot;
+	}
+	else {
+		m_localPosition = worldPos;
+	}
+
+	SetDirty();
+}
+
+void Transform::SetWorldRotationFromPhysics(float worldRotationDegrees) {
+	// Convert WORLD -> LOCAL, relative to parent.
+	const float parentWorldRot = m_parent ? m_parent->GetWorldRotation() : 0.0f;
+	m_localRotation = worldRotationDegrees - parentWorldRot;
+	SetDirty();
 }
 
 

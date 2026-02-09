@@ -115,6 +115,7 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="GameObject.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

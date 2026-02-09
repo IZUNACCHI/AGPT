@@ -105,7 +105,8 @@ void Rigidbody2D::SetPosition(const Vector2f& position) {
 
 	b2Rot rotation = b2Body_GetRotation(m_bodyId);
 	b2Body_SetTransform(m_bodyId, ToB2Vec(position), rotation);
-	GetGameObject()->GetTransform()->SetPosition(position);
+	// Keep the Transform in sync *without* writing back into Box2D again.
+	GetGameObject()->GetTransform()->SetWorldPositionFromPhysics(position);
 }
 
 void Rigidbody2D::SetRotation(float rotationDegrees) {
@@ -117,9 +118,22 @@ void Rigidbody2D::SetRotationRadians(float rotationRadians) {
 		return;
 	}
 
+	b2MotionLocks locks = b2Body_GetMotionLocks(m_bodyId);
+	const bool lockedAngular = locks.angularZ;
+	if (lockedAngular) {
+		locks.angularZ = false;
+		b2Body_SetMotionLocks(m_bodyId, locks);
+	}
+
 	b2Vec2 position = b2Body_GetPosition(m_bodyId);
 	b2Body_SetTransform(m_bodyId, position, b2MakeRot(rotationRadians));
-	GetGameObject()->GetTransform()->SetRotationRadians(rotationRadians);
+	// Keep the Transform in sync *without* writing back into Box2D again.
+	GetGameObject()->GetTransform()->SetWorldRotationFromPhysics(rotationRadians * Math::Constants<float>::Rad2Deg);
+
+	if (lockedAngular) {
+		locks.angularZ = true;
+		b2Body_SetMotionLocks(m_bodyId, locks);
+	}
 }
 
 void Rigidbody2D::SetLinearDamping(float damping) {
@@ -160,8 +174,8 @@ void Rigidbody2D::SyncTransformFromBody() {
 	float angle = b2Rot_GetAngle(rotation);
 
 	auto* transform = GetGameObject()->GetTransform();
-	transform->SetPosition(Vector2f(position.x, position.y));
-	transform->SetRotationRadians(angle);
+	transform->SetWorldPositionFromPhysics(Vector2f(position.x, position.y));
+	transform->SetWorldRotationFromPhysics(angle * Math::Constants<float>::Rad2Deg);
 }
 
 std::shared_ptr<Component> Rigidbody2D::Clone() const {

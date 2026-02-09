@@ -23,6 +23,17 @@ public:
 	/// Returns the world position.
 	Vector2f GetWorldPosition() const;
 
+	// ---------------------------------------------------------------------
+	// Internal sync helpers
+	// ---------------------------------------------------------------------
+	// Used by the physics system to write Box2D's world pose back into the
+	// transform *without* syncing the transform back into Box2D again.
+	//
+	// These intentionally set LOCAL values (relative to parent) such that the
+	// resulting WORLD pose matches the arguments.
+	void SetWorldPositionFromPhysics(const Vector2f& worldPos);
+	void SetWorldRotationFromPhysics(float worldRotationDegrees);
+
 	/// Sets the local rotation in degrees.
 	void SetRotation(float rotation);
 	/// Sets the local rotation in radians.

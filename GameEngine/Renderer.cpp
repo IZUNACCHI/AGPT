@@ -32,14 +32,14 @@ Renderer::Renderer(Window& window)
 
 Renderer::Renderer(Renderer&& other) noexcept
 	: m_renderer(other.m_renderer),
-	  m_window(other.m_window),
-	  m_virtualW(other.m_virtualW),
-	  m_virtualH(other.m_virtualH),
-	  m_scaleMode(other.m_scaleMode),
-	  m_integerScale(other.m_integerScale),
-	  m_clearColor(other.m_clearColor),
-	  m_letterboxColor(other.m_letterboxColor),
-	  m_cacheValid(false) {
+	m_window(other.m_window),
+	m_virtualW(other.m_virtualW),
+	m_virtualH(other.m_virtualH),
+	m_scaleMode(other.m_scaleMode),
+	m_integerScale(other.m_integerScale),
+	m_clearColor(other.m_clearColor),
+	m_letterboxColor(other.m_letterboxColor),
+	m_cacheValid(false) {
 
 	other.m_renderer = nullptr;
 	other.m_window = nullptr;
@@ -342,7 +342,7 @@ static SDL_FlipMode ToSDLFlip(FlipMode flip) {
 	case FlipMode::None: return SDL_FLIP_NONE;
 	case FlipMode::Horizontal: return SDL_FLIP_HORIZONTAL;
 	case FlipMode::Vertical: return SDL_FLIP_VERTICAL;
-	case FlipMode::Both: return (SDL_FlipMode)(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+	case FlipMode::Both: return static_cast<SDL_FlipMode>(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
 	default: return SDL_FLIP_NONE;
 	}
 }
@@ -468,6 +468,48 @@ bool Renderer::DrawRectOutline(const Vector2f& worldTopLeft, const Vector2f& siz
 	const SDL_FRect rect{ r.x, r.y, r.width, r.height };
 
 	if (!SDL_RenderRect(R(m_renderer), &rect)) {
+		LOG_WARN("Renderer draw rect failed: " + std::string(SDL_GetError()));
+		return false;
+	}
+
+	return true;
+}
+
+bool Renderer::DrawRectOutlineRotated(const Vector2f& worldCenter, const Vector2f& size, float angleDegrees, const Vector3i& color) {
+	if (!m_renderer) return false;
+	EnsureViewportAndClipApplied();
+
+	if (!SDL_SetRenderDrawColor(R(m_renderer), (Uint8)color.x, (Uint8)color.y, (Uint8)color.z, 255)) {
+		LOG_WARN("Renderer draw rect failed to set color: " + std::string(SDL_GetError()));
+		return false;
+	}
+
+	const float radians = angleDegrees * Math::Constants<float>::Deg2Rad;
+	const float cosA = std::cos(radians);
+	const float sinA = std::sin(radians);
+	const Vector2f half(size.x * 0.5f, size.y * 0.5f);
+
+	const Vector2f corners[4] = {
+		Vector2f(-half.x, -half.y),
+		Vector2f(half.x, -half.y),
+		Vector2f(half.x, half.y),
+		Vector2f(-half.x, half.y)
+	};
+
+	SDL_FPoint points[5];
+	for (int i = 0; i < 4; ++i) {
+		const Vector2f local = corners[i];
+		const Vector2f rotated(
+			local.x * cosA - local.y * sinA,
+			local.x * sinA + local.y * cosA
+		);
+		const Vector2f world = worldCenter + rotated;
+		const Vector2f screen = WorldToScreenPoint(world);
+		points[i] = SDL_FPoint{ screen.x, screen.y };
+	}
+	points[4] = points[0];
+
+	if (!SDL_RenderLines(R(m_renderer), points, 5)) {
 		LOG_WARN("Renderer draw rect failed: " + std::string(SDL_GetError()));
 		return false;
 	}

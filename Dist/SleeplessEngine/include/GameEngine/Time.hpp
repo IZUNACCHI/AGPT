@@ -43,6 +43,8 @@ public:
 		instance.m_showFPS = false;
 
 		instance.m_timeScale = 1.0f;
+		instance.m_savedTimeScale = instance.m_timeScale;
+		instance.m_paused = false;
 	}
 
 	static void Tick() {
@@ -121,9 +123,48 @@ public:
 	static float TargetFrameTime() { return Instance().m_targetFrameTime; }
 
 	// --- Time control ---
-	static void SetTimeScale(float scale) { Instance().m_timeScale = scale; }
+// NOTE: Pause is tracked independently from timeScale.
+// During pause we set the effective timeScale to 0, but remember the previous value
+// and restore it on resume. This means "timeScale == 0" no longer implies paused.
+	static void SetTimeScale(float scale) {
+		Time& instance = Instance();
+		if (instance.m_paused) {
+			// While paused, we keep effective timeScale at 0 but update the value to restore later.
+			instance.m_savedTimeScale = scale;
+			return;
+		}
+		instance.m_timeScale = scale;
+	}
 	static float GetTimeScale() { return Instance().m_timeScale; }
-	static bool IsPaused() { return Instance().m_timeScale == 0.0f; }
+
+	// The timeScale that will be applied once unpaused (or the current timeScale if not paused).
+	static float GetUnpausedTimeScale() {
+		const Time& instance = Instance();
+		return instance.m_paused ? instance.m_savedTimeScale : instance.m_timeScale;
+	}
+
+	static bool IsPaused() { return Instance().m_paused; }
+
+	static void SetPaused(bool paused) {
+		Time& instance = Instance();
+		if (paused) {
+			if (!instance.m_paused) {
+				instance.m_savedTimeScale = instance.m_timeScale;
+				instance.m_timeScale = 0.0f;
+				instance.m_paused = true;
+			}
+			return;
+		}
+
+		if (instance.m_paused) {
+			instance.m_timeScale = instance.m_savedTimeScale;
+			instance.m_paused = false;
+		}
+	}
+
+	static void Pause() { SetPaused(true); }
+	static void Resume() { SetPaused(false); }
+
 
 	// --- Setters ---
 	static void SetFixedDeltaTime(float dt) { Instance().m_fixedDeltaTime = dt; }
@@ -188,6 +229,9 @@ private:
 	float m_accumulator = 0.0f;
 
 	float m_timeScale = 1.0f;
+
+	bool m_paused = false;
+	float m_savedTimeScale = 1.0f;
 
 	float m_targetFPS = 60.0f;
 	float m_targetFrameTime = 1.0f / 60.0f;

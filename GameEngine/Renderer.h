@@ -45,7 +45,7 @@ public:
 	/// - Then clears the active viewport (game area) to the clear color
 	void Clear();
 
-	
+
 	void BeginFrame();
 	void Present();
 	void EndFrame();
@@ -128,6 +128,9 @@ public:
 	// WORLD top-left rect
 	bool DrawRectOutline(const Vector2f& worldTopLeft, const Vector2f& size, const Vector3i& color);
 
+	// WORLD center, rotated CCW by angleDegrees
+	bool DrawRectOutlineRotated(const Vector2f& worldCenter, const Vector2f& size, float angleDegrees, const Vector3i& color);
+
 	// WORLD top-left filled rect (supports alpha)
 	bool DrawFilledRect(const Vector2f& worldTopLeft, const Vector2f& size, const Vector4i& color);
 
@@ -156,7 +159,7 @@ private:
 	int m_virtualW = 0;
 	int m_virtualH = 0;
 	ViewportScaleMode m_scaleMode = ViewportScaleMode::Letterbox;
-	bool m_integerScale = false; 
+	bool m_integerScale = false;
 
 	// Colors
 	Vector4i m_clearColor = Vector4i(0, 0, 0, 255);

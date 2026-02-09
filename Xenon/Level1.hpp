@@ -36,7 +36,7 @@ public:
 // Parallax blocks (from Blocks.bmp atlas, specified in frames)
 {
 	// Rect 1: row 21, frames 1..9 wide, 2 frames tall
-	auto blocks1 = CreateBlocksRect(this, "BlocksRect1", 21, 1, 9, 2, Vector2f(-200.0f, 180.0f), -9);
+	auto blocks1 = CreateBlocksRect(this, "BlocksRect1", 20, 1, 9, 2, Vector2f(-200.0f, 180.0f), -9);
 	if (blocks1) {
 		auto p = blocks1->AddComponent<ParallaxMover2D>();
 		p->SetDirection(Vector2f(-1.0f, 0.0f)); // set to (0,-1) for vertical scroller branch
@@ -45,7 +45,7 @@ public:
 }
 {
 	// Rect 2: row 44, frames 4..9 wide, 2 frames tall
-	auto blocks2 = CreateBlocksRect(this, "BlocksRect2", 44, 4, 9, 2, Vector2f(140.0f, 40.0f), -8);
+	auto blocks2 = CreateBlocksRect(this, "BlocksRect2", 43, 4, 9, 2, Vector2f(140.0f, 40.0f), -8);
 	if (blocks2) {
 		auto p = blocks2->AddComponent<ParallaxMover2D>();
 		p->SetDirection(Vector2f(-1.0f, 0.0f));

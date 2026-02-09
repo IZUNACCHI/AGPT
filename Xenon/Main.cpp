@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
 	startConfig.windowConfig.resizable = true;
 	startConfig.virtualResolution = Vector2(640, 480);
 	startConfig.integerScale = false;
+	startConfig.debugDrawColliders = true;
 	startConfig.fitWindowToScale = true;
 	startConfig.viewportScaleMode = ViewportScaleMode::Letterbox;
 	startConfig.textureScaleMode = TextureScaleMode::Nearest;

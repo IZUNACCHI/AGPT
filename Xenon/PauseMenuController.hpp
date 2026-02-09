@@ -63,7 +63,7 @@ private:
 		}
 
 		UIButtonStyle st;
-		st.font = LoadBitmapFont("font16x16.bmp", Vector2i(16, 16));
+		st.font = LoadBitmapFont("font16x16.bmp", Vector2i(16, 16), Vector3i(255, 0, 255));
 		st.bgNormal = { 40, 40, 40, 220 };
 		st.bgHover = { 60, 60, 60, 240 };
 		st.bgPressed = { 20, 20, 20, 240 };
@@ -136,14 +136,14 @@ private:
 
 	void Pause() {
 		m_isPaused = true;
-		Time::SetTimeScale(0.0f);
+		Time::SetPaused(true);
 		if (m_pauseRoot) m_pauseRoot->SetActive(true);
 		UISystem::Get().SetFocused(m_resume.get());
 	}
 
 	void Resume() {
 		m_isPaused = false;
-		Time::SetTimeScale(1.0f);
+		Time::SetPaused(false);
 		HideAll();
 	}
 
