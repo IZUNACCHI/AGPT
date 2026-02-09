@@ -1,0 +1,480 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Entity" Collapsed="true">
+    <Position X="7.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EQAoAAAAAABAhAKAAAAAgYAAAFAEAAQAAAAAEiAAAEA=</HashCode>
+      <FileName>Entity.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScorePopupBehaviour" Collapsed="true">
+    <Position X="18" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QEQAIAAYIQAAAgAAAAAAAAAAAAAAAAAAAAAAAAAgAEA=</HashCode>
+      <FileName>ScorePopup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScorePopup" Collapsed="true">
+    <Position X="26.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>ScorePopup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextPopupBehaviour" Collapsed="true">
+    <Position X="25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QEQAAAAYoAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAgAEA=</HashCode>
+      <FileName>ScorePopup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="TextPopup" Collapsed="true">
+    <Position X="23.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>ScorePopup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OneShotVFXBehaviour" Collapsed="true">
+    <Position X="5.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAACADAgoACAAgCAgAABBAAAIAAEAAAAADAEA=</HashCode>
+      <FileName>VFX.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExplosionVFXBehaviour" Collapsed="true">
+    <Position X="5.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VFX.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ExplosionVFX" Collapsed="true">
+    <Position X="18" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>VFX.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EnemyEntity" Collapsed="true">
+    <Position X="9.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAEAAAAAAAAAIQAAAAAAAgIQAAAAAAAAEA=</HashCode>
+      <FileName>EnemyEntity.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LonerBehaviour" Collapsed="true">
+    <Position X="5.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAYAABAIACAIAAAACAAAAAAAAAAAAgIAAAAAAAAAAEA=</HashCode>
+      <FileName>Loner.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Loner" Collapsed="true">
+    <Position X="21.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Loner.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RusherBehaviour" Collapsed="true">
+    <Position X="9.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAQAABAAAAAIAAAACAAAAAAAAAAAAgIAAAAAAAAAAEA=</HashCode>
+      <FileName>Rusher.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rusher" Collapsed="true">
+    <Position X="25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Rusher.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DroneBehaviour" Collapsed="true">
+    <Position X="12" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BERAgBIAABAIAAAACEQQAIQAIAAAEEMAAAAAQAAAAEA=</HashCode>
+      <FileName>Drone.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Drone" Collapsed="true">
+    <Position X="25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Drone.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="KeyedSpawnerBase" Collapsed="true">
+    <Position X="5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABCEAAAgAAAAAAEAAAAAAAQAAAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LonerWaveSpawnerBehaviour" Collapsed="true">
+    <Position X="9.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAEAAAAAAAAAAAAAAAAEAAAAAIAQBAQAAEA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RusherWaveSpawnerBehaviour" Collapsed="true">
+    <Position X="0.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAABEAAAAAAAAAAAAAAAAEAAAAAIAABAQAAEA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DronePackSpawnerBehaviour" Collapsed="true">
+    <Position X="2.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AARAAAIAAAEABAAAAEQAAAAAAAAEAAAAAIAAREAAAgA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StoneAsteroidSpawnerBehaviour" Collapsed="true">
+    <Position X="5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAEAgAAAAAAIAAAAAAAEAAAAAIAABAYAAEA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MetalAsteroidSpawnerBehaviour" Collapsed="true">
+    <Position X="7.25" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAQAAAAEAAAAAAAAIAAAAAAAEAAAAAIAABAYAAEA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PickupKeySpawnerBehaviour" Collapsed="true">
+    <Position X="21.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABQAAAAABAkABAAAAAAAAAAAAAAABAQAQIAAAAjAAgA=</HashCode>
+      <FileName>EnemySpawners.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StoneAsteroidBehaviour" Collapsed="true">
+    <Position X="14.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAQAAAAAAQAAAAAAAAAAAoAAAAACAgAgAAAAAQIAAGA=</HashCode>
+      <FileName>StoneAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="StoneAsteroid" Collapsed="true">
+    <Position X="21.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>StoneAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MetalAsteroidBehaviour" Collapsed="true">
+    <Position X="7.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAQAAAAAAQAAAAAAQAAAAgAAAEACAgAgAAAAAAIAAEA=</HashCode>
+      <FileName>MetalAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MetalAsteroid" Collapsed="true">
+    <Position X="25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>MetalAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpaceShipBehaviour" Collapsed="true">
+    <Position X="0.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAQQQQAIEQAIAwQAEAAQAIAAAEAgAAAAFAgIEgAgAEA=</HashCode>
+      <FileName>SpaceShip.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpaceShip" Collapsed="true">
+    <Position X="19.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>SpaceShip.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AllyEntity" Collapsed="true">
+    <Position X="2" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAEA=</HashCode>
+      <FileName>AllyEntity.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CompanionBehaviour" Collapsed="true">
+    <Position X="3" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAACAAAAAIAAAAAgAAAEAAEAAAAABAEA=</HashCode>
+      <FileName>Companion.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Companion" Collapsed="true">
+    <Position X="21.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAAAAAAAAEAAAAAAAABAAA=</HashCode>
+      <FileName>Companion.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CompanionPickupBehaviour" Collapsed="true">
+    <Position X="5" Y="14" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAEA=</HashCode>
+      <FileName>CompanionPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CompanionPickup" Collapsed="true">
+    <Position X="13" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>CompanionPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AnimatedPickupBehaviour" Collapsed="true">
+    <Position X="1.5" Y="14" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BBAAAACAAAADAgoACAAgCBgABIBAAAIAAAAABAADAEA=</HashCode>
+      <FileName>AnimatedPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AnimatedPickup" Collapsed="true">
+    <Position X="9.5" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AnimatedPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HealPickupBehaviour" Collapsed="true">
+    <Position X="0.5" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAAQAAABAAAAAAAAAACIAAAAAA=</HashCode>
+      <FileName>HealPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="HealPickup" Collapsed="true">
+    <Position X="8.5" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HealPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PickupBehaviour" Collapsed="true">
+    <Position X="2.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQIAAAAAAAAAAgAAAAAABAAABAAAgAAQAAAMAAgAEA=</HashCode>
+      <FileName>Pickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pickup" Collapsed="true">
+    <Position X="10.75" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Pickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WeaponPickupBehaviour" Collapsed="true">
+    <Position X="2.75" Y="15.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAIAAAAAA=</HashCode>
+      <FileName>WeaponPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WeaponPickup" Collapsed="true">
+    <Position X="10.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>WeaponPickup.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MissileBehaviour" Collapsed="true">
+    <Position X="0.5" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAIQAAAAAAAAAAAAAAAAAAAAAAQAAEBAAAAAAAAEA=</HashCode>
+      <FileName>Missiles.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ProjectileBehaviour" Collapsed="true">
+    <Position X="2.75" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEIAQCAAChIAAAAEAQBAhAAABMAAgQIwACAUEAAAEA=</HashCode>
+      <FileName>ProjectileCommon.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerProjectileBehaviour" Collapsed="true">
+    <Position X="2.75" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ProjectileCommon.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EnemyProjectileBehaviour" Collapsed="true">
+    <Position X="5" Y="11" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAA=</HashCode>
+      <FileName>ProjectileCommon.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ProjectileLauncherBase" Collapsed="true">
+    <Position X="14.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QQFCIACAAAgAAAAAQCAQACAAAAgAAAAAAAgAggAAEBI=</HashCode>
+      <FileName>ProjectileLaunchers.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerProjectileLauncher" Collapsed="true">
+    <Position X="13.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAACAAAAAAAAgAAAAAAAAAAAAAAQAEgBAAAAAAAAAA=</HashCode>
+      <FileName>ProjectileLaunchers.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EnemyProjectileLauncher" Collapsed="true">
+    <Position X="15.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAAAACEAAAAAAAAAAABAAA=</HashCode>
+      <FileName>ProjectileLaunchers.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerProjectile" Collapsed="true">
+    <Position X="23.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ProjectileObjects.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EnemyProjectile" Collapsed="true">
+    <Position X="26.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ProjectileObjects.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Level1" Collapsed="true">
+    <Position X="19.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>Level1.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MainMenuScene" Collapsed="true">
+    <Position X="23.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MainMenuScene.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="IDamageable" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAAAABAAACAAAAAAAAAAEAAAAACAAAAACAAAAA=</HashCode>
+      <FileName>IDamageable.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ParallaxMover2D" Collapsed="true">
+    <Position X="18" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAAAEAEAQAIAQAAAAARAgAAIAJgAAACSAAAAAEkA=</HashCode>
+      <FileName>ParallaxBackground.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="OptionsMenuController" Collapsed="true">
+    <Position X="26.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAKIAAAIACAAAAAIEiAAAAAAAAAAAAAEUAABIAAACAk=</HashCode>
+      <FileName>OptionsMenuController.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PauseMenuController" Collapsed="true">
+    <Position X="19.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BQQgAoAAACAAAAAIAQAAAAAAAAAAAAEFAAAAEAgAAAA=</HashCode>
+      <FileName>PauseMenuController.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="XenonGameInstance" Collapsed="true">
+    <Position X="26.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AMAAAAoECAAAAgAgQACAgIAAAQAAACQgIAAAEACIAAg=</HashCode>
+      <FileName>XenonGameInstance.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="XenonGameMode" Collapsed="true">
+    <Position X="18" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAaBAAAQgABAiAwAEAIAARAAAAgAIAAxAggBgKEAQAA=</HashCode>
+      <FileName>XenonGameMode.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="XenonHUDController" Collapsed="true">
+    <Position X="19.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAgkAIaAAAAAAAgAAAaBAAQAAAgAAAAABABAAAQA=</HashCode>
+      <FileName>XenonHUDController.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClampToViewPort2D" Collapsed="true">
+    <Position X="19.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAQAAAAAEAAAAAAAIAQAAAAAAAAQAAAAAAgAAAA=</HashCode>
+      <FileName>XenonViewportComponents.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="DespawnOffscreen2D" Collapsed="true">
+    <Position X="23.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAgIADAECAEAACAAAIAAAAAAAAAAAAGAAAAAAAA=</HashCode>
+      <FileName>XenonViewportComponents.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BounceOffViewport2D" Collapsed="true">
+    <Position X="18" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEABAECBAAACAAIKAAAAAAAAAAAAEAAAAAAIA=</HashCode>
+      <FileName>XenonViewportComponents.hpp</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="DroneClusterState" Collapsed="true">
+    <Position X="19.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Drone.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="ShipAnim::Built" Collapsed="true">
+    <Position X="18" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAIAgABAA=</HashCode>
+      <FileName>SpaceShip.hpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="StoneAsteroidSize" Collapsed="true">
+    <Position X="23.25" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAgAAAA=</HashCode>
+      <FileName>StoneAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="MetalAsteroidSize" Collapsed="true">
+    <Position X="19.75" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAgAAAA=</HashCode>
+      <FileName>MetalAsteroids.hpp</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="MissileType" Collapsed="true">
+    <Position X="21.5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>Missiles.hpp</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Faction" Collapsed="true">
+    <Position X="18" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Faction.hpp</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

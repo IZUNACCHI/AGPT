@@ -1,14 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
   <Class Name="AnimationClip" Collapsed="true">
-    <Position X="36" Y="0.5" Width="1.5" />
-    <NestedTypes>
-      <Struct Name="AnimationClip::Event" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>AnimationClip.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="0.5" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAQAACAAAAEgAAAAAAAAEAAIABBEAAUAAAAA=</HashCode>
       <FileName>AnimationClip.h</FileName>
@@ -22,14 +15,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="AnimatorController" Collapsed="true">
-    <Position X="37.75" Y="0.5" Width="1.5" />
+    <Position X="2.25" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAABAAAAgAAAAAAAAAAAAAAAAAAAAAEAAAAAACAAEg=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="AssetManager" Collapsed="true">
-    <Position X="39.5" Y="0.5" Width="1.5" />
+    <Position X="4" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAEQIBSgCAAAAAAAAAACEFAAAhAAAgRAAAAATEzAAo=</HashCode>
       <FileName>AssetManager.h</FileName>
@@ -50,7 +43,7 @@
     </TypeIdentifier>
   </Class>
   <Class Name="BitmapFont" Collapsed="true">
-    <Position X="41.25" Y="0.5" Width="1.5" />
+    <Position X="5.75" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AEEGASAKAAQGAgAAgAAEgAAAAAAEgAAAAAAABAAAAAA=</HashCode>
       <FileName>BitmapFont.h</FileName>
@@ -85,14 +78,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="EngineException" Collapsed="true">
-    <Position X="43" Y="0.5" Width="1.5" />
+    <Position X="7.5" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAAAAAAAAAiAQAAAAACAAACEAAABAAQAAAAgAAABAAA=</HashCode>
       <FileName>EngineException.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="GameInstance" Collapsed="true">
-    <Position X="36" Y="1.5" Width="1.5" />
+    <Position X="0.5" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAEAAAgAAAAEAAAAAAAAAQgAAAAAAAAAAA=</HashCode>
       <FileName>GameInstance.h</FileName>
@@ -120,21 +113,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Input" Collapsed="true">
-    <Position X="37.75" Y="1.5" Width="1.5" />
-    <NestedTypes>
-      <Struct Name="Input::Impl" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Input.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="2.25" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>QAAEAAAAQAIA1QAAgAQAEQzAAgCAQhgAQDIAQAgkAAE=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Logger" Collapsed="true">
-    <Position X="39.5" Y="1.5" Width="1.5" />
+    <Position X="4" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>gAQQAAAAAAIAAAAQAAGgCAAAEgBCAAYBQAEhBAAAABA=</HashCode>
       <FileName>Logger.h</FileName>
@@ -142,18 +128,6 @@
   </Class>
   <Class Name="MonoBehaviour" Collapsed="true">
     <Position X="12" Y="4.75" Width="1.5" />
-    <NestedTypes>
-      <Enum Name="MonoBehaviour::InvokeTickPolicy" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>MonoBehaviour.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-      <Struct Name="MonoBehaviour::InvokeRequest" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>MonoBehaviour.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
     <TypeIdentifier>
       <HashCode>BAQRAAQIDrAIhJBCAgwIIggIASHAAMEOcDKkFGAASkA=</HashCode>
       <FileName>MonoBehaviour.h</FileName>
@@ -167,26 +141,14 @@
     </TypeIdentifier>
   </Class>
   <Class Name="ObjectPool" Collapsed="true">
-    <Position X="43" Y="1.5" Width="1.5" />
+    <Position X="7.5" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAABBABBCAAA=</HashCode>
       <FileName>ObjectPool.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Physics2DWorld" Collapsed="true">
-    <Position X="36" Y="2.5" Width="1.5" />
-    <NestedTypes>
-      <Struct Name="Physics2DWorld::ColliderPair" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Physics2D.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-      <Struct Name="Physics2DWorld::ColliderPairLess" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Physics2D.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="0.5" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BAQAIACAAAACBQAABCgAAQQgQAgAABAQIAAAGAAAAIA=</HashCode>
       <FileName>Physics2D.h</FileName>
@@ -200,43 +162,21 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Renderer" Collapsed="true">
-    <Position X="39.5" Y="2.5" Width="1.5" />
+    <Position X="4" Y="12.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>SBCgFQQQCBAMgBBCAAtAEIQWAQwAAiDBAAWkAQlEACA=</HashCode>
+      <HashCode>SBCgFQQQCBAMgBBCAAtAEIQWAQwAAiDBAAWkAQlEBCA=</HashCode>
       <FileName>Renderer.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="RenderQueue" Collapsed="true">
-    <Position X="41.25" Y="2.5" Width="1.5" />
-    <NestedTypes>
-      <Enum Name="RenderQueue::SortAxis" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>RenderQueue.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-      <Struct Name="RenderQueue::SortOptions" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>RenderQueue.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-      <Enum Name="RenderQueue::ItemType" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>RenderQueue.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-      <Struct Name="RenderQueue::Item" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>RenderQueue.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="5.75" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAIAACAAQAAABAQAAAAAAAEAAAAAAAAAAAAAAIBAAAA=</HashCode>
       <FileName>RenderQueue.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="RenderSystem" Collapsed="true">
-    <Position X="43" Y="2.5" Width="1.5" />
+    <Position X="7.5" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAQFAAAAAAAAgAAABAAQAAAAiAABAEAA=</HashCode>
       <FileName>RenderSystem.h</FileName>
@@ -244,27 +184,20 @@
   </Class>
   <Class Name="Rigidbody2D" Collapsed="true">
     <Position X="22.25" Y="3.25" Width="1.5" />
-    <NestedTypes>
-      <Enum Name="Rigidbody2D::BodyType" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Rigidbody2D.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-    </NestedTypes>
     <TypeIdentifier>
       <HashCode>oSgCAA5IwAAAAWAhAAAAhYAAAAIDAwkAAAAAAABwERs=</HashCode>
       <FileName>Rigidbody2D.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Scene" Collapsed="true">
-    <Position X="36" Y="3.5" Width="1.5" />
+    <Position X="0.5" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>2AQ1AgmAAiQAAAAwkAAAIIyAYCRAABAEIBIAKAEABAA=</HashCode>
       <FileName>Scene.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="SleeplessEngine" Collapsed="true">
-    <Position X="37.75" Y="3.5" Width="1.5" />
+    <Position X="2.25" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>CQQACAIAogACmUABAoAAIQAgBAEAACAAABOAEQSAAAI=</HashCode>
       <FileName>SleeplessEngine.h</FileName>
@@ -272,25 +205,13 @@
   </Class>
   <Class Name="SpriteRenderer" Collapsed="true">
     <Position X="33.5" Y="4.75" Width="1.5" />
-    <NestedTypes>
-      <Enum Name="SpriteRenderer::SortAxis" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>SpriteRenderer.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Enum>
-      <Struct Name="SpriteRenderer::SortOptions" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>SpriteRenderer.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
     <TypeIdentifier>
       <HashCode>gBAQAQACAAAABABAAEAgQAIABCBAAAAAADAEAAIAIBA=</HashCode>
       <FileName>SpriteRenderer.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Surface" Collapsed="true">
-    <Position X="39.5" Y="3.5" Width="1.5" />
+    <Position X="4" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAACACAAAAAiAAAgIAAAEAAAAAAABAAAgAAAAAAA=</HashCode>
       <FileName>Surface.h</FileName>
@@ -304,63 +225,56 @@
     </TypeIdentifier>
   </Class>
   <Class Name="Texture" Collapsed="true">
-    <Position X="41.25" Y="3.5" Width="1.5" />
-    <NestedTypes>
-      <Struct Name="Texture::Impl" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Texture.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="5.75" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAgACAAAgBAAAAAAAAAAABAAIgAAAAABE=</HashCode>
       <FileName>Texture.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Time" Collapsed="true">
-    <Position X="43" Y="3.5" Width="1.5" />
+    <Position X="7.5" Y="13.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAUBEiAkgAkCUQCBASAACIAQCCIAAYBAwChgAABWQYg=</HashCode>
+      <HashCode>AAUhEiAkhAkCUQCBASAACIASCCIAAYBgwCpgAAhWQYg=</HashCode>
       <FileName>Time.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Transform" Collapsed="true">
     <Position X="29" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAgNGCAFoICIwICARQAEAIBYgpAIEAEAoQAApw=</HashCode>
+      <HashCode>gAAAAAAgNGCAFoICIwICARQAEAIBYgpAIEBEAoQAApw=</HashCode>
       <FileName>Transform.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Vector2&lt;T&gt;" Collapsed="true">
-    <Position X="37.75" Y="4.5" Width="1.5" />
+    <Position X="2.25" Y="14.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAMCCAABAAAAEAAAAQBACQEAAABACADgAAAAAII=</HashCode>
       <FileName>Types.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Vector3&lt;T&gt;" Collapsed="true">
-    <Position X="39.5" Y="4.5" Width="1.5" />
+    <Position X="4" Y="14.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AQAAAAMACIAAAAAAEAAAAQBACQEEAABACAHgAQAAAII=</HashCode>
       <FileName>Types.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Vector4&lt;T&gt;" Collapsed="true">
-    <Position X="41.25" Y="4.5" Width="1.5" />
+    <Position X="5.75" Y="14.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAEAAEAAAAAAEIAAAQBACQEEAAAAAAhgAQAAAIA=</HashCode>
       <FileName>Types.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Rect&lt;T&gt;" Collapsed="true">
-    <Position X="37.75" Y="2.5" Width="1.5" />
+    <Position X="2.25" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAACAAAMSAYAIIgQBQICAAAgAAAABgAAAQAIA=</HashCode>
       <FileName>Types.hpp</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Matrix3x3f" Collapsed="true">
-    <Position X="41.25" Y="1.5" Width="1.5" />
+    <Position X="5.75" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAABAAAAAIACAAIAAAAAAAAAAAAAAkAgAAAAAAA=</HashCode>
       <FileName>Types.hpp</FileName>
@@ -423,245 +337,238 @@
     </TypeIdentifier>
   </Class>
   <Class Name="UISystem" Collapsed="true">
-    <Position X="36" Y="4.5" Width="1.5" />
+    <Position X="0.5" Y="14.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AUQAAAAAAAgCAQBhQEQgEQAARAMEIBBAABAgBAAICAI=</HashCode>
       <FileName>UISystem.h</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Window" Collapsed="true">
-    <Position X="43" Y="4.5" Width="1.5" />
-    <NestedTypes>
-      <Struct Name="Window::Impl" Collapsed="true">
-        <TypeIdentifier>
-          <NewMemberFileName>Window.h</NewMemberFileName>
-        </TypeIdentifier>
-      </Struct>
-    </NestedTypes>
+    <Position X="7.5" Y="14.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AKAAAAAEQAAYEACAMAAKAAAAAQAEAAABAAIgCACAAgk=</HashCode>
       <FileName>Window.h</FileName>
     </TypeIdentifier>
   </Class>
   <Struct Name="`anonymous-namespace'::PendingDestroy" Collapsed="true">
-    <Position X="43" Y="6.75" Width="1.5" />
+    <Position X="20.75" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAACCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Object.cpp</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="AnimParamDef" Collapsed="true">
-    <Position X="37.75" Y="5.75" Width="1.5" />
+    <Position X="15.5" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAFAABAAAgAAAAAEAA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="AnimCondition" Collapsed="true">
-    <Position X="36" Y="5.75" Width="1.5" />
+    <Position X="13.75" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAACAAAAAAAAAAAAAAAAAAAQIAAIAAAAAAA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="AnimTransition" Collapsed="true">
-    <Position X="41.25" Y="5.75" Width="1.5" />
+    <Position X="19" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAEAAAAAAAAAACAAAAQACAAQAAAAAAAAA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="AnimState" Collapsed="true">
-    <Position X="39.5" Y="5.75" Width="1.5" />
+    <Position X="17.25" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAgAAAAAAAAAgA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="AudioClip" Collapsed="true">
-    <Position X="43" Y="5.75" Width="1.5" />
+    <Position X="20.75" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>ACAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAEA=</HashCode>
       <FileName>AudioClip.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="GamepadState" Collapsed="true">
-    <Position X="41.25" Y="6.75" Width="1.5" />
+    <Position X="19" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="Config" Collapsed="true">
-    <Position X="37.75" Y="6.75" Width="1.5" />
+    <Position X="15.5" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAARBIAAYAACAEAAAAAIgUAAAAAAAI=</HashCode>
       <FileName>SleeplessEngine.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="SpriteSheet" Collapsed="true">
-    <Position X="36" Y="7.75" Width="1.5" />
+    <Position X="13.75" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAgAAAAAAgAEAgAAAAAAAAAAAAA=</HashCode>
       <FileName>SpriteSheet.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="UIPanelStyle" Collapsed="true">
-    <Position X="39.5" Y="7.75" Width="1.5" />
+    <Position X="17.25" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAABAAAAAAAAAAIAAAAQAAAAAACAAAAAAAAAAAA=</HashCode>
       <FileName>UIPanel.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="UIRect" Collapsed="true">
-    <Position X="43" Y="7.75" Width="1.5" />
+    <Position X="20.75" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAhgAAAAAAA=</HashCode>
       <FileName>UIPrimitives.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="UIButtonStyle" Collapsed="true">
-    <Position X="37.75" Y="7.75" Width="1.5" />
+    <Position X="15.5" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAIAAAAAAAAACAAAAAIACAQQAQAAgAAAAAAAAgACAAA=</HashCode>
       <FileName>UIStyles.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="UIProgressBarStyle" Collapsed="true">
-    <Position X="41.25" Y="7.75" Width="1.5" />
+    <Position X="19" Y="12.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAABAAAAAAAAABIAAAAQAAAAAAAACAEAAAAAAAA=</HashCode>
       <FileName>UIStyles.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="WindowConfig" Collapsed="true">
-    <Position X="36" Y="8.75" Width="1.5" />
+    <Position X="13.75" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAEAAAEQAAAAAAAAAAAAAAAAAAAAAQAAAACAAAAAAA=</HashCode>
       <FileName>Window.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="Math::Constants&lt;T&gt;" Collapsed="true">
-    <Position X="39.5" Y="6.75" Width="1.5" />
+    <Position X="17.25" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAQAAAAgAAAAAAAAACAAAAAgAQAAAAAAEAAAAAAAA=</HashCode>
       <FileName>Types.hpp</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="Viewport::Bounds" Collapsed="true">
-    <Position X="36" Y="6.75" Width="1.5" />
+    <Position X="13.75" Y="11.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAgAAAAIAAAAAAAAAAAAgAA=</HashCode>
       <FileName>ViewportUtils.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Struct Name="Viewport::WorldRect" Collapsed="true">
-    <Position X="37.75" Y="8.75" Width="1.5" />
+    <Position X="15.5" Y="13.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
       <FileName>ViewportUtils.h</FileName>
     </TypeIdentifier>
   </Struct>
   <Enum Name="AnimParamType" Collapsed="true">
-    <Position X="37.75" Y="10" Width="1.5" />
+    <Position X="28.5" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAgAAAAAAAAAAAAAAAAAAAAAAAgACA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="AnimCondOp" Collapsed="true">
-    <Position X="36" Y="10" Width="1.5" />
+    <Position X="26.75" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>IAAAAAAAAEAIAAAAAAAAAAgIAAACAAAAACQAAAgAAAA=</HashCode>
       <FileName>AnimatorController.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Key" Collapsed="true">
-    <Position X="37.75" Y="10.75" Width="1.5" />
+    <Position X="28.5" Y="11.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>BEIKAGYQAJIgQEAJiKP+aQgHggUEEAgCCgCEvv//ZVM=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="MouseButton" Collapsed="true">
-    <Position X="43" Y="10.75" Width="1.5" />
+    <Position X="33.75" Y="11.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAEBAAAAAAAAABAAAAAIAAAAAACACQAAAAAAA=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="KeyState" Collapsed="true">
-    <Position X="39.5" Y="10.75" Width="1.5" />
+    <Position X="30.25" Y="11.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAEAAI=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="ButtonState" Collapsed="true">
-    <Position X="39.5" Y="10" Width="1.5" />
+    <Position X="30.25" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAIAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAEAAI=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="GamepadAxis" Collapsed="true">
-    <Position X="43" Y="10" Width="1.5" />
+    <Position X="33.75" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AABAAEAAFBAAAAAAAAAAAAAIAAAAAAAAAACAAAAAAAA=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="GamepadButton" Collapsed="true">
-    <Position X="36" Y="10.75" Width="1.5" />
+    <Position X="26.75" Y="11.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>ESCAAAAgEDAQAAIIAAAAAAAAEAAAAAAAAAAACQAJAAQ=</HashCode>
       <FileName>Input.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="LogLevel" Collapsed="true">
-    <Position X="41.25" Y="10.75" Width="1.5" />
+    <Position X="32" Y="11.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAQAAAAgAAAAAAAAAAAAAAAAQAAIAAAAAQABAAAAAA=</HashCode>
       <FileName>Logger.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="FlipMode" Collapsed="true">
-    <Position X="41.25" Y="10" Width="1.5" />
+    <Position X="32" Y="10.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAABAAAAAAgAAAAIAAAAAAAAAAAAAAAEAAAA=</HashCode>
       <FileName>Renderer.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="ViewportScaleMode" Collapsed="true">
-    <Position X="43" Y="11.5" Width="1.5" />
+    <Position X="33.75" Y="12.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAQAACAAAA=</HashCode>
       <FileName>Renderer.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="TextAnchor" Collapsed="true">
-    <Position X="37.75" Y="11.5" Width="1.5" />
+    <Position X="28.5" Y="12.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAIAAA=</HashCode>
       <FileName>TextRenderer.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="TextureScaleMode" Collapsed="true">
-    <Position X="39.5" Y="11.5" Width="1.5" />
+    <Position X="30.25" Y="12.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAgAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Texture.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="UILabelAnchor" Collapsed="true">
-    <Position X="41.25" Y="11.5" Width="1.5" />
+    <Position X="32" Y="12.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAABAAAAAAAQAAAAAAAAAAAAAAAAAIAAA=</HashCode>
       <FileName>UILabel.h</FileName>
     </TypeIdentifier>
   </Enum>
   <Enum Name="Viewport::Side" Collapsed="true">
-    <Position X="36" Y="11.5" Width="1.5" />
+    <Position X="26.75" Y="12.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAQAAAAAAAIAAAACICAAAEAAAA=</HashCode>
       <FileName>ViewportUtils.h</FileName>

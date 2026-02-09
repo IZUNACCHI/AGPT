@@ -180,6 +180,9 @@
     <ClInclude Include="XenonHUDController.hpp" />
     <ClInclude Include="XenonViewportComponents.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="XenonClassDiagram.cd" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

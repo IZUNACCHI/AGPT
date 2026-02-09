@@ -114,4 +114,7 @@
       <UniqueIdentifier>{fd2551a2-b494-4bc5-899a-698dad8d9dd4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="XenonClassDiagram.cd" />
+  </ItemGroup>
 </Project>
