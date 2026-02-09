@@ -279,8 +279,7 @@ void KillCompanions() {
 		SetMaxHealth(100);
 		SetHealth(GetMaxHealth());
 
-		// Xenon faces right: make local +Y (up) point to the right of the screen.
-		GetTransform()->SetRotation(-90.0f);
+		// Project 1: ship faces UP at rotation 0.
 
 		// Optional respawn immunity (primed by GameMode).
 		if (m_respawnInvulnPending && m_respawnInvulnSeconds > 0.0f) {
@@ -328,20 +327,18 @@ void KillCompanions() {
 		}
 
 		rigidbody->SetLinearVelocity(velocity);
-
 		// Turning animation
 		if (m_animator) {
 			const std::string st = m_animator->GetCurrentStateName();
 			if (st != "Death") {
 				float targetN = 0.5f;
 
-				// Turning is driven by UP/DOWN instead of LEFT/RIGHT.
-				// (This only affects the visual banking animation; movement still uses WASD / stick X+Y.)
-				const float stickY = Input::GetGamepadLeftStick().y;
-				const bool up = IsKeyDown(Key::W) || stickY > 0.25f;
-				const bool down = IsKeyDown(Key::S) || stickY < -0.25f;
-				if (up && !down) targetN = 0.0f;          // bank left when moving up
-				else if (down && !up) targetN = 1.0f;     // bank right when moving down
+				// Project 1: turning animation driven by LEFT/RIGHT.
+				const float stickX = Input::GetGamepadLeftStick().x;
+				const bool left = IsKeyDown(Key::A) || stickX < -0.25f;
+				const bool right = IsKeyDown(Key::D) || stickX > 0.25f;
+				if (left && !right) targetN = 0.0f;
+				else if (right && !left) targetN = 1.0f;
 				m_animator->SeekNormalized(targetN, 2.0f);
 			}
 		}

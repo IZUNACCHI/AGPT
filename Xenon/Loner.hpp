@@ -67,13 +67,15 @@ protected:
 			THROW_ENGINE_EXCEPTION("Loner is missing BoxCollider2D component");
 		}
 
-		if (transform) {
-			transform->SetRotation(-90.0f);
+		
+		// Bounce only on the left/right edges (Project 1 requirement).
+		if (auto bounce = GetComponent<BounceOffViewport2D>().get()) {
+			bounce->SetSides(Viewport::Side::Left | Viewport::Side::Right);
 		}
 
 		// Set initial movement once; BounceOffViewport2D will reflect velocity on impact.
-		if (rigidbody && transform) {
-			const Vector2f dir = transform->GetRight() * m_dir;
+		if (rigidbody) {
+			const Vector2f dir = Vector2f(m_dir, 0.0f);
 			rigidbody->SetLinearVelocity(dir * m_speed);
 		}
 	}

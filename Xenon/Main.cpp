@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 		gi->ApplySettings();
 	}
 
-	engine.SetScene(&mainMenu);
+	engine.SetScene(&level1);
 	engine.Run();
 	return 0;
 

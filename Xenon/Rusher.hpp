@@ -62,17 +62,13 @@ protected:
 		else {
 			THROW_ENGINE_EXCEPTION("Rusher is missing BoxCollider2D component");
 		}
-
-		if (transform) {
-			transform->SetRotation(-90.0f);
-		}
 	}
 
 	void Update() override {
 		EnemyEntity::Update();
 
 		if (rigidbody && transform) {
-			const Vector2f dir = -transform->GetUp();
+			const Vector2f dir = Vector2f(0.0f, -1.0f);
 			rigidbody->SetLinearVelocity(dir * m_speed);
 		}
 

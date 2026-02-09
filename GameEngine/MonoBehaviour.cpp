@@ -30,7 +30,7 @@ MonoBehaviour::InvokeHandle MonoBehaviour::Invoke(
 	req.nextTime = Time::Now() + (std::max)(0.0f, delaySeconds);
 
 	// If ticking depends on enabled state and we're disabled, start paused.
-	if (policy == InvokeTickPolicy::WhileBehaviourEnabled && !IsEnabled()) {
+	if (policy == InvokeTickPolicy::WhileBehaviourEnabled && !IsActiveAndEnabled()) {
 		req.paused = true;
 		req.pausedRemaining = (std::max)(0.0f, req.nextTime - Time::Now());
 	}
@@ -57,7 +57,7 @@ MonoBehaviour::InvokeHandle MonoBehaviour::InvokeRepeating(
 	req.repeating = true;
 
 	// If ticking depends on enabled state and we're disabled, start paused.
-	if (policy == InvokeTickPolicy::WhileBehaviourEnabled && !IsEnabled()) {
+	if (policy == InvokeTickPolicy::WhileBehaviourEnabled && !IsActiveAndEnabled()) {
 		req.paused = true;
 		req.pausedRemaining = (std::max)(0.0f, req.nextTime - Time::Now());
 	}

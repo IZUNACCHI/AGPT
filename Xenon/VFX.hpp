@@ -128,13 +128,13 @@ protected:
 	AnimatorController m_controller{};
 };
 
-// Explosion VFX: a concrete one-shot VFX using explode16.bmp.
+// Explosion VFX: a concrete one-shot VFX using explode64.bmp.
 class ExplosionVFXBehaviour : public OneShotVFXBehaviour {
 public:
 	ExplosionVFXBehaviour() {
 		SetComponentName("ExplosionVFXBehaviour");
-		SetSpriteSheetPath("explode16.bmp");
-		SetFrameSize(Vector2i(16, 16));
+		SetSpriteSheetPath("explode64.bmp");
+		SetFrameSize(Vector2i(64, 64));
 		SetFPS(24.0f);
 		SetColorKey(Vector3i(255, 0, 255));
 	}

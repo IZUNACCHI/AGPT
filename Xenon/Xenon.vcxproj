@@ -156,11 +156,8 @@
     <ClInclude Include="Loner.hpp" />
     <ClInclude Include="ParallaxBackground.hpp" />
     <ClInclude Include="Rusher.hpp" />
-    <ClInclude Include="Drone.hpp" />
-    <ClInclude Include="EnemySpawners.hpp" />
-    <ClInclude Include="StoneAsteroids.hpp" />
-    <ClInclude Include="MetalAsteroids.hpp" />
-    <ClInclude Include="LoopingSheet.hpp" />
+        <ClInclude Include="EnemySpawners.hpp" />
+            <ClInclude Include="LoopingSheet.hpp" />
     <ClInclude Include="MainMenuScene.hpp" />
     <ClInclude Include="Missiles.hpp" />
     <ClInclude Include="OptionsMenuController.hpp" />

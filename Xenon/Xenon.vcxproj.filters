@@ -27,11 +27,7 @@
     </ClInclude>
     <ClInclude Include="CompanionPickup.hpp">
       <Filter>GameObjects\Pickup</Filter>
-    </ClInclude>
-    <ClInclude Include="Drone.hpp">
-      <Filter>GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyEntity.hpp">
+    </ClInclude>    <ClInclude Include="EnemyEntity.hpp">
       <Filter>GameObjects\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="EnemySpawners.hpp">
@@ -48,11 +44,7 @@
     </ClInclude>
     <ClInclude Include="MainMenuScene.hpp">
       <Filter>Scenes</Filter>
-    </ClInclude>
-    <ClInclude Include="MetalAsteroids.hpp">
-      <Filter>GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Missiles.hpp">
+    </ClInclude>    <ClInclude Include="Missiles.hpp">
       <Filter>GameObjects\Projectile</Filter>
     </ClInclude>
     <ClInclude Include="Pickup.hpp">
@@ -75,11 +67,7 @@
     </ClInclude>
     <ClInclude Include="Rusher.hpp">
       <Filter>GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="StoneAsteroids.hpp">
-      <Filter>GameObjects\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="VFX.hpp">
+    </ClInclude>    <ClInclude Include="VFX.hpp">
       <Filter>GameObjects</Filter>
     </ClInclude>
     <ClInclude Include="Entity.hpp">

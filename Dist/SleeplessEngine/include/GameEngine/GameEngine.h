@@ -21,6 +21,7 @@
 #include "SleeplessEngine.h"
 #include "SpriteRenderer.h"
 #include "SpriteSheet.h"
+#include "Tilemap.h"
 #include "TextRenderer.h"
 #include "Texture.h"
 #include "Time.hpp"

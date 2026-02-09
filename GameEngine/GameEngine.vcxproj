@@ -52,6 +52,7 @@
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SleeplessEngine.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="Tilemap.h" />
     <ClInclude Include="SpriteSheet.h" />
     <ClInclude Include="Surface.h" />
     <ClInclude Include="TextRenderer.h" />
@@ -99,6 +100,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SleeplessEngine.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
+    <ClCompile Include="Tilemap.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture.cpp" />
