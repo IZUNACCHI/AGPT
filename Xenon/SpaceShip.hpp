@@ -142,6 +142,10 @@ protected:
 	bool m_isInvulnerable = false;
 	MonoBehaviour::InvokeHandle m_invulnInvoke = 0;
 
+	// Respawn invulnerability (primed by GameMode before lifecycle runs).
+	bool m_respawnInvulnPending = false;
+	float m_respawnInvulnSeconds = 2.0f;
+
 	// Death animation
 	bool m_isDying = false;
 	float m_deathLength = 0.0f;
@@ -181,11 +185,20 @@ protected:
 	}
 
 	
+	void BeginInvulnerabilityFor(float seconds) {
+		if (!m_alive) return;
+		if (m_isDying) return;
+		seconds = std::max(0.01f, seconds);
+		m_isInvulnerable = true;
+		if (m_animator) m_animator->SetBool("Invuln", true);
+		if (m_invulnInvoke) CancelInvoke(m_invulnInvoke);
+		m_invulnInvoke = Invoke([this]() { EndInvulnerability(); }, seconds, MonoBehaviour::InvokeTickPolicy::WhileBehaviourEnabled);
+	}
 
-void EndInvulnerability() {
-	m_isInvulnerable = false;
-	if (m_animator) m_animator->SetBool("Invuln", false);
-}
+	void EndInvulnerability() {
+		m_isInvulnerable = false;
+		if (m_animator) m_animator->SetBool("Invuln", false);
+	}
 
 void FinishDeath() {
 	Object::Destroy(GetGameObject());
@@ -268,6 +281,12 @@ void KillCompanions() {
 
 		// Xenon faces right: make local +Y (up) point to the right of the screen.
 		GetTransform()->SetRotation(-90.0f);
+
+		// Optional respawn immunity (primed by GameMode).
+		if (m_respawnInvulnPending && m_respawnInvulnSeconds > 0.0f) {
+			BeginInvulnerabilityFor(m_respawnInvulnSeconds);
+			m_respawnInvulnPending = false;
+		}
 	};
 
 	void ApplyDamage(int amount, GameObject* instigator = nullptr) override {
@@ -280,10 +299,7 @@ void KillCompanions() {
 
 		// If we survived the hit, enter invulnerability.
 		if (m_alive) {
-			m_isInvulnerable = true;
-			if (m_animator) m_animator->SetBool("Invuln", true);
-			if (m_invulnInvoke) CancelInvoke(m_invulnInvoke);
-			m_invulnInvoke = Invoke([this]() { EndInvulnerability(); }, m_invulnDuration, MonoBehaviour::InvokeTickPolicy::WhileBehaviourEnabled);
+			BeginInvulnerabilityFor(m_invulnDuration);
 		}
 	}
 
@@ -369,6 +385,12 @@ void KillCompanions() {
 public:
 	// Exposed so CompanionPickup can grant a companion.
 	bool TryAddCompanion() { return AddCompanion(); }
+
+	// Called by XenonGameMode on respawn to grant a brief immunity window.
+	void PrimeRespawnInvulnerability(float seconds = 2.0f) {
+		m_respawnInvulnSeconds = std::max(0.0f, seconds);
+		m_respawnInvulnPending = true;
+	}
 
 };
 

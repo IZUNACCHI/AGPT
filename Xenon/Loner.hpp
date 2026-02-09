@@ -70,6 +70,12 @@ protected:
 		if (transform) {
 			transform->SetRotation(-90.0f);
 		}
+
+		// Set initial movement once; BounceOffViewport2D will reflect velocity on impact.
+		if (rigidbody && transform) {
+			const Vector2f dir = transform->GetRight() * m_dir;
+			rigidbody->SetLinearVelocity(dir * m_speed);
+		}
 	}
 
 	void Start() override {
@@ -84,30 +90,7 @@ protected:
 
 	void Update() override {
 		EnemyEntity::Update();
-
-		if (!transform) return;
-
-		const float halfW = (boxCol ? boxCol->GetSize().x * 0.5f : 32.0f);
-		const float halfH = (boxCol ? boxCol->GetSize().y * 0.5f : 32.0f);
-
-		Vector2f p = transform->GetWorldPosition();
-
-		const float minX = -400.0f + halfW;
-		const float maxX = 400.0f - halfW;
-		const float minY = -320.0f + halfH;
-		const float maxY = 320.0f - halfH;
-
-		if (p.x <= minX) { p.x = minX; m_dir = 1.0f; }
-		if (p.x >= maxX) { p.x = maxX; m_dir = -1.0f; }
-		if (p.y <= minY) { p.y = minY; m_dir = -m_dir; }
-		if (p.y >= maxY) { p.y = maxY; m_dir = -m_dir; }
-
-		transform->SetPosition(p);
-
-		if (rigidbody) {
-			const Vector2f dir = transform->GetRight() * m_dir;
-			rigidbody->SetLinearVelocity(dir * m_speed);
-		}
+		// Movement is handled by Rigidbody2D velocity + BounceOffViewport2D.
 	}
 
 };
@@ -118,7 +101,7 @@ public:
 		: GameObject(name) {
 		AddComponent<Rigidbody2D>();
 		AddComponent<SpriteRenderer>();
-		AddComponent<DespawnOffscreen2D>();
+		AddComponent<BounceOffViewport2D>();
 		AddComponent<BoxCollider2D>();
 		AddComponent<EnemyProjectileLauncher>();
 		AddComponent<Animator>();

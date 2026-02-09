@@ -168,3 +168,107 @@ private:
 	bool m_entered = false;
 	Viewport::Side m_sides = Viewport::Side::All;
 };
+
+
+// Behaviour that reflects the owning GameObject's Rigidbody2D linear velocity when it hits
+// the viewport edge. Uses SpriteRenderer frame size or BoxCollider2D size to compute extents.
+// Runs in LateUpdate so it can safely override movement set in Update().
+class BounceOffViewport2D : public MonoBehaviour {
+public:
+	BounceOffViewport2D() : MonoBehaviour() {
+		SetComponentName("BounceOffViewport2D");
+	}
+
+	// 1.0f = perfectly elastic reflection, 0.0f = stop on impact.
+	void SetBounciness(float b) { m_bounciness = std::max(0.0f, b); }
+	void SetRequireEntered(bool v) { m_requireEntered = v; }
+	void SetSides(Viewport::Side sides) { m_sides = sides; }
+
+	void LateUpdate() override {
+		CheckAndBounce();
+	}
+
+private:
+	Viewport::WorldRect GetWorldRect() {
+		Viewport::WorldRect r{};
+		if (!GetGameObject()) return r;
+
+		Transform* t = GetTransform();
+		if (!t) return r;
+
+		// Axis-aligned half-extents in world units.
+		Vector2f half = Vector2f::Zero();
+
+		if (auto sr = GetComponent<SpriteRenderer>().get()) {
+			const Vector2i fs = sr->GetResolvedFrameSize();
+			const Vector2f ws = t->GetWorldScale();
+			half.x = 0.5f * (fs.x > 0 ? fs.x * std::abs(ws.x) : 0.0f);
+			half.y = 0.5f * (fs.y > 0 ? fs.y * std::abs(ws.y) : 0.0f);
+		}
+		else if (auto col = GetComponent<Collider2D>().get()) {
+			if (auto box = dynamic_cast<BoxCollider2D*>(col)) {
+				const Vector2f s = box->GetSize();
+				const Vector2f ws = t->GetWorldScale();
+				half.x = 0.5f * s.x * std::abs(ws.x);
+				half.y = 0.5f * s.y * std::abs(ws.y);
+			}
+		}
+
+		const Vector2f pos = t->GetWorldPosition();
+		r.topLeft = Vector2f(pos.x - half.x, pos.y + half.y);
+		r.size = Vector2f(half.x * 2.0f, half.y * 2.0f);
+		return r;
+	}
+
+	void CheckAndBounce() {
+		GameObject* go = GetGameObject();
+		if (!go) return;
+
+		Renderer* renderer = GetRenderer();
+		if (!renderer) return;
+
+		const Vector2i vr = renderer->GetVirtualResolution();
+		if (vr.x <= 0 || vr.y <= 0) return;
+
+		Viewport::WorldRect rect = GetWorldRect();
+		if (rect.size.x <= 0.0f || rect.size.y <= 0.0f) return;
+
+		const bool fullyOutside = Viewport::IsRectOutside(rect, vr, m_sides);
+		if (m_requireEntered && !m_entered) {
+			if (!fullyOutside) m_entered = true;
+			return;
+		}
+
+		Viewport::Side over = Viewport::OverhangSidesRect(rect, vr) & m_sides;
+		if (!Viewport::Any(over)) return;
+
+		auto rb = GetComponent<Rigidbody2D>();
+		if (rb) {
+			Vector2f v = rb->GetLinearVelocity();
+
+			// Reflect only if we're moving further into that side.
+			if (Viewport::Any(over & Viewport::Side::Left) && v.x < 0.0f)   v.x = -v.x * m_bounciness;
+			if (Viewport::Any(over & Viewport::Side::Right) && v.x > 0.0f)  v.x = -v.x * m_bounciness;
+			if (Viewport::Any(over & Viewport::Side::Top) && v.y > 0.0f)    v.y = -v.y * m_bounciness;
+			if (Viewport::Any(over & Viewport::Side::Bottom) && v.y < 0.0f) v.y = -v.y * m_bounciness;
+
+			rb->SetLinearVelocity(v);
+		}
+
+		// Clamp back inside so we don't stay slightly outside due to timestep overshoot.
+		rect = Viewport::ClampRect(rect, vr, m_sides);
+		const Vector2f newCenter(
+			rect.topLeft.x + rect.size.x * 0.5f,
+			rect.topLeft.y - rect.size.y * 0.5f
+		);
+
+		if (rb) rb->SetPosition(newCenter);
+		else if (auto t = GetTransform()) t->SetPosition(newCenter);
+	}
+
+private:
+	float m_bounciness = 1.0f;
+	bool m_requireEntered = true;
+	bool m_entered = false;
+	Viewport::Side m_sides = Viewport::Side::All;
+};

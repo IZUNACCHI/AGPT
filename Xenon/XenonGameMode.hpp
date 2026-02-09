@@ -163,6 +163,9 @@ private:
 		auto ship = m_scene->CreateGameObject<SpaceShip>("SpaceShip");
 		ship->GetTransform()->SetPosition(Vector2f(0.0f, -160.0f));
 		ship->GetTransform()->SetRotation(-90.0f);
+		if (auto b = ship->GetComponent<SpaceShipBehaviour>()) {
+			b->PrimeRespawnInvulnerability(2.0f);
+		}
 
 		m_waitingForRespawn = false;
 	}
